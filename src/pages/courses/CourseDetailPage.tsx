@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Calendar, MapPin, Users, Pound, CheckCircle, Plus } from 'lucide-react'
+import { ArrowLeft, Calendar, MapPin, Users, PoundSterling, CheckCircle, Plus } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
@@ -88,7 +88,7 @@ export function CourseDetailPage() {
                 </div>
                 {course.location && <div className="flex items-center gap-2 text-gray-600"><MapPin size={16} className="text-ukag-500 flex-shrink-0" /><div><div className="text-xs text-gray-400">Location</div><div>{course.location}</div></div></div>}
                 {course.capacity && <div className="flex items-center gap-2 text-gray-600"><Users size={16} className="text-ukag-500 flex-shrink-0" /><div><div className="text-xs text-gray-400">Capacity</div><div>{enrolments.filter(e => e.status === 'enrolled' || e.status === 'completed').length}/{course.capacity} enrolled{spotsLeft !== null && ` · ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}</div></div></div>}
-                {course.cost !== undefined && course.cost !== null && <div className="flex items-center gap-2 text-gray-600"><Pound size={16} className="text-ukag-500 flex-shrink-0" /><div><div className="text-xs text-gray-400">Cost</div><div>£{Number(course.cost).toFixed(2)}</div></div></div>}
+                {course.cost !== undefined && course.cost !== null && <div className="flex items-center gap-2 text-gray-600"><PoundSterling size={16} className="text-ukag-500 flex-shrink-0" /><div><div className="text-xs text-gray-400">Cost</div><div>£{Number(course.cost).toFixed(2)}</div></div></div>}
                 {course.tutor && <div><div className="text-xs text-gray-400">Tutor</div><div className="text-gray-600">{course.tutor}</div></div>}
               </div>
               {course.description && <p className="mt-4 text-sm text-gray-600 border-t border-gray-100 pt-4">{course.description}</p>}
