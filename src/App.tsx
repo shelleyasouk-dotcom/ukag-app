@@ -9,6 +9,9 @@ import { CoachesPage } from './pages/coaches/CoachesPage'
 import { CoachDetailPage } from './pages/coaches/CoachDetailPage'
 import { CoursesPage } from './pages/courses/CoursesPage'
 import { CourseDetailPage } from './pages/courses/CourseDetailPage'
+import { CourseLearningPage } from './pages/courses/CourseLearningPage'
+import { WeekViewPage } from './pages/courses/WeekViewPage'
+import { LessonViewPage } from './pages/courses/LessonViewPage'
 import { AwardsPage } from './pages/awards/AwardsPage'
 import { ProfilePage } from './pages/profile/ProfilePage'
 
@@ -27,6 +30,9 @@ export default function App() {
           <Route path="/coaches/:id" element={<ProtectedRoute allowedRoles={['admin']}><CoachDetailPage /></ProtectedRoute>} />
           <Route path="/courses" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
           <Route path="/courses/:id" element={<ProtectedRoute><CourseDetailPage /></ProtectedRoute>} />
+          <Route path="/courses/:id/learn" element={<ProtectedRoute><CourseLearningPage /></ProtectedRoute>} />
+          <Route path="/courses/:id/learn/week/:weekId" element={<ProtectedRoute><WeekViewPage /></ProtectedRoute>} />
+          <Route path="/courses/:id/learn/week/:weekId/lesson/:lessonId" element={<ProtectedRoute><LessonViewPage /></ProtectedRoute>} />
           <Route path="/awards" element={<ProtectedRoute><AwardsPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 

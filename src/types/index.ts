@@ -5,6 +5,9 @@ export type Discipline = 'gymnastics' | 'trampolining' | 'both'
 export type LicenceStatus = 'active' | 'expired' | 'suspended' | 'pending'
 export type EnrolmentStatus = 'enrolled' | 'completed' | 'cancelled' | 'failed'
 export type CourseStatus = 'open' | 'full' | 'completed' | 'cancelled'
+export type LessonType = 'video' | 'reading' | 'quiz'
+export type AssessmentType = 'video_submission' | 'practical_signoff'
+export type AssessmentSubmissionStatus = 'submitted' | 'approved' | 'failed'
 
 export interface Profile {
   id: string
@@ -106,4 +109,48 @@ export interface CoachAward {
   created_at: string
   profile?: Profile
   award?: Award
+}
+
+export interface CourseWeek {
+  id: string
+  course_id: string
+  week_number: number
+  title: string
+  description?: string
+  created_at: string
+}
+
+export interface CourseLesson {
+  id: string
+  week_id: string
+  lesson_number: number
+  title: string
+  type: LessonType
+  duration_minutes?: number
+  content_placeholder?: string
+  created_at: string
+}
+
+export interface WeekAssessment {
+  id: string
+  week_id: string
+  type: AssessmentType
+  title: string
+  description?: string
+  created_at: string
+}
+
+export interface LessonCompletion {
+  id: string
+  lesson_id: string
+  profile_id: string
+  completed_at: string
+}
+
+export interface AssessmentSubmission {
+  id: string
+  assessment_id: string
+  profile_id: string
+  status: AssessmentSubmissionStatus
+  submitted_at: string
 }
