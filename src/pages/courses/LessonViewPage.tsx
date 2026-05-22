@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactElement } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, PlayCircle, FileText, HelpCircle, CheckCircle2, Clock } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
@@ -6,7 +6,9 @@ import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
 import type { CourseLesson, CourseWeek } from '../../types'
 
-const LESSON_TYPE_META = {
+interface LessonTypeMeta { icon: ReactElement; label: string; colour: string }
+
+const LESSON_TYPE_META: Record<string, LessonTypeMeta> = {
   video: { icon: <PlayCircle size={18} className="text-blue-500" />, label: 'Video', colour: 'bg-blue-50 text-blue-700' },
   reading: { icon: <FileText size={18} className="text-green-500" />, label: 'Reading', colour: 'bg-green-50 text-green-700' },
   quiz: { icon: <HelpCircle size={18} className="text-amber-500" />, label: 'Quiz', colour: 'bg-amber-50 text-amber-700' },
@@ -38,11 +40,8 @@ export function LessonViewPage() {
     setWeek(weekData)
 
     const { data: completion } = await supabase
-      .from('lesson_completions')
-      .select('id')
-      .eq('lesson_id', lessonId)
-      .eq('profile_id', profile.id)
-      .maybeSingle()
+      .from('lesson_completions').select('id')
+      .eq('lesson_id', lessonId).eq('profile_id', profile.id).maybeSingle()
 
     setIsComplete(!!completion)
     setLoading(false)
@@ -51,27 +50,18 @@ export function LessonViewPage() {
   async function markComplete() {
     if (!lesson || !profile || isComplete || marking) return
     setMarking(true)
-    await supabase.from('lesson_completions').insert({
-      lesson_id: lesson.id,
-      profile_id: profile.id,
-    })
+    await supabase.from('lesson_completions').insert({ lesson_id: lesson.id, profile_id: profile.id })
     setIsComplete(true)
     setMarking(false)
     setTimeout(() => navigate(`/courses/${id}/learn/week/${weekId}`), 600)
   }
 
   if (loading) return (
-    <Layout>
-      <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-ukag-600" />
-      </div>
-    </Layout>
+    <Layout><div className="flex justify-center py-12"><div className="animate-spin rounded-full h-7 w-7 border-b-2 border-ukag-600" /></div></Layout>
   )
 
   if (!lesson || !week) return (
-    <Layout>
-      <div className="text-center py-12 text-gray-500">Lesson not found</div>
-    </Layout>
+    <Layout><div className="text-center py-12 text-gray-500">Lesson not found</div></Layout>
   )
 
   const meta = LESSON_TYPE_META[lesson.type]
@@ -79,12 +69,9 @@ export function LessonViewPage() {
   return (
     <Layout>
       <div className="max-w-2xl mx-auto space-y-5">
-        {/* Header */}
         <div>
-          <Link
-            to={`/courses/${id}/learn/week/${weekId}`}
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-3"
-          >
+          <Link to={`/courses/${id}/learn/week/${weekId}`}
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-3">
             <ArrowLeft size={14} /> Week {week.week_number} — {week.title}
           </Link>
           <div className="flex items-center gap-2 mb-2">
@@ -92,15 +79,12 @@ export function LessonViewPage() {
               {meta.icon}{meta.label}
             </span>
             {lesson.duration_minutes && (
-              <span className="flex items-center gap-1 text-xs text-gray-400">
-                <Clock size={11} />{lesson.duration_minutes} min
-              </span>
+              <span className="flex items-center gap-1 text-xs text-gray-400"><Clock size={11} />{lesson.duration_minutes} min</span>
             )}
           </div>
           <h1 className="text-xl font-bold text-gray-900">{lesson.title}</h1>
         </div>
 
-        {/* Content Area */}
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden min-h-64">
           {lesson.type === 'video' ? (
             <div className="bg-gray-900 aspect-video flex flex-col items-center justify-center gap-3">
@@ -124,33 +108,21 @@ export function LessonViewPage() {
           )}
         </div>
 
-        {/* Action */}
         <div className="flex items-center justify-between">
-          <Link
-            to={`/courses/${id}/learn/week/${weekId}`}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
+          <Link to={`/courses/${id}/learn/week/${weekId}`} className="text-sm text-gray-500 hover:text-gray-700">
             ← Back to week
           </Link>
-
           {isComplete ? (
             <div className="flex items-center gap-2 text-green-600 font-medium text-sm">
-              <CheckCircle2 size={18} />
-              Complete
+              <CheckCircle2 size={18} />Complete
             </div>
           ) : lesson.type === 'quiz' ? (
-            <button
-              disabled
-              className="bg-amber-400 text-white px-5 py-2.5 rounded-lg font-medium text-sm opacity-50 cursor-not-allowed"
-            >
+            <button disabled className="bg-amber-400 text-white px-5 py-2.5 rounded-lg font-medium text-sm opacity-50 cursor-not-allowed">
               Start Quiz
             </button>
           ) : (
-            <button
-              onClick={markComplete}
-              disabled={marking}
-              className="bg-ukag-600 hover:bg-ukag-700 disabled:opacity-60 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors"
-            >
+            <button onClick={markComplete} disabled={marking}
+              className="bg-ukag-600 hover:bg-ukag-700 disabled:opacity-60 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors">
               {marking ? 'Saving…' : 'Mark as Complete ✓'}
             </button>
           )}
