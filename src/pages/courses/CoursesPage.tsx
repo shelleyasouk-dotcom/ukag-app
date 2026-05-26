@@ -6,6 +6,19 @@ import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
 import type { Course, CourseStatus, Discipline } from '../../types'
 
+const COURSE_TYPES = [
+  'Junior Coach Certificate',
+  'Level 1 Certificate',
+  'Level 2 Certificate',
+  'Lead Coach CPD',
+  'Refresher Training',
+  'Safeguarding in Sport',
+  'Level 2 Safeguarding Certificate',
+  'DBS',
+  'First Aid Basic',
+  'Paediatric First Aid Full',
+]
+
 const STATUS_COLOURS: Record<CourseStatus, string> = {
   open: 'bg-green-100 text-green-700',
   full: 'bg-amber-100 text-amber-700',
@@ -74,11 +87,18 @@ export function CoursesPage() {
           </div>
           <select value={disciplineFilter} onChange={e => setDisciplineFilter(e.target.value as Discipline | 'all')}
             className="border border-gray-300 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ukag-500">
-            <option value="all">All disciplines</option><option value="gymnastics">Gymnastics</option><option value="trampolining">Trampolining</option><option value="both">Both</option>
+            <option value="all">All disciplines</option>
+            <option value="gymnastics">Gymnastics</option>
+            <option value="trampolining">Trampolining</option>
+            <option value="both">Both</option>
           </select>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as CourseStatus | 'all')}
             className="border border-gray-300 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ukag-500">
-            <option value="all">All statuses</option><option value="open">Open</option><option value="full">Full</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option>
+            <option value="all">All statuses</option>
+            <option value="open">Open</option>
+            <option value="full">Full</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
           </select>
         </div>
 
@@ -96,14 +116,18 @@ export function CoursesPage() {
                     <div className="font-semibold text-gray-900 text-sm">{course.title}</div>
                     {course.course_type && <div className="text-xs text-gray-400 mt-0.5">{course.course_type}</div>}
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${STATUS_COLOURS[course.status]}`}>{course.status.charAt(0).toUpperCase() + course.status.slice(1)}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${STATUS_COLOURS[course.status]}`}>
+                    {course.status.charAt(0).toUpperCase() + course.status.slice(1)}
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-2 text-xs text-gray-500">
                   {course.date && <span className="flex items-center gap-1"><Calendar size={12} />{new Date(course.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
                   {course.location && <span className="flex items-center gap-1"><MapPin size={12} />{course.location}</span>}
                   {course.capacity && <span className="flex items-center gap-1"><Users size={12} />{course.enrolment_count}/{course.capacity} places</span>}
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium self-start ${DISCIPLINE_COLOURS[course.discipline]}`}>{course.discipline.charAt(0).toUpperCase() + course.discipline.slice(1)}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium self-start ${DISCIPLINE_COLOURS[course.discipline]}`}>
+                  {course.discipline.charAt(0).toUpperCase() + course.discipline.slice(1)}
+                </span>
               </Link>
             ))}
           </div>
@@ -118,7 +142,11 @@ export function CoursesPage() {
 }
 
 function AddCourseModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
-  const [form, setForm] = useState({ title: '', discipline: 'gymnastics' as Discipline, course_type: 'Foundation', description: '', date: '', end_date: '', location: '', capacity: '', tutor: '', cost: '', status: 'open' as CourseStatus })
+  const [form, setForm] = useState({
+    title: '', discipline: 'gymnastics' as Discipline,
+    course_type: 'Level 1 Certificate',
+    description: '', date: '', end_date: '', location: '', capacity: '', tutor: '', cost: '', status: 'open' as CourseStatus
+  })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -128,7 +156,13 @@ function AddCourseModal({ onClose, onSaved }: { onClose: () => void; onSaved: ()
     e.preventDefault()
     if (!form.title.trim()) { setError('Title is required'); return }
     setSaving(true)
-    const { error } = await supabase.from('courses').insert({ ...form, capacity: form.capacity ? +form.capacity : null, cost: form.cost ? +form.cost : null, date: form.date || null, end_date: form.end_date || null })
+    const { error } = await supabase.from('courses').insert({
+      ...form,
+      capacity: form.capacity ? +form.capacity : null,
+      cost: form.cost ? +form.cost : null,
+      date: form.date || null,
+      end_date: form.end_date || null,
+    })
     if (error) { setError(error.message); setSaving(false) }
     else onSaved()
   }
@@ -138,30 +172,88 @@ function AddCourseModal({ onClose, onSaved }: { onClose: () => void; onSaved: ()
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
           <h2 className="font-semibold text-gray-900">Add Training Course</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">×</button>
         </div>
         <form onSubmit={save} className="p-5 space-y-4">
-          <div><label className="block text-sm font-medium text-gray-700 mb-1">Course title *</label><input required value={form.title} onChange={e => set('title', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500" placeholder="e.g. Recreational Gymnastics Foundation" /></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Discipline</label><select value={form.discipline} onChange={e => set('discipline', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500"><option value="gymnastics">Gymnastics</option><option value="trampolining">Trampolining</option><option value="both">Both</option></select></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Course type</label><select value={form.course_type} onChange={e => set('course_type', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500"><option>Foundation</option><option>Award Level 1</option><option>Award Level 2</option><option>Award Level 3</option><option>CPD</option><option>Refresher</option><option>Safeguarding</option><option>First Aid</option></select></div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Course title *</label>
+            <input required value={form.title} onChange={e => set('title', e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500"
+              placeholder="e.g. Level 1 Gymnastics Coaching Certificate" />
           </div>
-          <div><label className="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea rows={2} value={form.description} onChange={e => set('description', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500 resize-none" /></div>
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Start date</label><input type="date" value={form.date} onChange={e => set('date', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500" /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">End date</label><input type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500" /></div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Discipline</label>
+              <select value={form.discipline} onChange={e => set('discipline', e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500">
+                <option value="gymnastics">Gymnastics</option>
+                <option value="trampolining">Trampolining</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Course type</label>
+              <select value={form.course_type} onChange={e => set('course_type', e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500">
+                {COURSE_TYPES.map(t => <option key={t}>{t}</option>)}
+              </select>
+            </div>
           </div>
-          <div><label className="block text-sm font-medium text-gray-700 mb-1">Location</label><input value={form.location} onChange={e => set('location', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500" placeholder="Venue name and town" /></div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea rows={2} value={form.description} onChange={e => set('description', e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500 resize-none" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Start date</label>
+              <input type="date" value={form.date} onChange={e => set('date', e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">End date</label>
+              <input type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+            <input value={form.location} onChange={e => set('location', e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500"
+              placeholder="Venue name and town" />
+          </div>
           <div className="grid grid-cols-3 gap-3">
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Capacity</label><input type="number" min="0" value={form.capacity} onChange={e => set('capacity', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500" /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Cost (£)</label><input type="number" min="0" step="0.01" value={form.cost} onChange={e => set('cost', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500" /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Status</label><select value={form.status} onChange={e => set('status', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500"><option value="open">Open</option><option value="full">Full</option><option value="cancelled">Cancelled</option></select></div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Capacity</label>
+              <input type="number" min="0" value={form.capacity} onChange={e => set('capacity', e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Cost (£)</label>
+              <input type="number" min="0" step="0.01" value={form.cost} onChange={e => set('cost', e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select value={form.status} onChange={e => set('status', e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500">
+                <option value="open">Open</option>
+                <option value="full">Full</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
           </div>
-          <div><label className="block text-sm font-medium text-gray-700 mb-1">Tutor</label><input value={form.tutor} onChange={e => set('tutor', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500" /></div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tutor</label>
+            <input value={form.tutor} onChange={e => set('tutor', e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ukag-500" />
+          </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 border border-gray-300 rounded-lg py-2 text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
-            <button type="submit" disabled={saving} className="flex-1 bg-ukag-600 hover:bg-ukag-700 disabled:opacity-60 text-white rounded-lg py-2 text-sm font-medium">{saving ? 'Saving…' : 'Add Course'}</button>
+            <button type="submit" disabled={saving} className="flex-1 bg-ukag-600 hover:bg-ukag-700 disabled:opacity-60 text-white rounded-lg py-2 text-sm font-medium">
+              {saving ? 'Saving…' : 'Add Course'}
+            </button>
           </div>
         </form>
       </div>
