@@ -2,6 +2,29 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
+function UkagMark({ size = 100 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="2" width="22" height="22" rx="3" fill="#1e52a4"/>
+      <rect x="54" y="2" width="22" height="22" rx="3" fill="#1e52a4"/>
+      <rect x="4" y="23" width="18" height="30" rx="2.5" fill="#ef462c"/>
+      <rect x="28" y="23" width="18" height="30" rx="2.5" fill="#ef462c"/>
+      <path d="M4 42 Q4 54 22 54 Q40 54 40 42 L28 42 Q28 46 22 46 Q16 46 16 42 Z" fill="#ef462c"/>
+      <rect x="54" y="23" width="18" height="31" rx="2.5" fill="#ef462c"/>
+      <polygon points="72,34 96,23 85,23 72,30" fill="#ef462c"/>
+      <polygon points="72,34 84,54 96,54 72,34" fill="#ef462c"/>
+      <rect x="4" y="59" width="18" height="36" rx="2.5" fill="#f4cc2c"/>
+      <rect x="28" y="59" width="18" height="36" rx="2.5" fill="#f4cc2c"/>
+      <path d="M4 68 L4 64 Q4 59 22 59 Q40 59 40 64 L40 68 Z" fill="#f4cc2c"/>
+      <rect x="4" y="79" width="34" height="9" rx="2" fill="#f4cc2c"/>
+      <rect x="54" y="59" width="36" height="9" rx="2.5" fill="#f4cc2c"/>
+      <rect x="54" y="68" width="18" height="22" rx="2.5" fill="#f4cc2c"/>
+      <rect x="54" y="86" width="36" height="9" rx="2.5" fill="#f4cc2c"/>
+      <rect x="72" y="71" width="18" height="9" rx="2" fill="#f4cc2c"/>
+    </svg>
+  )
+}
+
 export function LoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
@@ -25,34 +48,30 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
+      {/* Left panel */}
       <div className="hidden lg:flex w-1/2 bg-gray-900 items-center justify-center p-12 flex-col gap-8">
-        <svg width="160" height="160" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="4" y="4" width="16" height="16" rx="2" fill="#2B4EAD" />
-          <rect x="44" y="4" width="16" height="16" rx="2" fill="#2B4EAD" />
-          <path d="M4 22 L4 56 Q4 72 22 72 Q40 72 40 56 L40 22 L27 22 L27 56 Q27 60 22 60 Q17 60 17 56 L17 22 Z" fill="#E8391C" />
-          <rect x="46" y="22" width="12" height="50" fill="#E8391C" />
-          <path d="M58 47 L80 22 L66 22 L46 47 L66 72 L80 72 Z" fill="#E8391C" />
-          <path d="M4 98 L18 68 L32 98 L26 98 L22 88 L14 88 L10 98 Z M16 82 L22 82 L19 75 Z" fill="#F9C400" transform="translate(0 -2)" />
-          <path d="M56 70 Q44 70 44 82 Q44 96 56 96 L68 96 L68 82 L60 82 L60 88 L62 88 L62 90 L56 90 Q52 90 52 82 Q52 76 56 76 Q60 76 60 79 L68 79 Q68 70 56 70 Z" fill="#F9C400" transform="translate(18 -4)" />
-        </svg>
+        <UkagMark size={130} />
         <div className="text-center">
-          <div className="text-3xl font-bold">
-            <span className="text-ukag-500">UK</span>
-            <span style={{ color: '#F9C400' }}>AG</span>
+          <div className="leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            <div className="text-4xl font-black tracking-tight" style={{ color: '#ef462c' }}>UK ACADEMIES</div>
+            <div className="text-4xl font-black tracking-tight" style={{ color: '#1e52a4' }}>OF GYMNASTICS</div>
           </div>
-          <div className="text-gray-300 text-lg font-medium mt-1">UK Academies of Gymnastics</div>
-          <div className="text-gray-500 text-sm mt-2">Training &amp; Affiliation Portal</div>
+          <div className="text-gray-400 text-sm mt-3 tracking-wide">Coaching &amp; Accreditation Portal</div>
         </div>
       </div>
 
+      {/* Right panel */}
       <div className="flex-1 flex items-center justify-center p-6 bg-gray-50">
         <div className="w-full max-w-sm">
-          <div className="lg:hidden text-center mb-8">
-            <div className="text-3xl font-bold mb-1">
-              <span className="text-ukag-500">UK</span>
-              <span style={{ color: '#F9C400' }}>AG</span>
+          {/* Mobile logo */}
+          <div className="lg:hidden text-center mb-8 flex flex-col items-center gap-3">
+            <UkagMark size={72} />
+            <div style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              <div className="text-xl font-black tracking-tight">
+                <span style={{ color: '#ef462c' }}>UK ACADEMIES </span>
+                <span style={{ color: '#1e52a4' }}>OF GYMNASTICS</span>
+              </div>
             </div>
-            <div className="text-gray-700 font-medium">UK Academies of Gymnastics</div>
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-7">
@@ -94,9 +113,12 @@ export function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-ukag-600 hover:bg-ukag-700 disabled:opacity-60 text-white font-medium py-2.5 rounded-lg text-sm transition-colors mt-2"
+                className="w-full disabled:opacity-60 text-white font-bold py-2.5 rounded-lg text-sm transition-colors mt-2"
+                style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#d43218')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ef462c')}
               >
-                {loading ? 'Signing in…' : 'Sign in'}
+                {loading ? 'Signing in…' : 'Sign In'}
               </button>
             </form>
           </div>

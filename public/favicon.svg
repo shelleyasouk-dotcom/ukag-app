@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#ef462c"/>
+  <!-- U left bar -->
+  <rect x="6" y="22" width="13" height="26" rx="2" fill="white"/>
+  <!-- U right bar -->
+  <rect x="25" y="22" width="13" height="26" rx="2" fill="white"/>
+  <!-- U bottom curve -->
+  <path d="M6 38 Q6 50 22 50 Q38 50 38 38 L25 38 Q25 42 22 42 Q19 42 19 38 Z" fill="white"/>
+  <!-- K vertical -->
+  <rect x="50" y="22" width="13" height="28" rx="2" fill="white"/>
+  <!-- K upper arm -->
+  <polygon points="63,30 84,22 75,22 63,27" fill="white"/>
+  <!-- K lower arm -->
+  <polygon points="63,30 74,50 84,50 63,30" fill="white"/>
+  <!-- A left bar -->
+  <rect x="6" y="58" width="13" height="26" rx="2" fill="white"/>
+  <!-- A right bar -->
+  <rect x="25" y="58" width="13" height="26" rx="2" fill="white"/>
+  <!-- A top arch -->
+  <path d="M6 65 L6 62 Q6 58 22 58 Q38 58 38 62 L38 65 Z" fill="white"/>
+  <!-- A crossbar -->
+  <rect x="6" y="74" width="32" height="7" rx="2" fill="white"/>
+  <!-- G top bar -->
+  <rect x="50" y="58" width="30" height="7" rx="2" fill="white"/>
+  <!-- G left bar -->
+  <rect x="50" y="65" width="13" height="19" rx="2" fill="white"/>
+  <!-- G bottom bar -->
+  <rect x="50" y="77" width="30" height="7" rx="2" fill="white"/>
+  <!-- G shelf -->
+  <rect x="63" y="67" width="17" height="7" rx="2" fill="white"/>
+</svg>
