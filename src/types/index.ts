@@ -128,6 +128,8 @@ export interface CourseLesson {
   type: LessonType
   duration_minutes?: number
   content_placeholder?: string
+  pass_threshold?: number
+  video_url?: string
   created_at: string
 }
 
@@ -153,4 +155,35 @@ export interface AssessmentSubmission {
   profile_id: string
   status: AssessmentSubmissionStatus
   submitted_at: string
+}
+
+// ── Quiz types ──────────────────────────────────────────────
+
+export interface QuizOption {
+  id: string
+  question_id: string
+  option_letter: string
+  option_text: string
+  is_correct: boolean
+  created_at: string
+}
+
+export interface QuizQuestion {
+  id: string
+  lesson_id: string
+  question_number: number
+  question_text: string
+  created_at: string
+  options?: QuizOption[]
+}
+
+export interface QuizAttempt {
+  id: string
+  lesson_id: string
+  profile_id: string
+  score: number
+  total_questions: number
+  passed: boolean
+  answers?: Record<string, string>
+  attempted_at: string
 }
