@@ -676,7 +676,6 @@ function AddLessonModal({ weekId, nextLessonNumber, onClose, onSaved }: {
   const [title, setTitle] = useState('')
   const [type, setType] = useState<'video' | 'reading' | 'quiz'>('video')
   const [duration, setDuration] = useState('')
-  const [placeholder, setPlaceholder] = useState('')
   const [saving, setSaving] = useState(false)
 
   async function save(e: React.FormEvent) {
@@ -687,7 +686,6 @@ function AddLessonModal({ weekId, nextLessonNumber, onClose, onSaved }: {
       week_id: weekId, lesson_number: nextLessonNumber,
       title: title.trim(), type,
       duration_minutes: duration ? parseInt(duration) : null,
-      content_placeholder: placeholder.trim() || null,
     })
     onSaved()
   }
