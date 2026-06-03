@@ -3,14 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
 function UkagMark({ size = 100 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="2" width="11" height="10" fill="#1e52a4"/>
-      <rect x="51" y="2" width="11" height="10" fill="#1e52a4"/>
-      <text x="2" y="52" fontSize="46" fontWeight="900" fontFamily="Montserrat, sans-serif" fill="#ef462c" textLength="96" lengthAdjust="spacingAndGlyphs">UK</text>
-      <text x="2" y="98" fontSize="46" fontWeight="900" fontFamily="Montserrat, sans-serif" fill="#f4cc2c" textLength="96" lengthAdjust="spacingAndGlyphs">AG</text>
-    </svg>
-  )
+  return <img src="/ukag-mark.png" width={size} height={size} alt="UKAG" style={{ objectFit: 'contain', display: 'block' }} />
 }
 
 export function LoginPage() {
