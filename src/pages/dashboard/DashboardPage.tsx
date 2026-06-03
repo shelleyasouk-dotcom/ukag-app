@@ -2,6 +2,12 @@ import { Link } from 'react-router-dom'
 import { Layout } from '../../components/layout/Layout'
 import { useAuth } from '../../contexts/AuthContext'
 import { GraduationCap, BookOpen, FolderOpen, Award, ChevronRight } from 'lucide-react'
+import { ACADEMIES } from '../../data/academies'
+
+const coachAcademy = ACADEMIES.find(a => a.id === 'coach')!
+const FEATURED_COURSES = ['junior-coach', 'level-1-assistant', 'level-2-lead-gymnastics']
+  .map(id => coachAcademy.courses.find(c => c.id === id)!)
+  .filter(Boolean)
 
 const QUICK_ACTIONS = [
   {
@@ -43,11 +49,6 @@ const FULL_PATHWAY = [
   { title: 'Tutor and Assessor Award', desc: 'Senior coaches', colour: '#0f172a', role: 'admin' },
 ]
 
-const FEATURED_COURSES = [
-  { id: 'junior-coach', title: 'Junior Coach Award', price: '£120', academy: 'coach', desc: 'The entry-level coaching award for ages 14–16.' },
-  { id: 'level-1-assistant', title: 'Level 1 Assistant Coach', price: '£195', academy: 'coach', desc: 'Qualify to deliver UKAG Levels 1–3 sessions.' },
-  { id: 'level-2-lead-gymnastics', title: 'Level 2 Lead Coach', price: '£295', academy: 'coach', desc: 'Deliver all six UKAG levels independently.' },
-]
 
 export function DashboardPage() {
   const { profile } = useAuth()
@@ -129,9 +130,9 @@ export function DashboardPage() {
                   <div className="font-bold text-sm text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>{course.title}</div>
                   <span className="text-sm font-black flex-shrink-0" style={{ color: '#ef462c' }}>{course.price}</span>
                 </div>
-                <p className="text-xs text-gray-500 mb-3">{course.desc}</p>
+                <p className="text-xs text-gray-500 mb-3">{course.overview}</p>
                 <Link
-                  to={`/academies/${course.academy}`}
+                  to="/academies/coach"
                   className="inline-flex items-center gap-1 text-xs font-bold text-white px-3 py-1.5 rounded-lg"
                   style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
                 >
