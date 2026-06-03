@@ -69,13 +69,23 @@ function CourseCard({ course, colour }: { course: Course; colour: string }) {
         </span>
       </div>
 
-      <a
-        href={course.bookingUrl}
-        className="mt-auto px-4 py-2.5 rounded-lg text-sm font-bold text-white text-center"
-        style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
-      >
-        Book Now
-      </a>
+      {course.bookingUrl.startsWith('/') ? (
+        <Link
+          to={course.bookingUrl}
+          className="mt-auto px-4 py-2.5 rounded-lg text-sm font-bold text-white text-center"
+          style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Start Course
+        </Link>
+      ) : (
+        <a
+          href={course.bookingUrl}
+          className="mt-auto px-4 py-2.5 rounded-lg text-sm font-bold text-white text-center"
+          style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Book Now
+        </a>
+      )}
     </div>
   )
 }

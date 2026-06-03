@@ -205,7 +205,7 @@ export const ACADEMIES: Academy[] = [
         ],
         assessment: 'Online Assessment',
         certification: 'Lead Coach Leadership Award',
-        bookingUrl: '#',
+        bookingUrl: '/courses/leadership',
       },
       {
         id: 'area-lead-development',

@@ -10,6 +10,8 @@ import { LibraryPage } from './pages/library/LibraryPage'
 import { LevelDetailPage } from './pages/library/LevelDetailPage'
 import { ResourcesPage } from './pages/resources/ResourcesPage'
 import { CertificationsPage } from './pages/profile/CertificationsPage'
+import { LeadershipCoursePage } from './pages/courses/LeadershipCoursePage'
+import { LeadershipModulePage } from './pages/courses/LeadershipModulePage'
 
 export default function App() {
   return (
@@ -26,6 +28,8 @@ export default function App() {
           <Route path="/library/:level" element={<ProtectedRoute><LevelDetailPage /></ProtectedRoute>} />
           <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
           <Route path="/certifications" element={<ProtectedRoute><CertificationsPage /></ProtectedRoute>} />
+          <Route path="/courses/leadership" element={<ProtectedRoute><LeadershipCoursePage /></ProtectedRoute>} />
+          <Route path="/courses/leadership/:moduleId" element={<ProtectedRoute><LeadershipModulePage /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
