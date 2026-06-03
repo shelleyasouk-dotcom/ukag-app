@@ -5,22 +5,10 @@ import { useAuth } from '../../contexts/AuthContext'
 function UkagMark({ size = 100 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="3" width="11" height="10" fill="#1e52a4"/>
-      <rect x="53" y="3" width="11" height="10" fill="#1e52a4"/>
-      <rect x="3" y="14" width="11" height="28" fill="#ef462c"/>
-      <rect x="35" y="14" width="11" height="28" fill="#ef462c"/>
-      <path d="M3,42 Q3,56 24,56 Q45,56 45,42 L35,42 Q35,50 24,50 Q14,50 14,42 Z" fill="#ef462c"/>
-      <rect x="53" y="14" width="11" height="42" fill="#ef462c"/>
-      <polygon points="64,26 97,14 97,22 64,38" fill="#ef462c"/>
-      <polygon points="64,38 97,48 97,56 64,50" fill="#ef462c"/>
-      <rect x="3" y="72" width="11" height="26" fill="#f4cc2c"/>
-      <rect x="35" y="72" width="11" height="26" fill="#f4cc2c"/>
-      <path d="M3,72 Q3,58 24,58 Q45,58 45,72 L35,72 Q35,65 24,65 Q14,65 14,72 Z" fill="#f4cc2c"/>
-      <rect x="3" y="84" width="43" height="8" fill="#f4cc2c"/>
-      <rect x="53" y="58" width="44" height="9" fill="#f4cc2c"/>
-      <rect x="53" y="67" width="11" height="31" fill="#f4cc2c"/>
-      <rect x="53" y="89" width="44" height="9" fill="#f4cc2c"/>
-      <rect x="74" y="71" width="23" height="9" fill="#f4cc2c"/>
+      <rect x="2" y="2" width="11" height="10" fill="#1e52a4"/>
+      <rect x="51" y="2" width="11" height="10" fill="#1e52a4"/>
+      <text x="2" y="52" fontSize="46" fontWeight="900" fontFamily="Montserrat, sans-serif" fill="#ef462c" textLength="96" lengthAdjust="spacingAndGlyphs">UK</text>
+      <text x="2" y="98" fontSize="46" fontWeight="900" fontFamily="Montserrat, sans-serif" fill="#f4cc2c" textLength="96" lengthAdjust="spacingAndGlyphs">AG</text>
     </svg>
   )
 }
