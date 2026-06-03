@@ -2,23 +2,28 @@ import { useState } from 'react'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { Layout } from '../../components/layout/Layout'
 import { LEADERSHIP_COURSE } from '../../data/leadershipCourse'
+import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../contexts/AuthContext'
 import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock } from 'lucide-react'
 
-type QuizState = 'idle' | 'answered' | 'passed' | 'failed'
+type QuizState = 'idle' | 'passed' | 'failed'
 
 export function LeadershipModulePage() {
   const { moduleId } = useParams<{ moduleId: string }>()
+  const { profile } = useAuth()
   const mod = LEADERSHIP_COURSE.modules.find(m => m.id === moduleId)
 
   const [tab, setTab] = useState<'content' | 'quiz'>('content')
   const [answers, setAnswers] = useState<(number | null)[]>([])
   const [quizState, setQuizState] = useState<QuizState>('idle')
+  const [saving, setSaving] = useState(false)
 
   if (!mod) return <Navigate to="/courses/leadership" replace />
 
   const moduleIndex = LEADERSHIP_COURSE.modules.findIndex(m => m.id === moduleId)
   const prevModule = moduleIndex > 0 ? LEADERSHIP_COURSE.modules[moduleIndex - 1] : null
   const nextModule = moduleIndex < LEADERSHIP_COURSE.modules.length - 1 ? LEADERSHIP_COURSE.modules[moduleIndex + 1] : null
+  const isLastModule = moduleIndex === LEADERSHIP_COURSE.modules.length - 1
 
   function startQuiz() {
     setAnswers(new Array(mod!.quiz.length).fill(null))
@@ -27,7 +32,7 @@ export function LeadershipModulePage() {
   }
 
   function selectAnswer(qi: number, ai: number) {
-    if (quizState === 'answered') return
+    if (quizState !== 'idle') return
     setAnswers(prev => {
       const next = [...prev]
       next[qi] = ai
@@ -35,10 +40,40 @@ export function LeadershipModulePage() {
     })
   }
 
-  function submitQuiz() {
-    if (!mod) return
+  async function submitQuiz() {
+    if (!mod || !profile) return
     const score = mod.quiz.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0)
-    setQuizState(score >= mod.passThreshold ? 'passed' : 'failed')
+    const passed = score >= mod.passThreshold
+
+    if (passed) {
+      setSaving(true)
+      await supabase.from('course_progress').upsert({
+        user_id: profile.id,
+        course_id: LEADERSHIP_COURSE.id,
+        module_id: mod.id,
+        passed_at: new Date().toISOString(),
+      }, { onConflict: 'user_id,course_id,module_id' })
+
+      if (isLastModule) {
+        const { data: existing } = await supabase
+          .from('course_certificates')
+          .select('id')
+          .eq('user_id', profile.id)
+          .eq('course_id', LEADERSHIP_COURSE.id)
+          .maybeSingle()
+
+        if (!existing) {
+          await supabase.from('course_certificates').insert({
+            user_id: profile.id,
+            course_id: LEADERSHIP_COURSE.id,
+            completed_at: new Date().toISOString(),
+          })
+        }
+      }
+      setSaving(false)
+    }
+
+    setQuizState(passed ? 'passed' : 'failed')
   }
 
   function retryQuiz() {
@@ -46,7 +81,14 @@ export function LeadershipModulePage() {
     setQuizState('idle')
   }
 
+  function resetForNextModule() {
+    setTab('content')
+    setQuizState('idle')
+    setAnswers([])
+  }
+
   const allAnswered = answers.length === mod.quiz.length && answers.every(a => a !== null)
+  const score = mod.quiz.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0)
 
   return (
     <Layout>
@@ -136,11 +178,14 @@ export function LeadershipModulePage() {
             <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center mb-6">
               <CheckCircle size={40} className="text-green-500 mx-auto mb-3" />
               <h2 className="font-black text-green-800 text-lg mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                Module Complete!
+                {isLastModule ? 'Course Complete!' : 'Module Complete!'}
               </h2>
               <p className="text-sm text-green-700">
-                You passed with {mod.quiz.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0)}/{mod.quiz.length} correct.
+                You scored {score}/{mod.quiz.length} — {saving ? 'saving progress…' : 'progress saved.'}
               </p>
+              {isLastModule && (
+                <p className="text-xs text-green-600 mt-1">Your certificate has been awarded and saved to your profile.</p>
+              )}
             </div>
           )}
 
@@ -151,7 +196,7 @@ export function LeadershipModulePage() {
                 Not quite — try again
               </h2>
               <p className="text-sm text-red-700 mb-4">
-                You scored {mod.quiz.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0)}/{mod.quiz.length}. You need {mod.passThreshold} to pass.
+                You scored {score}/{mod.quiz.length}. You need {mod.passThreshold} to pass.
               </p>
               <button
                 onClick={retryQuiz}
@@ -166,7 +211,7 @@ export function LeadershipModulePage() {
           <div className="space-y-6">
             {mod.quiz.map((q, qi) => {
               const chosen = answers[qi] ?? null
-              const isAnswered = quizState === 'passed' || quizState === 'failed'
+              const isRevealed = quizState === 'passed' || quizState === 'failed'
 
               return (
                 <div key={qi} className="bg-white rounded-xl border border-gray-200 p-5">
@@ -183,15 +228,15 @@ export function LeadershipModulePage() {
                   <div className="space-y-2">
                     {q.options.map((opt, ai) => {
                       let style = 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
-                      if (chosen === ai && !isAnswered) style = 'border-[#1e52a4] bg-[#1e52a4]/10 text-[#1e52a4]'
-                      if (isAnswered && ai === q.correct) style = 'border-green-400 bg-green-50 text-green-800'
-                      else if (isAnswered && chosen === ai && ai !== q.correct) style = 'border-red-400 bg-red-50 text-red-800'
+                      if (chosen === ai && !isRevealed) style = 'border-[#1e52a4] bg-[#1e52a4]/10 text-[#1e52a4]'
+                      if (isRevealed && ai === q.correct) style = 'border-green-400 bg-green-50 text-green-800'
+                      else if (isRevealed && chosen === ai && ai !== q.correct) style = 'border-red-400 bg-red-50 text-red-800'
 
                       return (
                         <button
                           key={ai}
                           onClick={() => selectAnswer(qi, ai)}
-                          disabled={isAnswered}
+                          disabled={isRevealed}
                           className={`w-full text-left px-4 py-2.5 rounded-lg border text-sm transition-colors ${style} disabled:cursor-default`}
                         >
                           {opt}
@@ -200,7 +245,7 @@ export function LeadershipModulePage() {
                     })}
                   </div>
 
-                  {isAnswered && (
+                  {isRevealed && (
                     <div className="mt-3 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2 leading-relaxed">
                       <span className="font-bold text-gray-700">Explanation: </span>
                       {q.explanation}
@@ -215,7 +260,7 @@ export function LeadershipModulePage() {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={submitQuiz}
-                disabled={!allAnswered}
+                disabled={!allAnswered || saving}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
               >
@@ -233,7 +278,7 @@ export function LeadershipModulePage() {
             to={`/courses/leadership/${prevModule.id}`}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50"
             style={{ fontFamily: 'Montserrat, sans-serif' }}
-            onClick={() => { setTab('content'); setQuizState('idle'); setAnswers([]) }}
+            onClick={resetForNextModule}
           >
             <ArrowLeft size={14} />
             {prevModule.title}
@@ -245,7 +290,7 @@ export function LeadershipModulePage() {
             to={`/courses/leadership/${nextModule.id}`}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white"
             style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
-            onClick={() => { setTab('content'); setQuizState('idle'); setAnswers([]) }}
+            onClick={resetForNextModule}
           >
             {nextModule.title}
             <ArrowRight size={14} />
