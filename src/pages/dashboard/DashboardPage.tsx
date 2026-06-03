@@ -1,93 +1,147 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Building2, Users, BookOpen, Award, AlertTriangle, CheckCircle } from 'lucide-react'
-import { supabase } from '../../lib/supabase'
-import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
+import { useAuth } from '../../contexts/AuthContext'
+import { GraduationCap, BookOpen, FolderOpen, Award, ChevronRight } from 'lucide-react'
 
-interface Stats {
-  clubs: number
-  coaches: number
-  openCourses: number
-  expiringLicences: number
-}
+const QUICK_ACTIONS = [
+  {
+    label: 'Academies',
+    desc: 'Browse qualifications and CPD courses',
+    to: '/academies',
+    colour: '#1e52a4',
+    Icon: GraduationCap,
+  },
+  {
+    label: 'Coaching Library',
+    desc: 'Session plans and skill progressions',
+    to: '/library',
+    colour: '#ef462c',
+    Icon: BookOpen,
+  },
+  {
+    label: 'Resources',
+    desc: 'Policies, templates and forms',
+    to: '/resources',
+    colour: '#f4cc2c',
+    Icon: FolderOpen,
+  },
+  {
+    label: 'My Certifications',
+    desc: 'View your qualifications and compliance',
+    to: '/certifications',
+    colour: '#8b5cf6',
+    Icon: Award,
+  },
+]
+
+const FULL_PATHWAY = [
+  { title: 'Junior Coach Award', desc: 'Ages 14–16', colour: '#f4cc2c', role: 'junior_coach' },
+  { title: 'Level 1 Assistant Coach', desc: 'Ages 16+', colour: '#1e52a4', role: 'assistant_coach' },
+  { title: 'Level 2 Lead Coach', desc: 'Ages 18+', colour: '#ef462c', role: 'lead_coach' },
+  { title: 'Lead Coach Leadership Award', desc: 'Lead Coaches', colour: '#8b5cf6', role: 'lead_coach' },
+  { title: 'Area Lead Award', desc: 'Regional lead', colour: '#22c55e', role: 'area_lead' },
+  { title: 'Tutor and Assessor Award', desc: 'Senior coaches', colour: '#0f172a', role: 'admin' },
+]
+
+const FEATURED_COURSES = [
+  { id: 'junior-coach', title: 'Junior Coach Award', price: '£120', academy: 'coach', desc: 'The entry-level coaching award for ages 14–16.' },
+  { id: 'level-1-assistant', title: 'Level 1 Assistant Coach', price: '£195', academy: 'coach', desc: 'Qualify to deliver UKAG Levels 1–3 sessions.' },
+  { id: 'level-2-lead-gymnastics', title: 'Level 2 Lead Coach', price: '£295', academy: 'coach', desc: 'Deliver all six UKAG levels independently.' },
+]
 
 export function DashboardPage() {
   const { profile } = useAuth()
-  const [stats, setStats] = useState<Stats>({ clubs: 0, coaches: 0, openCourses: 0, expiringLicences: 0 })
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function load() {
-      const [clubsRes, coachesRes, coursesRes, licencesRes] = await Promise.all([
-        supabase.from('clubs').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'coach'),
-        supabase.from('courses').select('id', { count: 'exact', head: true }).eq('status', 'open'),
-        supabase.from('coach_licences').select('id', { count: 'exact', head: true })
-          .eq('status', 'active')
-          .lt('expiry_date', new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0]),
-      ])
-      setStats({
-        clubs: clubsRes.count ?? 0,
-        coaches: coachesRes.count ?? 0,
-        openCourses: coursesRes.count ?? 0,
-        expiringLicences: licencesRes.count ?? 0,
-      })
-      setLoading(false)
-    }
-    load()
-  }, [])
-
-  const isAdmin = profile?.role === 'admin'
-  const greeting = profile?.full_name ? `Welcome back, ${profile.full_name.split(' ')[0]}` : 'Welcome back'
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{greeting}</h1>
-          <p className="text-gray-500 text-sm mt-0.5">UK Academies of Gymnastics — Training &amp; Affiliation Portal</p>
+      <div className="mb-6">
+        <h1 className="text-2xl font-black text-gray-900 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}
+        </h1>
+        <p className="text-gray-500 text-sm">Here's everything you need to manage your coaching journey.</p>
+      </div>
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {QUICK_ACTIONS.map(({ label, desc, to, colour, Icon }) => (
+          <Link
+            key={to}
+            to={to}
+            className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow flex flex-col gap-3"
+          >
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: colour + '18' }}>
+              <Icon size={20} style={{ color: colour }} />
+            </div>
+            <div>
+              <div className="font-black text-gray-900 text-sm mb-0.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>{label}</div>
+              <div className="text-xs text-gray-500 leading-relaxed">{desc}</div>
+            </div>
+            <div className="mt-auto">
+              <ChevronRight size={16} className="text-gray-400" />
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 className="font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Career Pathway</h2>
+          <div className="space-y-2">
+            {FULL_PATHWAY.map((step, i) => {
+              const isActive = profile?.role === step.role
+              return (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 p-3 rounded-lg"
+                  style={isActive ? { backgroundColor: step.colour + '12' } : { backgroundColor: '#f9fafb' }}
+                >
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
+                    style={{ backgroundColor: step.colour, color: step.colour === '#f4cc2c' ? '#0f172a' : '#ffffff', fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    {i + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-gray-700" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                      {step.title}
+                    </div>
+                    <div className="text-xs text-gray-500">{step.desc}</div>
+                  </div>
+                  {isActive && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold text-white flex-shrink-0" style={{ backgroundColor: step.colour, fontFamily: 'Montserrat, sans-serif' }}>
+                      Your level
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
 
-        {isAdmin && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard icon={<Building2 className="text-ukag-600" size={22} />} label="Active Clubs" value={loading ? '—' : stats.clubs.toString()} to="/clubs" />
-            <StatCard icon={<Users className="text-ukag-600" size={22} />} label="Coaches" value={loading ? '—' : stats.coaches.toString()} to="/coaches" />
-            <StatCard icon={<BookOpen className="text-ukag-600" size={22} />} label="Open Courses" value={loading ? '—' : stats.openCourses.toString()} to="/courses" />
-            <StatCard icon={<AlertTriangle className="text-amber-500" size={22} />} label="Licences Expiring" value={loading ? '—' : stats.expiringLicences.toString()} to="/coaches" alert={stats.expiringLicences > 0} />
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Upcoming Courses</h2>
+            <Link to="/academies/coach" className="text-xs text-gray-500 hover:text-gray-700">View all</Link>
           </div>
-        )}
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <QuickLink icon={<Building2 size={20} className="text-ukag-600" />} title="Affiliated Clubs" description="View and manage clubs affiliated with UKAG." to="/clubs" />
-          <QuickLink icon={<BookOpen size={20} className="text-ukag-600" />} title="Training Courses" description="Browse and enrol in coach training courses." to="/courses" />
-          <QuickLink icon={<Award size={20} className="text-ukag-600" />} title="Awards Programme" description="Explore the UKAG gymnastics and trampolining awards." to="/awards" />
-          {isAdmin && <QuickLink icon={<Users size={20} className="text-ukag-600" />} title="Coaches" description="Manage coach profiles, licences, and enrolments." to="/coaches" />}
-          <QuickLink icon={<CheckCircle size={20} className="text-ukag-600" />} title="My Profile" description="View your licences, courses, and awards." to="/profile" />
+          <div className="space-y-3">
+            {FEATURED_COURSES.map(course => (
+              <div key={course.id} className="border border-gray-100 rounded-lg p-4">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="font-bold text-sm text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>{course.title}</div>
+                  <span className="text-sm font-black flex-shrink-0" style={{ color: '#ef462c' }}>{course.price}</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-3">{course.desc}</p>
+                <Link
+                  to={`/academies/${course.academy}`}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-white px-3 py-1.5 rounded-lg"
+                  style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Book Now
+                </Link>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </Layout>
-  )
-}
-
-function StatCard({ icon, label, value, to, alert }: { icon: React.ReactNode; label: string; value: string; to: string; alert?: boolean }) {
-  return (
-    <Link to={to} className={`bg-white rounded-xl border p-4 flex items-center gap-3 hover:shadow-sm transition-shadow ${alert ? 'border-amber-200' : 'border-gray-200'}`}>
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${alert ? 'bg-amber-50' : 'bg-ukag-50'}`}>{icon}</div>
-      <div>
-        <div className="text-2xl font-bold text-gray-900">{value}</div>
-        <div className="text-xs text-gray-500">{label}</div>
-      </div>
-    </Link>
-  )
-}
-
-function QuickLink({ icon, title, description, to }: { icon: React.ReactNode; title: string; description: string; to: string }) {
-  return (
-    <Link to={to} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-sm hover:border-ukag-200 transition-all group">
-      <div className="w-9 h-9 bg-ukag-50 rounded-lg flex items-center justify-center mb-3 group-hover:bg-ukag-100 transition-colors">{icon}</div>
-      <div className="font-semibold text-gray-900 text-sm">{title}</div>
-      <div className="text-gray-500 text-xs mt-0.5">{description}</div>
-    </Link>
   )
 }

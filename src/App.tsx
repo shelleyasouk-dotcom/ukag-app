@@ -4,17 +4,12 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { LoginPage } from './pages/auth/LoginPage'
 import { HomePage } from './pages/home/HomePage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
-import { ClubsPage } from './pages/clubs/ClubsPage'
-import { ClubDetailPage } from './pages/clubs/ClubDetailPage'
-import { CoachesPage } from './pages/coaches/CoachesPage'
-import { CoachDetailPage } from './pages/coaches/CoachDetailPage'
-import { CoursesPage } from './pages/courses/CoursesPage'
-import { CourseDetailPage } from './pages/courses/CourseDetailPage'
-import { CourseLearningPage } from './pages/courses/CourseLearningPage'
-import { WeekViewPage } from './pages/courses/WeekViewPage'
-import { LessonViewPage } from './pages/courses/LessonViewPage'
-import { AwardsPage } from './pages/awards/AwardsPage'
-import { ProfilePage } from './pages/profile/ProfilePage'
+import { AcademiesPage } from './pages/academies/AcademiesPage'
+import { AcademyDetailPage } from './pages/academies/AcademyDetailPage'
+import { LibraryPage } from './pages/library/LibraryPage'
+import { LevelDetailPage } from './pages/library/LevelDetailPage'
+import { ResourcesPage } from './pages/resources/ResourcesPage'
+import { CertificationsPage } from './pages/profile/CertificationsPage'
 
 export default function App() {
   return (
@@ -25,17 +20,12 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
 
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          <Route path="/clubs" element={<ProtectedRoute><ClubsPage /></ProtectedRoute>} />
-          <Route path="/clubs/:id" element={<ProtectedRoute><ClubDetailPage /></ProtectedRoute>} />
-          <Route path="/coaches" element={<ProtectedRoute allowedRoles={['admin']}><CoachesPage /></ProtectedRoute>} />
-          <Route path="/coaches/:id" element={<ProtectedRoute allowedRoles={['admin']}><CoachDetailPage /></ProtectedRoute>} />
-          <Route path="/courses" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
-          <Route path="/courses/:id" element={<ProtectedRoute><CourseDetailPage /></ProtectedRoute>} />
-          <Route path="/courses/:id/learn" element={<ProtectedRoute><CourseLearningPage /></ProtectedRoute>} />
-          <Route path="/courses/:id/learn/week/:weekId" element={<ProtectedRoute><WeekViewPage /></ProtectedRoute>} />
-          <Route path="/courses/:id/learn/week/:weekId/lesson/:lessonId" element={<ProtectedRoute><LessonViewPage /></ProtectedRoute>} />
-          <Route path="/awards" element={<ProtectedRoute><AwardsPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/academies" element={<ProtectedRoute><AcademiesPage /></ProtectedRoute>} />
+          <Route path="/academies/:academyId" element={<ProtectedRoute><AcademyDetailPage /></ProtectedRoute>} />
+          <Route path="/library" element={<ProtectedRoute><LibraryPage /></ProtectedRoute>} />
+          <Route path="/library/:level" element={<ProtectedRoute><LevelDetailPage /></ProtectedRoute>} />
+          <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
+          <Route path="/certifications" element={<ProtectedRoute><CertificationsPage /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -1,456 +1,364 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import {
-  GraduationCap, Shield, Building2, BookOpen,
-  ChevronRight, CheckCircle, ArrowRight, Mail,
+  GraduationCap,
+  BookOpen,
+  Settings,
+  Award,
+  Star,
+  TrendingUp,
+  Shield,
+  School,
+  Users,
+  Building2,
+  Globe,
+  Calendar,
+  MapPin,
+  ChevronRight,
 } from 'lucide-react'
 
-function UkagMark({ size = 56 }: { size?: number }) {
+function UkagMark({ size = 36 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="4"  y="2"  width="22" height="22" rx="3" fill="#1e52a4"/>
-      <rect x="54" y="2"  width="22" height="22" rx="3" fill="#1e52a4"/>
-      <rect x="4"  y="23" width="18" height="30" rx="2.5" fill="#ef462c"/>
+      <rect x="4" y="2" width="22" height="22" rx="3" fill="#1e52a4"/>
+      <rect x="54" y="2" width="22" height="22" rx="3" fill="#1e52a4"/>
+      <rect x="4" y="23" width="18" height="30" rx="2.5" fill="#ef462c"/>
       <rect x="28" y="23" width="18" height="30" rx="2.5" fill="#ef462c"/>
       <path d="M4 42 Q4 54 22 54 Q40 54 40 42 L28 42 Q28 46 22 46 Q16 46 16 42 Z" fill="#ef462c"/>
       <rect x="54" y="23" width="18" height="31" rx="2.5" fill="#ef462c"/>
       <polygon points="72,34 96,23 85,23 72,30" fill="#ef462c"/>
       <polygon points="72,34 84,54 96,54 72,34" fill="#ef462c"/>
-      <rect x="4"  y="59" width="18" height="36" rx="2.5" fill="#f4cc2c"/>
+      <rect x="4" y="59" width="18" height="36" rx="2.5" fill="#f4cc2c"/>
       <rect x="28" y="59" width="18" height="36" rx="2.5" fill="#f4cc2c"/>
       <path d="M4 68 L4 64 Q4 59 22 59 Q40 59 40 64 L40 68 Z" fill="#f4cc2c"/>
-      <rect x="4"  y="79" width="34" height="9" rx="2" fill="#f4cc2c"/>
+      <rect x="4" y="79" width="34" height="9" rx="2" fill="#f4cc2c"/>
       <rect x="54" y="59" width="36" height="9" rx="2.5" fill="#f4cc2c"/>
       <rect x="54" y="68" width="18" height="22" rx="2.5" fill="#f4cc2c"/>
       <rect x="54" y="86" width="36" height="9" rx="2.5" fill="#f4cc2c"/>
-      <rect x="72" y="71" width="18" height="9"  rx="2" fill="#f4cc2c"/>
+      <rect x="72" y="71" width="18" height="9" rx="2" fill="#f4cc2c"/>
     </svg>
   )
 }
 
-const QUALIFICATIONS = [
-  { title: 'Junior Coach Certificate', level: 'Foundation', colour: '#f4cc2c', text: '#0f172a' },
-  { title: 'Level 1 Certificate',      level: 'Level 1',    colour: '#ef462c', text: 'white'   },
-  { title: 'Level 2 Certificate',      level: 'Level 2',    colour: '#1e52a4', text: 'white'   },
-  { title: 'Lead Coach CPD',            level: 'CPD',        colour: '#ef462c', text: 'white'   },
-  { title: 'Safeguarding in Sport',     level: 'Welfare',    colour: '#1e52a4', text: 'white'   },
-  { title: 'Paediatric First Aid',      level: 'First Aid',  colour: '#0f172a', text: 'white'   },
+const PATHWAY_STEPS = [
+  { title: 'Junior Coach Award', desc: 'Ages 14–16. Entry point to coaching.', colour: '#f4cc2c', textColour: '#0f172a' },
+  { title: 'Level 1 Assistant Coach', desc: 'Ages 16+. Deliver Levels 1–3.', colour: '#1e52a4', textColour: '#ffffff' },
+  { title: 'Level 2 Lead Coach', desc: 'Ages 18+. Deliver all levels.', colour: '#ef462c', textColour: '#ffffff' },
+  { title: 'Lead Coach Leadership', desc: 'Lead teams and programmes.', colour: '#8b5cf6', textColour: '#ffffff' },
+  { title: 'Area Lead Award', desc: 'Regional leadership and QA.', colour: '#22c55e', textColour: '#ffffff' },
+  { title: 'Tutor and Assessor', desc: 'Train and certify other coaches.', colour: '#0f172a', textColour: '#ffffff' },
 ]
 
-const FEATURES = [
-  {
-    icon: <GraduationCap size={28} />,
-    title: 'Coaching Qualifications',
-    body: 'A clear, progressive pathway from Junior Coach Certificate through to Lead Coach — designed by experienced gymnastics professionals.',
-    accent: '#ef462c',
-  },
-  {
-    icon: <Shield size={28} />,
-    title: 'Safeguarding & Welfare',
-    body: 'Child welfare is at the core of every qualification we deliver. All coaches must maintain current safeguarding certifications to remain affiliated.',
-    accent: '#1e52a4',
-  },
-  {
-    icon: <Building2 size={28} />,
-    title: 'Club Affiliation',
-    body: 'Affiliated clubs receive governance support, access to our coach register, insurance guidance, and access to UKAG-accredited courses.',
-    accent: '#ef462c',
-  },
-  {
-    icon: <BookOpen size={28} />,
-    title: 'Online Learning',
-    body: 'Flexible, accredited online modules accessible from any device — learn at your own pace and progress through your qualification at home.',
-    accent: '#1e52a4',
-  },
+const ACADEMIES_LIST = [
+  { id: 'coach', name: 'Coach Academy', purpose: 'Develop and certify gymnastics and trampolining coaches', colour: '#1e52a4', Icon: GraduationCap },
+  { id: 'leadership', name: 'Leadership Academy', purpose: 'Develop future leaders within UKAG', colour: '#ef462c', Icon: Star },
+  { id: 'development', name: 'Coach Development', purpose: 'Develop coaching excellence through specialist CPD', colour: '#f4cc2c', Icon: TrendingUp },
+  { id: 'safety', name: 'Safety Academy', purpose: 'Maintain high standards of safeguarding and welfare', colour: '#0f172a', Icon: Shield },
+  { id: 'schools', name: 'Schools Academy', purpose: 'Support teachers, schools and education providers', colour: '#22c55e', Icon: School },
+  { id: 'operations', name: 'Operations Academy', purpose: 'Support the operational delivery of programmes', colour: '#8b5cf6', Icon: Settings },
 ]
 
-const VALUES = [
-  'Independent and coach-led',
-  'Safeguarding-first in every qualification',
-  'Inclusive of gymnastics and trampolining',
-  'Accessible online and in-person delivery',
-  'Nationally recognised certificates',
-  'Committed to raising coaching standards',
+const WHO_WE_SERVE = [
+  { label: 'Individual Coaches', desc: 'Qualifications, CPD, and career development for coaches at every level.', Icon: GraduationCap },
+  { label: 'Schools & Academies', desc: 'Teacher awards, curriculum resources, and school partnership programmes.', Icon: School },
+  { label: 'Sports Providers', desc: 'Frameworks, compliance, and operational support for gymnastics providers.', Icon: Building2 },
+  { label: 'Gymnastics Clubs', desc: 'Coaching pathways, quality assurance, and accreditation for clubs.', Icon: Award },
+  { label: 'Holiday Club Providers', desc: 'Session plans, risk assessments, and staff training for holiday clubs.', Icon: Calendar },
+  { label: 'Local Authorities', desc: 'Partnership programmes, Active Kids initiatives, and workforce development.', Icon: MapPin },
 ]
 
 export function HomePage() {
-  const { profile } = useAuth()
+  const { user } = useAuth()
 
   return (
-    <div className="min-h-screen bg-white" style={{ fontFamily: 'Raleway, sans-serif' }}>
-
-      {/* ── Navbar ──────────────────────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-5 py-3 flex items-center gap-4">
-          <div className="flex items-center gap-3 flex-1">
-            <UkagMark size={38} />
-            <div style={{ fontFamily: 'Montserrat, sans-serif' }}>
-              <div className="font-black text-base leading-none tracking-tight">
-                <span style={{ color: '#ef462c' }}>UK</span><span style={{ color: '#1e52a4' }}>AG</span>
+    <div style={{ fontFamily: 'Raleway, sans-serif' }} className="min-h-screen bg-white">
+      <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3">
+              <UkagMark size={40} />
+              <div style={{ fontFamily: 'Montserrat, sans-serif' }} className="font-black text-sm tracking-tight leading-tight">
+                <div style={{ color: '#ef462c' }}>UK ACADEMIES</div>
+                <div style={{ color: '#1e52a4' }}>OF GYMNASTICS</div>
               </div>
-              <div className="text-gray-400 text-xs leading-tight hidden sm:block">UK Academies of Gymnastics</div>
             </div>
-          </div>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            <a href="#about" className="hover:text-gray-900 transition-colors">About</a>
-            <a href="#qualifications" className="hover:text-gray-900 transition-colors">Qualifications</a>
-            <a href="#clubs" className="hover:text-gray-900 transition-colors">Clubs</a>
-            <a href="#contact" className="hover:text-gray-900 transition-colors">Contact</a>
-          </nav>
-          {profile ? (
-            <Link to="/dashboard"
-              className="flex items-center gap-2 text-sm font-bold text-white px-4 py-2 rounded-lg transition-colors"
-              style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#d43218')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ef462c')}>
-              Dashboard <ArrowRight size={14} />
-            </Link>
-          ) : (
-            <Link to="/login"
-              className="flex items-center gap-2 text-sm font-bold text-white px-4 py-2 rounded-lg transition-colors"
-              style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#d43218')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ef462c')}>
-              Coach Portal <ArrowRight size={14} />
-            </Link>
-          )}
-        </div>
-      </header>
-
-      {/* ── Hero ────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center" style={{ backgroundColor: '#0f172a' }}>
-        {/* Subtle geometric background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-10" style={{ backgroundColor: '#ef462c' }} />
-          <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full opacity-10" style={{ backgroundColor: '#1e52a4' }} />
-          <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full opacity-5" style={{ backgroundColor: '#f4cc2c' }} />
-          {/* Grid lines */}
-          <svg className="absolute inset-0 w-full h-full opacity-5" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" strokeWidth="0.5"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-        </div>
-
-        <div className="relative max-w-6xl mx-auto px-5 pt-24 pb-20 flex flex-col lg:flex-row items-center gap-16">
-          {/* Left: text */}
-          <div className="flex-1 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border text-xs font-semibold tracking-wider uppercase"
-              style={{ borderColor: '#f4cc2c', color: '#f4cc2c' }}>
-              Independent · Professional · Accredited
+            <div className="hidden md:flex items-center gap-8">
+              <a href="#academies" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Academies</a>
+              <a href="#pathway" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Career Pathway</a>
+              <a href="#resources" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Resources</a>
             </div>
-            <h1 className="text-5xl sm:text-6xl xl:text-7xl font-black leading-none tracking-tight mb-6"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}>
-              <span style={{ color: '#ef462c' }}>Developing</span>
-              <br />
-              <span className="text-white">Excellence in</span>
-              <br />
-              <span style={{ color: '#f4cc2c' }}>Gymnastics</span>
-            </h1>
-            <p className="text-gray-300 text-lg leading-relaxed mb-10 max-w-lg mx-auto lg:mx-0">
-              UKAG is the UK&rsquo;s independent professional association for gymnastics and trampolining coaches.
-              We set the standard for coach education, safeguarding, and club excellence.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-              <a href="#qualifications"
-                className="flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm transition-all"
-                style={{ backgroundColor: '#ef462c', color: 'white', fontFamily: 'Montserrat, sans-serif' }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#d43218')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ef462c')}>
-                Explore Qualifications <ChevronRight size={16} />
-              </a>
-              <Link to={profile ? '/dashboard' : '/login'}
-                className="flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm border-2 transition-all"
-                style={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white', fontFamily: 'Montserrat, sans-serif' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'white'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; e.currentTarget.style.backgroundColor = 'transparent' }}>
-                {profile ? 'Go to Dashboard' : 'Coach Portal Login'}
-              </Link>
-            </div>
-          </div>
-
-          {/* Right: logo mark */}
-          <div className="flex-shrink-0 flex flex-col items-center gap-6">
-            <UkagMark size={200} />
-            <div style={{ fontFamily: 'Montserrat, sans-serif' }} className="text-center">
-              <div className="text-3xl font-black tracking-tight leading-none">
-                <span style={{ color: '#ef462c' }}>UK</span>
-                <span style={{ color: '#f4cc2c' }}>AG</span>
-              </div>
-              <div className="text-gray-400 text-xs tracking-widest uppercase mt-1">UK Academies of Gymnastics</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-gray-500">
-          <span className="text-xs tracking-widest uppercase">Scroll</span>
-          <div className="w-px h-8 bg-gradient-to-b from-gray-500 to-transparent" />
-        </div>
-      </section>
-
-      {/* ── Stats Bar ─────────────────────────────────────── */}
-      <section style={{ backgroundColor: '#1e52a4' }}>
-        <div className="max-w-6xl mx-auto px-5 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { num: '10+',   label: 'Recognised Qualifications' },
-            { num: '100%',  label: 'Safeguarding Compliant' },
-            { num: 'UK',    label: 'Nationwide Coverage' },
-            { num: '2',     label: 'Disciplines: Gymnastics & Trampolining' },
-          ].map(stat => (
-            <div key={stat.label} className="text-center">
-              <div className="text-4xl font-black text-white leading-none mb-1"
-                style={{ fontFamily: 'Montserrat, sans-serif', color: '#f4cc2c' }}>
-                {stat.num}
-              </div>
-              <div className="text-blue-200 text-sm leading-tight">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── What We Offer ─────────────────────────────────── */}
-      <section id="about" className="py-24 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-5">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}>What We Offer</p>
-            <h2 className="text-4xl font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-              Everything a Professional
-              <br />
-              <span style={{ color: '#1e52a4' }}>Gymnastics Organisation Needs</span>
-            </h2>
-            <p className="text-gray-500 mt-4 max-w-xl mx-auto text-base leading-relaxed">
-              From your very first coaching qualification to ongoing CPD, UKAG supports coaches and clubs at every stage of their journey.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {FEATURES.map(f => (
-              <div key={f.title} className="bg-white rounded-2xl p-7 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110"
-                  style={{ backgroundColor: f.accent + '15', color: f.accent }}>
-                  {f.icon}
-                </div>
-                <h3 className="font-black text-gray-900 mb-3 text-base" style={{ fontFamily: 'Montserrat, sans-serif' }}>{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{f.body}</p>
-                <div className="mt-4 w-8 h-0.5 rounded-full transition-all group-hover:w-16" style={{ backgroundColor: f.accent }} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Qualifications ──────────────────────────────────── */}
-      <section id="qualifications" className="py-24" style={{ backgroundColor: '#0f172a' }}>
-        <div className="max-w-6xl mx-auto px-5">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
             <div>
-              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#f4cc2c', fontFamily: 'Montserrat, sans-serif' }}>Coaching Pathway</p>
-              <h2 className="text-4xl font-black text-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                Recognised
-                <br />
-                <span style={{ color: '#ef462c' }}>Qualifications</span>
-              </h2>
+              {user ? (
+                <Link
+                  to="/dashboard"
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-white"
+                  style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-white"
+                  style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Coach Portal
+                </Link>
+              )}
             </div>
-            <p className="text-gray-400 max-w-sm text-sm leading-relaxed">
-              UKAG offers a complete coaching pathway for both gymnastics and trampolining — from entry-level awards to advanced professional development.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {QUALIFICATIONS.map(q => (
-              <div key={q.title}
-                className="rounded-2xl p-6 border border-white/10 hover:border-white/20 transition-all hover:-translate-y-0.5"
-                style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}>
-                <span className="inline-block text-xs font-bold px-2.5 py-1 rounded-full mb-4"
-                  style={{ backgroundColor: q.colour, color: q.text, fontFamily: 'Montserrat, sans-serif' }}>
-                  {q.level}
-                </span>
-                <h3 className="text-white font-bold text-lg mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>{q.title}</h3>
-                <div className="flex items-center gap-1.5 text-gray-400 text-sm mt-4">
-                  <CheckCircle size={14} style={{ color: q.colour }} />
-                  <span>Available in Coach Portal</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-10 text-center">
-            <Link to={profile ? '/courses' : '/login'}
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm transition-colors"
-              style={{ backgroundColor: '#ef462c', color: 'white', fontFamily: 'Montserrat, sans-serif' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#d43218')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ef462c')}>
-              {profile ? 'View All Courses' : 'Access Courses via Coach Portal'} <ArrowRight size={15} />
-            </Link>
           </div>
         </div>
-      </section>
+      </nav>
 
-      {/* ── About ─────────────────────────────────────────── */}
-      <section className="py-24 bg-white" id="clubs">
-        <div className="max-w-6xl mx-auto px-5">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <section style={{ backgroundColor: '#0f172a' }} className="relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }}
+        />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}>Who We Are</p>
-              <h2 className="text-4xl font-black text-gray-900 mb-6" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                An Independent Voice
-                <br />
-                <span style={{ color: '#1e52a4' }}>for UK Gymnastics</span>
-              </h2>
-              <p className="text-gray-600 text-base leading-relaxed mb-6">
-                UKAG was established to provide an independent, coach-led professional body for gymnastics and trampolining across the United Kingdom.
-                We believe every gymnast deserves a qualified, welfare-aware coach — and every coach deserves a clear, accessible path to develop.
+              <div
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6"
+                style={{ backgroundColor: '#1e52a4', color: '#ffffff' }}
+              >
+                <Globe size={12} />
+                UK's Leading Gymnastics Framework
+              </div>
+              <h1
+                className="text-4xl lg:text-5xl font-black text-white leading-tight mb-6"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                The UK's Leading Framework for Gymnastics and Trampolining Education
+              </h1>
+              <p className="text-lg text-gray-300 mb-8 leading-relaxed">
+                Training coaches, supporting schools and accrediting organisations across the country.
               </p>
-              <p className="text-gray-600 text-base leading-relaxed mb-8">
-                Our qualifications are designed by experienced gymnastics and trampolining professionals, with safeguarding embedded throughout —
-                not as an afterthought, but as a foundation.
-              </p>
-              <ul className="space-y-3">
-                {VALUES.map(v => (
-                  <li key={v} className="flex items-center gap-3 text-sm text-gray-700">
-                    <CheckCircle size={16} style={{ color: '#ef462c', flexShrink: 0 }} />
-                    {v}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Visual panel */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-2xl p-8 flex flex-col gap-3" style={{ backgroundColor: '#ef462c' }}>
-                <GraduationCap size={32} color="white" />
-                <div className="text-white font-black text-xl leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>Coach Education</div>
-                <p className="text-red-100 text-sm leading-relaxed">Progressive qualifications from foundation to advanced level.</p>
-              </div>
-              <div className="rounded-2xl p-8 flex flex-col gap-3 mt-8" style={{ backgroundColor: '#1e52a4' }}>
-                <Shield size={32} color="white" />
-                <div className="text-white font-black text-xl leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>Welfare First</div>
-                <p className="text-blue-200 text-sm leading-relaxed">Safeguarding built into every qualification and club process.</p>
-              </div>
-              <div className="rounded-2xl p-8 flex flex-col gap-3" style={{ backgroundColor: '#0f172a' }}>
-                <Building2 size={32} color="#f4cc2c" />
-                <div className="font-black text-xl leading-tight" style={{ fontFamily: 'Montserrat, sans-serif', color: '#f4cc2c' }}>Club Support</div>
-                <p className="text-gray-400 text-sm leading-relaxed">Governance, resources, and a network for affiliated clubs.</p>
-              </div>
-              <div className="rounded-2xl p-8 flex flex-col gap-3 mt-8" style={{ backgroundColor: '#f4cc2c' }}>
-                <BookOpen size={32} color="#0f172a" />
-                <div className="text-gray-900 font-black text-xl leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>Online Learning</div>
-                <p className="text-gray-700 text-sm leading-relaxed">Flexible learning accessible anywhere, anytime.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Safeguarding Commitment ──────────────────────────── */}
-      <section style={{ backgroundColor: '#ef462c' }} className="py-20">
-        <div className="max-w-4xl mx-auto px-5 text-center">
-          <Shield size={48} color="white" className="mx-auto mb-6 opacity-90" />
-          <h2 className="text-4xl font-black text-white mb-5" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-            Our Safeguarding Commitment
-          </h2>
-          <p className="text-red-100 text-lg leading-relaxed max-w-2xl mx-auto mb-8">
-            Every UKAG-affiliated coach holds a current safeguarding qualification. Every course we deliver includes dedicated welfare modules.
-            The safety and wellbeing of children and young people in gymnastics is non-negotiable.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#qualifications"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-bold text-sm bg-white transition-colors hover:bg-gray-100"
-              style={{ color: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}>
-              Safeguarding Courses <ChevronRight size={15} />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ── CTA ────────────────────────────────────────────── */}
-      <section className="py-24 bg-gray-50">
-        <div className="max-w-3xl mx-auto px-5 text-center">
-          <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}>Get Started</p>
-          <h2 className="text-4xl font-black text-gray-900 mb-5" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-            Ready to Develop
-            <br />
-            <span style={{ color: '#1e52a4' }}>Your Coaching Career?</span>
-          </h2>
-          <p className="text-gray-500 text-base leading-relaxed mb-10 max-w-xl mx-auto">
-            Access your UKAG Coach Portal to enrol on courses, track your progress, manage your qualifications, and connect with your affiliated club.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to={profile ? '/dashboard' : '/login'}
-              className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-white transition-colors"
-              style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#d43218')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ef462c')}>
-              {profile ? 'Go to Dashboard' : 'Login to Coach Portal'} <ArrowRight size={16} />
-            </Link>
-            <a href="#contact"
-              className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-base border-2 transition-colors hover:bg-gray-100"
-              style={{ borderColor: '#1e52a4', color: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}>
-              Contact UKAG <Mail size={16} />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Footer ──────────────────────────────────────────── */}
-      <footer id="contact" style={{ backgroundColor: '#0f172a' }} className="pt-16 pb-8">
-        <div className="max-w-6xl mx-auto px-5">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-14">
-
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-3 mb-5">
-                <UkagMark size={48} />
-                <div style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  <div className="font-black text-xl leading-none">
-                    <span style={{ color: '#ef462c' }}>UK</span><span style={{ color: '#f4cc2c' }}>AG</span>
-                  </div>
-                  <div className="text-gray-400 text-xs mt-0.5">UK Academies of Gymnastics</div>
-                </div>
-              </div>
-              <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
-                The UK&rsquo;s independent professional association for gymnastics and trampolining coaches, clubs, and athletes.
-                Setting the standard in coach education, safeguarding, and sporting excellence.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-white font-bold text-sm mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Qualifications</h4>
-              <ul className="space-y-2.5 text-sm text-gray-400">
-                {['Junior Coach Certificate', 'Level 1 Certificate', 'Level 2 Certificate', 'Lead Coach CPD', 'Safeguarding in Sport'].map(q => (
-                  <li key={q}><a href="#qualifications" className="hover:text-white transition-colors">{q}</a></li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-white font-bold text-sm mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Organisation</h4>
-              <ul className="space-y-2.5 text-sm text-gray-400">
-                <li><a href="#about" className="hover:text-white transition-colors">About UKAG</a></li>
-                <li><a href="#clubs" className="hover:text-white transition-colors">Affiliated Clubs</a></li>
-                <li><a href="#qualifications" className="hover:text-white transition-colors">Coaching Pathway</a></li>
-                <li><Link to="/login" className="hover:text-white transition-colors">Coach Portal</Link></li>
-              </ul>
-              <div className="mt-6">
-                <h4 className="text-white font-bold text-sm mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Contact</h4>
-                <a href="mailto:info@ukag.co.uk" className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
-                  <Mail size={14} /> info@ukag.co.uk
+              <div className="flex flex-wrap gap-4">
+                <a
+                  href="#academies"
+                  className="px-6 py-3 rounded-lg font-bold text-white text-sm"
+                  style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Explore Academies
                 </a>
+                <Link
+                  to="/login"
+                  className="px-6 py-3 rounded-lg font-bold text-sm border-2 border-white text-white hover:bg-white hover:text-gray-900 transition-colors"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Coach Login
+                </Link>
+              </div>
+            </div>
+
+            <div className="hidden lg:block">
+              <div className="bg-gray-800/60 rounded-2xl border border-gray-700 p-6">
+                <div
+                  className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Career Pathway
+                </div>
+                <div className="space-y-3">
+                  {PATHWAY_STEPS.map((step, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
+                        style={{ backgroundColor: step.colour, color: step.textColour, fontFamily: 'Montserrat, sans-serif' }}
+                      >
+                        {i + 1}
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>{step.title}</div>
+                        <div className="text-xs text-gray-400">{step.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-gray-500 text-xs">&copy; {new Date().getFullYear()} UK Academies of Gymnastics. All rights reserved.</p>
-            <div className="flex items-center gap-1 text-xs text-gray-600">
-              <span>Independent</span>
-              <span className="mx-2 text-gray-700">&bull;</span>
-              <span>Professional</span>
-              <span className="mx-2 text-gray-700">&bull;</span>
-              <span>Safeguarding-led</span>
+      <section className="bg-white py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-black mb-3" style={{ color: '#0f172a', fontFamily: 'Montserrat, sans-serif' }}>Built on Four Pillars</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">Everything UKAG does is built on four foundational pillars.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { Icon: GraduationCap, title: 'Education', colour: '#1e52a4', desc: 'From Junior Coach to Tutor/Assessor — structured, progressive qualifications that raise coaching standards' },
+              { Icon: BookOpen, title: 'Delivery', colour: '#ef462c', desc: 'Curricula, awards, and competition frameworks that help organisations deliver world-class sessions' },
+              { Icon: Settings, title: 'Operations', colour: '#f4cc2c', desc: 'The tools, templates and compliance frameworks to run safe, professional and sustainable programmes' },
+              { Icon: Award, title: 'Accreditation', colour: '#0f172a', desc: 'A nationally recognised framework recognising quality coaches, schools and centres' },
+            ].map(({ Icon, title, colour, desc }) => (
+              <div key={title} className="bg-gray-50 rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: colour + '18' }}>
+                  <Icon size={24} style={{ color: colour }} />
+                </div>
+                <h3 className="font-black text-gray-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>{title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="academies" className="bg-gray-50 py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-black mb-3" style={{ color: '#0f172a', fontFamily: 'Montserrat, sans-serif' }}>Six Academies. One Framework.</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">Every qualification, every resource, and every pathway — all within one unified national framework.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {ACADEMIES_LIST.map(({ id, name, purpose, colour, Icon }) => (
+              <div key={id} className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                <div className="h-2" style={{ backgroundColor: colour }} />
+                <div className="p-6">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: colour + '18' }}>
+                    <Icon size={20} style={{ color: colour }} />
+                  </div>
+                  <h3 className="font-black text-gray-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>{name}</h3>
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">{purpose}</p>
+                  <Link
+                    to={`/academies/${id}`}
+                    className="inline-flex items-center gap-1 text-sm font-semibold"
+                    style={{ color: colour }}
+                  >
+                    View Courses <ChevronRight size={14} />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="pathway" style={{ backgroundColor: '#0f172a' }} className="py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-black text-white mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Your Coaching Career, Every Step</h2>
+            <p className="text-gray-400 max-w-xl mx-auto">A clear, structured pathway from your first coaching steps all the way to training other coaches.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {PATHWAY_STEPS.map((step, i) => (
+              <div key={i} className="bg-gray-800/60 rounded-xl border border-gray-700 p-5">
+                <div className="flex items-start gap-4">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0"
+                    style={{ backgroundColor: step.colour, color: step.textColour, fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    {i + 1}
+                  </div>
+                  <div>
+                    <div className="font-black text-white text-sm mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>{step.title}</div>
+                    <div className="text-gray-400 text-sm">{step.desc}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 text-center">
+            <div className="inline-flex items-center gap-2 text-gray-500 text-sm">
+              <div className="h-px w-8 bg-gray-700" />
+              Plus UKAG Trainer at the apex of the framework
+              <div className="h-px w-8 bg-gray-700" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="resources" className="bg-white py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-black mb-3" style={{ color: '#0f172a', fontFamily: 'Montserrat, sans-serif' }}>Who We Serve</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">UKAG supports everyone involved in delivering gymnastics and trampolining across the UK.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {WHO_WE_SERVE.map(({ label, desc, Icon }) => (
+              <div key={label} className="flex gap-4 p-5 rounded-xl border border-gray-100 bg-gray-50">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1e52a418' }}>
+                  <Icon size={20} style={{ color: '#1e52a4' }} />
+                </div>
+                <div>
+                  <div className="font-bold text-gray-900 mb-1 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>{label}</div>
+                  <div className="text-sm text-gray-600 leading-relaxed">{desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 lg:py-20" style={{ backgroundColor: '#ef462c' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-black text-white mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Ready to Get Started?</h2>
+          <p className="text-red-100 mb-8 max-w-lg mx-auto">Join thousands of coaches, schools and organisations already part of the UKAG framework.</p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <a
+              href="#academies"
+              className="px-6 py-3 rounded-lg font-bold text-sm bg-white"
+              style={{ color: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
+            >
+              Browse Academies
+            </a>
+            <Link
+              to="/login"
+              className="px-6 py-3 rounded-lg font-bold text-sm border-2 border-white text-white hover:bg-white hover:text-red-600 transition-colors"
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
+              Sign In
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <footer style={{ backgroundColor: '#0f172a' }} className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <UkagMark size={36} />
+                <div style={{ fontFamily: 'Montserrat, sans-serif' }} className="font-black text-sm leading-tight">
+                  <div style={{ color: '#ef462c' }}>UK ACADEMIES</div>
+                  <div style={{ color: '#1e52a4' }}>OF GYMNASTICS</div>
+                </div>
+              </div>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                The UK's leading framework for gymnastics and trampolining education, accreditation and operational support.
+              </p>
+            </div>
+            <div>
+              <div className="text-white font-bold text-sm mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Academies</div>
+              <ul className="space-y-1.5">
+                {['Coach Academy', 'Leadership Academy', 'Coach Development', 'Safety Academy', 'Schools Academy', 'Operations Academy'].map(a => (
+                  <li key={a}><span className="text-gray-400 text-sm">{a}</span></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <div className="text-white font-bold text-sm mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Contact</div>
+              <div className="space-y-2 text-sm text-gray-400">
+                <div className="flex items-center gap-2">
+                  <Users size={14} />
+                  <span>Coach Support Team</span>
+                </div>
+                <div>enquiries@ukag.co.uk</div>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-gray-500 text-xs">© {new Date().getFullYear()} UK Academies of Gymnastics. All rights reserved.</div>
+            <div className="flex gap-6 text-xs text-gray-500">
+              <span>Privacy Policy</span>
+              <span>Terms of Use</span>
+              <span>Safeguarding</span>
             </div>
           </div>
         </div>

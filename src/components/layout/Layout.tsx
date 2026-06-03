@@ -2,94 +2,60 @@ import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
-  Building2,
-  Users,
+  GraduationCap,
   BookOpen,
+  FolderOpen,
   Award,
-  User,
   LogOut,
   Menu,
   X,
+  ChevronDown,
   ChevronRight,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import type { ReactNode } from 'react'
 
-interface NavItem {
-  label: string
-  to: string
-  icon: ReactNode
-  roles?: string[]
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', to: '/dashboard', icon: <LayoutDashboard size={18} /> },
-  { label: 'Clubs', to: '/clubs', icon: <Building2 size={18} /> },
-  { label: 'Coaches', to: '/coaches', icon: <Users size={18} />, roles: ['admin'] },
-  { label: 'Training Courses', to: '/courses', icon: <BookOpen size={18} /> },
-  { label: 'Awards', to: '/awards', icon: <Award size={18} /> },
-]
-
 function UkagMark({ size = 36 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Blue accent squares */}
       <rect x="4" y="2" width="22" height="22" rx="3" fill="#1e52a4"/>
       <rect x="54" y="2" width="22" height="22" rx="3" fill="#1e52a4"/>
-
-      {/* U — left bar */}
       <rect x="4" y="23" width="18" height="30" rx="2.5" fill="#ef462c"/>
-      {/* U — right bar */}
       <rect x="28" y="23" width="18" height="30" rx="2.5" fill="#ef462c"/>
-      {/* U — bottom curve */}
       <path d="M4 42 Q4 54 22 54 Q40 54 40 42 L28 42 Q28 46 22 46 Q16 46 16 42 Z" fill="#ef462c"/>
-
-      {/* K — vertical bar */}
       <rect x="54" y="23" width="18" height="31" rx="2.5" fill="#ef462c"/>
-      {/* K — upper arm */}
       <polygon points="72,34 96,23 85,23 72,30" fill="#ef462c"/>
-      {/* K — lower arm */}
       <polygon points="72,34 84,54 96,54 72,34" fill="#ef462c"/>
-
-      {/* A — left bar */}
       <rect x="4" y="59" width="18" height="36" rx="2.5" fill="#f4cc2c"/>
-      {/* A — right bar */}
       <rect x="28" y="59" width="18" height="36" rx="2.5" fill="#f4cc2c"/>
-      {/* A — top arch */}
       <path d="M4 68 L4 64 Q4 59 22 59 Q40 59 40 64 L40 68 Z" fill="#f4cc2c"/>
-      {/* A — crossbar */}
       <rect x="4" y="79" width="34" height="9" rx="2" fill="#f4cc2c"/>
-
-      {/* G — top bar */}
       <rect x="54" y="59" width="36" height="9" rx="2.5" fill="#f4cc2c"/>
-      {/* G — left bar */}
       <rect x="54" y="68" width="18" height="22" rx="2.5" fill="#f4cc2c"/>
-      {/* G — bottom bar */}
       <rect x="54" y="86" width="36" height="9" rx="2.5" fill="#f4cc2c"/>
-      {/* G — middle shelf */}
       <rect x="72" y="71" width="18" height="9" rx="2" fill="#f4cc2c"/>
     </svg>
   )
 }
 
+const ACADEMY_LINKS = [
+  { id: 'coach', label: 'Coach Academy' },
+  { id: 'leadership', label: 'Leadership Academy' },
+  { id: 'development', label: 'Coach Development' },
+  { id: 'safety', label: 'Safety Academy' },
+  { id: 'schools', label: 'Schools Academy' },
+  { id: 'operations', label: 'Operations Academy' },
+]
+
 export function Layout({ children }: { children: ReactNode }) {
   const { profile, signOut } = useAuth()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-
-  const visibleNav = NAV_ITEMS.filter(item =>
-    !item.roles || (profile && item.roles.includes(profile.role))
-  )
+  const [academiesOpen, setAcademiesOpen] = useState(false)
 
   async function handleSignOut() {
     await signOut()
     navigate('/login')
-  }
-
-  const roleBadge: Record<string, string> = {
-    admin: 'Admin',
-    coach: 'Coach',
-    club_manager: 'Club Manager',
   }
 
   return (
@@ -104,7 +70,6 @@ export function Layout({ children }: { children: ReactNode }) {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:z-auto
       `}>
-        {/* Logo */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-800">
           <UkagMark size={40} />
           <div className="flex-1 min-w-0">
@@ -118,43 +83,112 @@ export function Layout({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
-          {visibleNav.map(item => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              onClick={() => setSidebarOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-ukag-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                }`
-              }
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          <NavLink
+            to="/dashboard"
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive ? 'text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              }`
+            }
+            style={({ isActive }) => isActive ? { backgroundColor: '#ef462c' } : {}}
+          >
+            <LayoutDashboard size={18} />
+            Dashboard
+          </NavLink>
+
+          <div>
+            <button
+              onClick={() => setAcademiesOpen(o => !o)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
             >
-              {item.icon}
-              {item.label}
-            </NavLink>
-          ))}
+              <GraduationCap size={18} />
+              <span className="flex-1 text-left">Academies</span>
+              {academiesOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
+            {academiesOpen && (
+              <div className="ml-6 mt-0.5 space-y-0.5">
+                {ACADEMY_LINKS.map(a => (
+                  <NavLink
+                    key={a.id}
+                    to={`/academies/${a.id}`}
+                    onClick={() => setSidebarOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                        isActive ? 'text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                      }`
+                    }
+                    style={({ isActive }) => isActive ? { backgroundColor: '#ef462c' } : {}}
+                  >
+                    {a.label}
+                  </NavLink>
+                ))}
+                <NavLink
+                  to="/academies"
+                  end
+                  onClick={() => setSidebarOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                      isActive ? 'text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                    }`
+                  }
+                  style={({ isActive }) => isActive ? { backgroundColor: '#ef462c' } : {}}
+                >
+                  All Academies
+                </NavLink>
+              </div>
+            )}
+          </div>
+
+          <NavLink
+            to="/library"
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive ? 'text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              }`
+            }
+            style={({ isActive }) => isActive ? { backgroundColor: '#ef462c' } : {}}
+          >
+            <BookOpen size={18} />
+            Coaching Library
+          </NavLink>
+
+          <NavLink
+            to="/resources"
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive ? 'text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              }`
+            }
+            style={({ isActive }) => isActive ? { backgroundColor: '#ef462c' } : {}}
+          >
+            <FolderOpen size={18} />
+            Resources
+          </NavLink>
+
+          <NavLink
+            to="/certifications"
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive ? 'text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              }`
+            }
+            style={({ isActive }) => isActive ? { backgroundColor: '#ef462c' } : {}}
+          >
+            <Award size={18} />
+            My Certifications
+          </NavLink>
         </nav>
 
         <div className="px-3 py-4 border-t border-gray-800 space-y-1">
-          <NavLink
-            to="/profile"
-            onClick={() => setSidebarOpen(false)}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                isActive ? 'bg-ukag-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-              }`
-            }
-          >
-            <User size={18} />
-            <div className="flex-1 min-w-0">
-              <div className="font-medium truncate">{profile?.full_name ?? 'My Profile'}</div>
-              {profile && <div className="text-gray-400 text-xs">{roleBadge[profile.role]}</div>}
-            </div>
-            <ChevronRight size={14} className="text-gray-500" />
-          </NavLink>
+          <div className="px-3 py-2 text-xs text-gray-400">
+            <div className="font-medium text-gray-300 truncate">{profile?.full_name ?? 'Coach'}</div>
+            <div className="truncate">{profile?.email ?? ''}</div>
+          </div>
           <button
             onClick={handleSignOut}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
@@ -166,7 +200,6 @@ export function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Mobile header */}
         <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200">
           <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-md text-gray-600 hover:bg-gray-100">
             <Menu size={20} />
