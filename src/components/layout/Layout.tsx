@@ -17,23 +17,28 @@ import type { ReactNode } from 'react'
 
 function UkagMark({ size = 36 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="4" y="2" width="22" height="22" rx="3" fill="#1e52a4"/>
-      <rect x="54" y="2" width="22" height="22" rx="3" fill="#1e52a4"/>
-      <rect x="4" y="23" width="18" height="30" rx="2.5" fill="#ef462c"/>
-      <rect x="28" y="23" width="18" height="30" rx="2.5" fill="#ef462c"/>
-      <path d="M4 42 Q4 54 22 54 Q40 54 40 42 L28 42 Q28 46 22 46 Q16 46 16 42 Z" fill="#ef462c"/>
-      <rect x="54" y="23" width="18" height="31" rx="2.5" fill="#ef462c"/>
-      <polygon points="72,34 96,23 85,23 72,30" fill="#ef462c"/>
-      <polygon points="72,34 84,54 96,54 72,34" fill="#ef462c"/>
-      <rect x="4" y="59" width="18" height="36" rx="2.5" fill="#f4cc2c"/>
-      <rect x="28" y="59" width="18" height="36" rx="2.5" fill="#f4cc2c"/>
-      <path d="M4 68 L4 64 Q4 59 22 59 Q40 59 40 64 L40 68 Z" fill="#f4cc2c"/>
-      <rect x="4" y="79" width="34" height="9" rx="2" fill="#f4cc2c"/>
-      <rect x="54" y="59" width="36" height="9" rx="2.5" fill="#f4cc2c"/>
-      <rect x="54" y="68" width="18" height="22" rx="2.5" fill="#f4cc2c"/>
-      <rect x="54" y="86" width="36" height="9" rx="2.5" fill="#f4cc2c"/>
-      <rect x="72" y="71" width="18" height="9" rx="2" fill="#f4cc2c"/>
+    <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      {/* Blue accent squares — same width as letter strokes, above U left bar and K stem */}
+      <rect x="3" y="3" width="11" height="10" fill="#1e52a4"/>
+      <rect x="53" y="3" width="11" height="10" fill="#1e52a4"/>
+      {/* U — left bar, right bar, bottom curve */}
+      <rect x="3" y="14" width="11" height="28" fill="#ef462c"/>
+      <rect x="35" y="14" width="11" height="28" fill="#ef462c"/>
+      <path d="M3,42 Q3,56 24,56 Q45,56 45,42 L35,42 Q35,50 24,50 Q14,50 14,42 Z" fill="#ef462c"/>
+      {/* K — stem, upper arm, lower arm */}
+      <rect x="53" y="14" width="11" height="42" fill="#ef462c"/>
+      <polygon points="64,26 97,14 97,22 64,38" fill="#ef462c"/>
+      <polygon points="64,38 97,48 97,56 64,50" fill="#ef462c"/>
+      {/* A — left bar, right bar, top arch, crossbar */}
+      <rect x="3" y="72" width="11" height="26" fill="#f4cc2c"/>
+      <rect x="35" y="72" width="11" height="26" fill="#f4cc2c"/>
+      <path d="M3,72 Q3,58 24,58 Q45,58 45,72 L35,72 Q35,65 24,65 Q14,65 14,72 Z" fill="#f4cc2c"/>
+      <rect x="3" y="84" width="43" height="8" fill="#f4cc2c"/>
+      {/* G — top bar, left bar, bottom bar, middle shelf */}
+      <rect x="53" y="58" width="44" height="9" fill="#f4cc2c"/>
+      <rect x="53" y="67" width="11" height="31" fill="#f4cc2c"/>
+      <rect x="53" y="89" width="44" height="9" fill="#f4cc2c"/>
+      <rect x="74" y="71" width="23" height="9" fill="#f4cc2c"/>
     </svg>
   )
 }
