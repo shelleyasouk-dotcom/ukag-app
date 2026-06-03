@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
 function UkagMark({ size = 100 }: { size?: number }) {
@@ -30,7 +30,10 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left panel */}
-      <div className="hidden lg:flex w-1/2 bg-gray-900 items-center justify-center p-12 flex-col gap-8">
+      <div className="hidden lg:flex w-1/2 bg-gray-900 items-center justify-center p-12 flex-col gap-8 relative">
+        <Link to="/" className="absolute top-5 left-5 text-gray-400 hover:text-white text-sm flex items-center gap-1.5 transition-colors">
+          ← Back to home
+        </Link>
         <UkagMark size={130} />
         <div className="text-center">
           <div className="leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -56,7 +59,10 @@ export function LoginPage() {
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-7">
-            <h1 className="text-xl font-bold text-gray-900 mb-1">Sign in</h1>
+            <div className="flex items-center justify-between mb-1">
+              <h1 className="text-xl font-bold text-gray-900">Sign in</h1>
+              <Link to="/" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">← Home</Link>
+            </div>
             <p className="text-gray-500 text-sm mb-6">Access the UKAG training portal</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">

@@ -52,13 +52,15 @@ export function Layout({ children }: { children: ReactNode }) {
         lg:translate-x-0 lg:static lg:z-auto
       `}>
         <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-800">
-          <UkagMark size={40} />
-          <div className="flex-1 min-w-0">
-            <div className="font-black text-base leading-none tracking-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-              <span style={{ color: '#ef462c' }}>UK</span><span style={{ color: '#f4cc2c' }}>AG</span>
+          <NavLink to="/" className="flex items-center gap-3 flex-1 min-w-0" onClick={() => setSidebarOpen(false)}>
+            <UkagMark size={40} />
+            <div className="flex-1 min-w-0">
+              <div className="font-black text-base leading-none tracking-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                <span style={{ color: '#ef462c' }}>UK</span><span style={{ color: '#f4cc2c' }}>AG</span>
+              </div>
+              <div className="text-gray-400 text-xs mt-0.5 leading-tight">Coaching Portal</div>
             </div>
-            <div className="text-gray-400 text-xs mt-0.5 leading-tight">Coaching Portal</div>
-          </div>
+          </NavLink>
           <button className="ml-auto lg:hidden text-gray-400 hover:text-white" onClick={() => setSidebarOpen(false)}>
             <X size={18} />
           </button>
