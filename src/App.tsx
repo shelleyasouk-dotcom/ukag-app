@@ -14,6 +14,7 @@ import { LeadershipCoursePage } from './pages/courses/LeadershipCoursePage'
 import { LeadershipModulePage } from './pages/courses/LeadershipModulePage'
 import { AreaLeadCoursePage } from './pages/courses/AreaLeadCoursePage'
 import { AreaLeadModulePage } from './pages/courses/AreaLeadModulePage'
+import { ServicesPage } from './pages/services/ServicesPage'
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/courses/leadership/:moduleId" element={<ProtectedRoute><LeadershipModulePage /></ProtectedRoute>} />
           <Route path="/courses/area-lead" element={<ProtectedRoute><AreaLeadCoursePage /></ProtectedRoute>} />
           <Route path="/courses/area-lead/:moduleId" element={<ProtectedRoute><AreaLeadModulePage /></ProtectedRoute>} />
+          <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

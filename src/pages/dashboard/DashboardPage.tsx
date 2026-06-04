@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Layout } from '../../components/layout/Layout'
 import { useAuth } from '../../contexts/AuthContext'
-import { GraduationCap, BookOpen, FolderOpen, Award, ChevronRight } from 'lucide-react'
+import { GraduationCap, BookOpen, FolderOpen, Award, Wrench, ChevronRight } from 'lucide-react'
 import { ACADEMIES } from '../../data/academies'
 
 const coachAcademy = ACADEMIES.find(a => a.id === 'coach')!
@@ -37,6 +37,13 @@ const QUICK_ACTIONS = [
     to: '/certifications',
     colour: '#8b5cf6',
     Icon: Award,
+  },
+  {
+    label: 'Equipment Services',
+    desc: 'Maintenance and inspection for school equipment',
+    to: '/services',
+    colour: '#0d9488',
+    Icon: Wrench,
   },
 ]
 

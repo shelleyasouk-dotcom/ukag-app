@@ -6,6 +6,7 @@ import {
   BookOpen,
   FolderOpen,
   Award,
+  Wrench,
   LogOut,
   Menu,
   X,
@@ -26,7 +27,6 @@ const ACADEMY_LINKS = [
   { id: 'safety', label: 'Safety Academy' },
   { id: 'schools', label: 'Schools Academy' },
   { id: 'operations', label: 'Operations Academy' },
-  { id: 'equipment', label: 'Equipment Academy' },
 ]
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -165,6 +165,20 @@ export function Layout({ children }: { children: ReactNode }) {
           >
             <Award size={18} />
             My Certifications
+          </NavLink>
+
+          <NavLink
+            to="/services"
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive ? 'text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              }`
+            }
+            style={({ isActive }) => isActive ? { backgroundColor: '#ef462c' } : {}}
+          >
+            <Wrench size={18} />
+            Equipment Services
           </NavLink>
         </nav>
 
