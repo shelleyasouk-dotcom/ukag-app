@@ -53,7 +53,7 @@ export const ACADEMIES: Academy[] = [
         ],
         assessment: 'Knowledge Check + Practical Observation + Coach Workbook',
         certification: 'UKAG Junior Coach Award',
-        bookingUrl: '#',
+        bookingUrl: 'https://www.activeschool.org.uk/challenge-page/2ddf40c6-e322-4132-b0ce-0f5afbf57a64',
       },
       {
         id: 'level-1-assistant',
