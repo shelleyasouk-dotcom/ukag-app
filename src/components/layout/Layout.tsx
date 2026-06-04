@@ -26,6 +26,7 @@ const ACADEMY_LINKS = [
   { id: 'safety', label: 'Safety Academy' },
   { id: 'schools', label: 'Schools Academy' },
   { id: 'operations', label: 'Operations Academy' },
+  { id: 'equipment', label: 'Equipment Academy' },
 ]
 
 export function Layout({ children }: { children: ReactNode }) {
