@@ -226,7 +226,7 @@ export const ACADEMIES: Academy[] = [
         ],
         assessment: 'Online Learning + Workshop Attendance',
         certification: 'UKAG Area Lead Award',
-        bookingUrl: '#',
+        bookingUrl: '/courses/area-lead',
       },
       {
         id: 'tutor-assessor',

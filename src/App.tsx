@@ -12,6 +12,8 @@ import { ResourcesPage } from './pages/resources/ResourcesPage'
 import { CertificationsPage } from './pages/profile/CertificationsPage'
 import { LeadershipCoursePage } from './pages/courses/LeadershipCoursePage'
 import { LeadershipModulePage } from './pages/courses/LeadershipModulePage'
+import { AreaLeadCoursePage } from './pages/courses/AreaLeadCoursePage'
+import { AreaLeadModulePage } from './pages/courses/AreaLeadModulePage'
 
 export default function App() {
   return (
@@ -30,6 +32,8 @@ export default function App() {
           <Route path="/certifications" element={<ProtectedRoute><CertificationsPage /></ProtectedRoute>} />
           <Route path="/courses/leadership" element={<ProtectedRoute><LeadershipCoursePage /></ProtectedRoute>} />
           <Route path="/courses/leadership/:moduleId" element={<ProtectedRoute><LeadershipModulePage /></ProtectedRoute>} />
+          <Route path="/courses/area-lead" element={<ProtectedRoute><AreaLeadCoursePage /></ProtectedRoute>} />
+          <Route path="/courses/area-lead/:moduleId" element={<ProtectedRoute><AreaLeadModulePage /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
