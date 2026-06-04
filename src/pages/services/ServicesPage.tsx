@@ -109,7 +109,7 @@ export function ServicesPage() {
 
               <div className="mt-auto pt-2">
                 <a
-                  href="mailto:info@ukag.co.uk"
+                  href="mailto:info@ukacademiesofgymnastics.com"
                   className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-lg text-white"
                   style={{
                     backgroundColor: svc.colour,
@@ -134,7 +134,7 @@ export function ServicesPage() {
           If you manage equipment across multiple schools or a region, contact us to discuss a scheduled maintenance contract with fixed annual pricing.
         </p>
         <a
-          href="mailto:info@ukag.co.uk"
+          href="mailto:info@ukacademiesofgymnastics.com"
           className="inline-flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-lg"
           style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
         >

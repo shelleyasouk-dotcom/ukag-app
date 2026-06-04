@@ -300,7 +300,7 @@ export function HomePage() {
                 UKAG provides professional maintenance, inspection, and servicing for school gymnastics and trampolining equipment. All visits are carried out by trained technicians and produce written reports suitable for school compliance and insurance records.
               </p>
               <a
-                href="mailto:info@ukag.co.uk"
+                href="mailto:info@ukacademiesofgymnastics.com"
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-bold text-white"
                 style={{ backgroundColor: '#0d9488', fontFamily: 'Montserrat, sans-serif' }}
               >
@@ -331,7 +331,7 @@ export function HomePage() {
               <div className="text-gray-400 text-sm">Fixed annual pricing for organisations managing equipment across multiple schools.</div>
             </div>
             <a
-              href="mailto:info@ukag.co.uk"
+              href="mailto:info@ukacademiesofgymnastics.com"
               className="whitespace-nowrap inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white flex-shrink-0"
               style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
             >
@@ -400,7 +400,7 @@ export function HomePage() {
                   <Users size={14} />
                   <span>Coach Support Team</span>
                 </div>
-                <div>enquiries@ukag.co.uk</div>
+                <div>info@ukacademiesofgymnastics.com</div>
               </div>
             </div>
           </div>
