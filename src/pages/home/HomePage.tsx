@@ -15,6 +15,10 @@ import {
   Calendar,
   MapPin,
   ChevronRight,
+  Wrench,
+  ClipboardCheck,
+  CalendarCheck,
+  AlertTriangle,
 } from 'lucide-react'
 
 function UkagMark({ size = 36 }: { size?: number }) {
@@ -67,6 +71,7 @@ export function HomePage() {
               <a href="#academies" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Academies</a>
               <a href="#pathway" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Career Pathway</a>
               <a href="#resources" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Resources</a>
+              <a href="#equipment" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Equipment Services</a>
             </div>
             <div>
               {user ? (
@@ -277,6 +282,65 @@ export function HomePage() {
         </div>
       </section>
 
+      <section id="equipment" className="bg-gray-50 py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center mb-12">
+            <div>
+              <div
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
+                style={{ backgroundColor: '#0d948818', color: '#0d9488' }}
+              >
+                <Wrench size={12} />
+                Equipment Services
+              </div>
+              <h2 className="text-3xl font-black mb-4" style={{ color: '#0f172a', fontFamily: 'Montserrat, sans-serif' }}>
+                School Gymnastics &amp; Trampoline Equipment Servicing
+              </h2>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                UKAG provides professional maintenance, inspection, and servicing for school gymnastics and trampolining equipment. All visits are carried out by trained technicians and produce written reports suitable for school compliance and insurance records.
+              </p>
+              <a
+                href="mailto:info@ukag.co.uk"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-bold text-white"
+                style={{ backgroundColor: '#0d9488', fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Enquire About Servicing
+                <ChevronRight size={15} />
+              </a>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {[
+                { Icon: Wrench, title: 'Equipment Maintenance', desc: 'Scheduled maintenance for gymnastics apparatus — mats, vaults, beams, bars and agility equipment.' },
+                { Icon: ClipboardCheck, title: 'Trampoline Servicing', desc: 'Springs, beds, frames, and pads inspected and serviced to manufacturer standards.' },
+                { Icon: CalendarCheck, title: 'Annual Safety Inspection', desc: 'Full school compliance report covering all gymnastics and trampoline equipment in a single visit.' },
+                { Icon: AlertTriangle, title: 'Emergency Assessment', desc: 'Priority 48-hour assessment with written safety determination for any equipment involved in an incident.' },
+              ].map(({ Icon, title, desc }) => (
+                <div key={title} className="bg-white rounded-xl border border-gray-200 p-4">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-3" style={{ backgroundColor: '#0d948818' }}>
+                    <Icon size={18} style={{ color: '#0d9488' }} />
+                  </div>
+                  <div className="font-black text-gray-900 text-sm mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>{title}</div>
+                  <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="bg-gray-900 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <div className="font-black text-white text-sm mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>Multi-school &amp; regional contracts available</div>
+              <div className="text-gray-400 text-sm">Fixed annual pricing for organisations managing equipment across multiple schools.</div>
+            </div>
+            <a
+              href="mailto:info@ukag.co.uk"
+              className="whitespace-nowrap inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white flex-shrink-0"
+              style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
+            >
+              Get in touch <ChevronRight size={14} />
+            </a>
+          </div>
+        </div>
+      </section>
+
       <section className="py-16 lg:py-20" style={{ backgroundColor: '#ef462c' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-black text-white mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Ready to Get Started?</h2>
@@ -320,6 +384,12 @@ export function HomePage() {
               <ul className="space-y-1.5">
                 {['Coach Academy', 'Leadership Academy', 'Coach Development', 'Safety Academy', 'Schools Academy', 'Operations Academy'].map(a => (
                   <li key={a}><span className="text-gray-400 text-sm">{a}</span></li>
+                ))}
+              </ul>
+              <div className="text-white font-bold text-sm mt-5 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Services</div>
+              <ul className="space-y-1.5">
+                {['Equipment Maintenance', 'Trampoline Servicing', 'Annual Inspections', 'Emergency Assessments'].map(s => (
+                  <li key={s}><span className="text-gray-400 text-sm">{s}</span></li>
                 ))}
               </ul>
             </div>
