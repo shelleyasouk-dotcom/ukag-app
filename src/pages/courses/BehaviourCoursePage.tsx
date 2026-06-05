@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Layout } from '../../components/layout/Layout'
 import { BEHAVIOUR_COURSE } from '../../data/behaviourCourse'
+import { EnrollmentGate } from '../../components/courses/EnrollmentGate'
+import { CertificateDownload } from '../../components/courses/CertificateDownload'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { ArrowLeft, ArrowRight, CheckCircle, Lock, Award } from 'lucide-react'
@@ -9,7 +11,7 @@ import { ArrowLeft, ArrowRight, CheckCircle, Lock, Award } from 'lucide-react'
 export function BehaviourCoursePage() {
   const { profile } = useAuth()
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set())
-  const [certificate, setCertificate] = useState<{ completed_at: string } | null>(null)
+  const [certificate, setCertificate] = useState<{ id: string; completed_at: string } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export function BehaviourCoursePage() {
           .eq('course_id', BEHAVIOUR_COURSE.id),
         supabase
           .from('course_certificates')
-          .select('completed_at')
+          .select('id, completed_at')
           .eq('user_id', profile!.id)
           .eq('course_id', BEHAVIOUR_COURSE.id)
           .maybeSingle(),
@@ -76,7 +78,7 @@ export function BehaviourCoursePage() {
       {certificate && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-center gap-3">
           <Award size={24} className="text-amber-600 flex-shrink-0" />
-          <div>
+          <div className="flex-1">
             <div className="font-black text-amber-800 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
               {BEHAVIOUR_COURSE.certificateTitle}
             </div>
@@ -84,11 +86,18 @@ export function BehaviourCoursePage() {
               Awarded {new Date(certificate.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
             </div>
           </div>
+          <CertificateDownload
+            participantName={profile?.full_name || 'Participant'}
+            courseTitle={BEHAVIOUR_COURSE.certificateTitle}
+            completedAt={certificate.completed_at}
+            certificateId={certificate.id}
+          />
         </div>
       )}
 
-      {/* Module list */}
-      <div className="space-y-3">
+      <EnrollmentGate courseId={BEHAVIOUR_COURSE.id} courseTitle={BEHAVIOUR_COURSE.title}>
+        {/* Module list */}
+        <div className="space-y-3">
         {BEHAVIOUR_COURSE.modules.map((mod, index) => {
           const isDone = completedModules.has(mod.id)
           const isUnlocked = index === 0 || completedModules.has(BEHAVIOUR_COURSE.modules[index - 1].id)
@@ -132,7 +141,8 @@ export function BehaviourCoursePage() {
             </div>
           )
         })}
-      </div>
+        </div>
+      </EnrollmentGate>
     </Layout>
   )
 }

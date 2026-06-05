@@ -5,12 +5,14 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
 import { LEADERSHIP_COURSE } from '../../data/leadershipCourse'
+import { EnrollmentGate } from '../../components/courses/EnrollmentGate'
+import { CertificateDownload } from '../../components/courses/CertificateDownload'
 
 export function LeadershipCoursePage() {
   const { profile } = useAuth()
   const navigate = useNavigate()
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set())
-  const [certificate, setCertificate] = useState<{ completed_at: string } | null>(null)
+  const [certificate, setCertificate] = useState<{ id: string; completed_at: string } | null>(null)
   const [loading, setLoading] = useState(true)
 
   const course = LEADERSHIP_COURSE
@@ -25,7 +27,7 @@ export function LeadershipCoursePage() {
           .eq('user_id', profile!.id)
           .eq('course_id', course.id),
         supabase.from('course_certificates')
-          .select('completed_at')
+          .select('id, completed_at')
           .eq('user_id', profile!.id)
           .eq('course_id', course.id)
           .maybeSingle(),
@@ -79,13 +81,19 @@ export function LeadershipCoursePage() {
         {certificate ? (
           <div className="bg-[#f5c518]/10 border border-[#f5c518]/40 rounded-2xl p-4 flex items-center gap-3 mb-1">
             <Award size={28} className="text-[#f5c518] shrink-0" />
-            <div>
+            <div className="flex-1">
               <p className="font-black text-[#1a3a6b] text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>Certificate Earned</p>
               <p className="text-xs text-gray-500">
                 Completed {new Date(certificate.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
               <p className="text-xs text-[#1a3a6b] font-semibold mt-0.5">Visible on your profile</p>
             </div>
+            <CertificateDownload
+              participantName={profile?.full_name || 'Participant'}
+              courseTitle={LEADERSHIP_COURSE.certificateTitle}
+              completedAt={certificate.completed_at}
+              certificateId={certificate.id}
+            />
           </div>
         ) : allDone ? (
           <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-center mb-1">
@@ -94,7 +102,9 @@ export function LeadershipCoursePage() {
           </div>
         ) : null}
 
-        {/* Module list */}
+        <EnrollmentGate courseId={LEADERSHIP_COURSE.id} courseTitle={LEADERSHIP_COURSE.title}>
+          {/* Module list */}
+          <div className="space-y-3">
         {loading ? (
           <p className="text-center text-gray-400 py-8 text-sm">Loading…</p>
         ) : (
@@ -131,6 +141,8 @@ export function LeadershipCoursePage() {
             )
           })
         )}
+          </div>
+        </EnrollmentGate>
 
         <p className="text-xs text-gray-400 text-center pt-2">
           Complete each module in order. A certificate is awarded on completion and saved to your profile.

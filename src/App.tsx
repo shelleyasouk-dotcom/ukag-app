@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { useAuth } from './contexts/AuthContext'
 import { LoginPage } from './pages/auth/LoginPage'
+import { SignUpPage } from './pages/auth/SignUpPage'
 import { HomePage } from './pages/home/HomePage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { AcademiesPage } from './pages/academies/AcademiesPage'
@@ -23,38 +25,54 @@ import { FirstAidAdvancedCoursePage } from './pages/courses/FirstAidAdvancedCour
 import { FirstAidAdvancedModulePage } from './pages/courses/FirstAidAdvancedModulePage'
 import { BehaviourCoursePage } from './pages/courses/BehaviourCoursePage'
 import { BehaviourModulePage } from './pages/courses/BehaviourModulePage'
+import { AdminPage } from './pages/admin/AdminPage'
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { profile, loading } = useAuth()
+  if (loading) return null
+  if (!profile || profile.role !== 'admin') return <Navigate to="/dashboard" replace />
+  return <>{children}</>
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignUpPage />} />
+
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+      <Route path="/academies" element={<ProtectedRoute><AcademiesPage /></ProtectedRoute>} />
+      <Route path="/academies/:academyId" element={<ProtectedRoute><AcademyDetailPage /></ProtectedRoute>} />
+      <Route path="/library" element={<ProtectedRoute><LibraryPage /></ProtectedRoute>} />
+      <Route path="/library/:level" element={<ProtectedRoute><LevelDetailPage /></ProtectedRoute>} />
+      <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
+      <Route path="/certifications" element={<ProtectedRoute><CertificationsPage /></ProtectedRoute>} />
+      <Route path="/courses/leadership" element={<ProtectedRoute><LeadershipCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/leadership/:moduleId" element={<ProtectedRoute><LeadershipModulePage /></ProtectedRoute>} />
+      <Route path="/courses/area-lead" element={<ProtectedRoute><AreaLeadCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/area-lead/:moduleId" element={<ProtectedRoute><AreaLeadModulePage /></ProtectedRoute>} />
+      <Route path="/courses/safeguarding" element={<ProtectedRoute><SafeguardingCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/safeguarding/:moduleId" element={<ProtectedRoute><SafeguardingModulePage /></ProtectedRoute>} />
+      <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
+      <Route path="/courses/first-aid-basic" element={<ProtectedRoute><FirstAidBasicCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/first-aid-basic/:moduleId" element={<ProtectedRoute><FirstAidBasicModulePage /></ProtectedRoute>} />
+      <Route path="/courses/first-aid-advanced" element={<ProtectedRoute><FirstAidAdvancedCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/first-aid-advanced/:moduleId" element={<ProtectedRoute><FirstAidAdvancedModulePage /></ProtectedRoute>} />
+      <Route path="/courses/behaviour" element={<ProtectedRoute><BehaviourCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/behaviour/:moduleId" element={<ProtectedRoute><BehaviourModulePage /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          <Route path="/academies" element={<ProtectedRoute><AcademiesPage /></ProtectedRoute>} />
-          <Route path="/academies/:academyId" element={<ProtectedRoute><AcademyDetailPage /></ProtectedRoute>} />
-          <Route path="/library" element={<ProtectedRoute><LibraryPage /></ProtectedRoute>} />
-          <Route path="/library/:level" element={<ProtectedRoute><LevelDetailPage /></ProtectedRoute>} />
-          <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
-          <Route path="/certifications" element={<ProtectedRoute><CertificationsPage /></ProtectedRoute>} />
-          <Route path="/courses/leadership" element={<ProtectedRoute><LeadershipCoursePage /></ProtectedRoute>} />
-          <Route path="/courses/leadership/:moduleId" element={<ProtectedRoute><LeadershipModulePage /></ProtectedRoute>} />
-          <Route path="/courses/area-lead" element={<ProtectedRoute><AreaLeadCoursePage /></ProtectedRoute>} />
-          <Route path="/courses/area-lead/:moduleId" element={<ProtectedRoute><AreaLeadModulePage /></ProtectedRoute>} />
-          <Route path="/courses/safeguarding" element={<ProtectedRoute><SafeguardingCoursePage /></ProtectedRoute>} />
-          <Route path="/courses/safeguarding/:moduleId" element={<ProtectedRoute><SafeguardingModulePage /></ProtectedRoute>} />
-          <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
-          <Route path="/courses/first-aid-basic" element={<ProtectedRoute><FirstAidBasicCoursePage /></ProtectedRoute>} />
-          <Route path="/courses/first-aid-basic/:moduleId" element={<ProtectedRoute><FirstAidBasicModulePage /></ProtectedRoute>} />
-          <Route path="/courses/first-aid-advanced" element={<ProtectedRoute><FirstAidAdvancedCoursePage /></ProtectedRoute>} />
-          <Route path="/courses/first-aid-advanced/:moduleId" element={<ProtectedRoute><FirstAidAdvancedModulePage /></ProtectedRoute>} />
-          <Route path="/courses/behaviour" element={<ProtectedRoute><BehaviourCoursePage /></ProtectedRoute>} />
-          <Route path="/courses/behaviour/:moduleId" element={<ProtectedRoute><BehaviourModulePage /></ProtectedRoute>} />
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AppRoutes />
       </AuthProvider>
     </BrowserRouter>
   )
