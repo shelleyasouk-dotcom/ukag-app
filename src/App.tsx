@@ -21,6 +21,8 @@ import { FirstAidBasicCoursePage } from './pages/courses/FirstAidBasicCoursePage
 import { FirstAidBasicModulePage } from './pages/courses/FirstAidBasicModulePage'
 import { FirstAidAdvancedCoursePage } from './pages/courses/FirstAidAdvancedCoursePage'
 import { FirstAidAdvancedModulePage } from './pages/courses/FirstAidAdvancedModulePage'
+import { BehaviourCoursePage } from './pages/courses/BehaviourCoursePage'
+import { BehaviourModulePage } from './pages/courses/BehaviourModulePage'
 
 export default function App() {
   return (
@@ -48,6 +50,8 @@ export default function App() {
           <Route path="/courses/first-aid-basic/:moduleId" element={<ProtectedRoute><FirstAidBasicModulePage /></ProtectedRoute>} />
           <Route path="/courses/first-aid-advanced" element={<ProtectedRoute><FirstAidAdvancedCoursePage /></ProtectedRoute>} />
           <Route path="/courses/first-aid-advanced/:moduleId" element={<ProtectedRoute><FirstAidAdvancedModulePage /></ProtectedRoute>} />
+          <Route path="/courses/behaviour" element={<ProtectedRoute><BehaviourCoursePage /></ProtectedRoute>} />
+          <Route path="/courses/behaviour/:moduleId" element={<ProtectedRoute><BehaviourModulePage /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
