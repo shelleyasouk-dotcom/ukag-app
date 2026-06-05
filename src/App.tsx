@@ -17,6 +17,10 @@ import { AreaLeadModulePage } from './pages/courses/AreaLeadModulePage'
 import { SafeguardingCoursePage } from './pages/courses/SafeguardingCoursePage'
 import { SafeguardingModulePage } from './pages/courses/SafeguardingModulePage'
 import { ServicesPage } from './pages/services/ServicesPage'
+import { FirstAidBasicCoursePage } from './pages/courses/FirstAidBasicCoursePage'
+import { FirstAidBasicModulePage } from './pages/courses/FirstAidBasicModulePage'
+import { FirstAidAdvancedCoursePage } from './pages/courses/FirstAidAdvancedCoursePage'
+import { FirstAidAdvancedModulePage } from './pages/courses/FirstAidAdvancedModulePage'
 
 export default function App() {
   return (
@@ -40,6 +44,10 @@ export default function App() {
           <Route path="/courses/safeguarding" element={<ProtectedRoute><SafeguardingCoursePage /></ProtectedRoute>} />
           <Route path="/courses/safeguarding/:moduleId" element={<ProtectedRoute><SafeguardingModulePage /></ProtectedRoute>} />
           <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
+          <Route path="/courses/first-aid-basic" element={<ProtectedRoute><FirstAidBasicCoursePage /></ProtectedRoute>} />
+          <Route path="/courses/first-aid-basic/:moduleId" element={<ProtectedRoute><FirstAidBasicModulePage /></ProtectedRoute>} />
+          <Route path="/courses/first-aid-advanced" element={<ProtectedRoute><FirstAidAdvancedCoursePage /></ProtectedRoute>} />
+          <Route path="/courses/first-aid-advanced/:moduleId" element={<ProtectedRoute><FirstAidAdvancedModulePage /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -1,0 +1,550 @@
+import type { CourseModule } from './leadershipCourse'
+
+export interface FirstAidCourse {
+  id: string
+  title: string
+  subtitle: string
+  description: string
+  certificateTitle: string
+  modules: CourseModule[]
+}
+
+export const FIRST_AID_BASIC_COURSE: FirstAidCourse = {
+  id: 'first_aid_basic_v1',
+  title: 'First Aid in Gymnastics & Trampolining — Basic',
+  subtitle: 'Essential First Aid for Assistant Coaches',
+  description: 'A practical first aid CPD course for Level 1 Assistant Coaches covering your responsibilities, recognising and responding to common gymnastics and trampolining injuries, and knowing when and how to escalate to emergency services.',
+  certificateTitle: 'UKAG Basic First Aid in Gymnastics & Trampolining Certificate',
+  modules: [
+    {
+      id: 'basic-principles',
+      number: 1,
+      title: 'First Aid Principles & Your Role',
+      subtitle: 'What first aid means for an assistant coach and your responsibilities',
+      emoji: '🩺',
+      gradient: 'from-orange-600 to-red-700',
+      accent: 'text-orange-200',
+      cardBg: 'bg-orange-50',
+      cardBorder: 'border-orange-200',
+      cardText: 'text-orange-700',
+      duration: '8 mins',
+      passThreshold: 3,
+      sections: [
+        {
+          heading: 'Your Role as an Assistant Coach',
+          body: 'As an assistant coach, you are not the first aider in charge — that responsibility sits with your lead coach. But you are often closest to the children during a session, which means you may be the first person to see an injury happen or to reach a child who is hurt.',
+          bullets: [
+            'Your first responsibility is to keep calm — your reaction sets the tone for the child and the rest of the group',
+            'Alert your lead coach immediately whenever a child is injured — do not manage it alone',
+            'While waiting for the lead coach, keep the injured child still, calm, and comfortable',
+            'Manage the rest of the group: move other children away from the incident safely',
+            'Never attempt treatment beyond your competence — reassurance and calling for help is a valid and important response',
+          ],
+        },
+        {
+          heading: 'What First Aid Is (and Is Not)',
+          body: 'First aid is the immediate help given to a person who is injured or becomes unwell before professional medical help arrives. As an assistant coach, your first aid role is about recognition, response, and support — not diagnosis or treatment.',
+          bullets: [
+            'First aid preserves life, prevents the condition worsening, and promotes recovery',
+            'You do not need to know what is wrong — you need to recognise that something is wrong and get help',
+            'Doing something simple well (staying calm, calling for help, keeping the child still) is more valuable than attempting something complex incorrectly',
+            'Never remove a child from the session without your lead coach\'s knowledge',
+            'In a life-threatening emergency, call 999 immediately — do not wait for your lead coach if seconds matter',
+          ],
+        },
+        {
+          heading: 'The First Aid Kit and Facility',
+          body: 'Before every session, you should know where the first aid kit is, who the qualified first aider is in the building, and how to call for help. This information should never be sought for the first time during an emergency.',
+          bullets: [
+            'Locate the first aid kit at the start of every session — know exactly where it is before the children arrive',
+            'Know the name of the school\'s designated first aider and how to contact them quickly',
+            'Know the nearest exit route and whether the venue has a defibrillator (AED) — and where it is',
+            'Ensure your lead coach has a charged phone accessible during the session',
+            'Report any first aid kit items that have been used or are missing to the school office after the session',
+          ],
+        },
+        {
+          heading: 'Consent and Communication',
+          body: 'When a child is injured, clear and calm communication with the child, your lead coach, parents, and the school is a key part of the first aid response.',
+          bullets: [
+            'Speak directly to the child: use their name, stay at their level, and tell them what is happening',
+            'A child\'s parent or guardian must be informed of any injury — your lead coach manages this communication',
+            'Do not speculate about the severity of an injury to parents or other children',
+            'Complete the accident/incident form before leaving the venue — never leave this for another day',
+            'Any injury that results in a child leaving the session early must be reported through the UKAG app the same day',
+          ],
+        },
+      ],
+      quiz: [
+        {
+          question: 'A child falls and appears to be hurt. As an assistant coach, what should you do first?',
+          options: [
+            'Attempt to diagnose the injury before calling for help',
+            'Alert your lead coach immediately, keep the child calm and still, and manage the rest of the group',
+            'Move the child to a quieter area and assess the injury yourself',
+            'Continue the session and check on the child at the end',
+          ],
+          correct: 1,
+          explanation: 'Alert your lead coach immediately. Keep the child calm and still, move other children away, and do not attempt to manage the injury alone. Your role is to support the lead coach and keep the environment safe.',
+        },
+        {
+          question: 'When should you call 999 during a gymnastics session?',
+          options: [
+            'Only after your lead coach has assessed the injury',
+            'Never — the school\'s first aider always manages emergencies',
+            'In a life-threatening emergency, immediately — do not wait if seconds matter',
+            'Only if the injury involves blood',
+          ],
+          correct: 2,
+          explanation: 'In a life-threatening emergency, call 999 immediately. Do not wait for your lead coach if a child\'s life is at risk. Seconds matter in a cardiac arrest or serious airway emergency.',
+        },
+        {
+          question: 'Before every session, what first aid information must you know?',
+          options: [
+            'The child\'s full medical history',
+            'The location of the first aid kit, the school\'s first aider, and the nearest AED',
+            'The address of the nearest hospital',
+            'The names of all children\'s parents',
+          ],
+          correct: 1,
+          explanation: 'Before every session: know where the first aid kit is, who the school\'s designated first aider is and how to reach them, and where the nearest AED is. This information must be found before the session starts — not during an emergency.',
+        },
+        {
+          question: 'A child is injured and their parents ask you how serious it is. What should you say?',
+          options: [
+            'Give your best assessment based on what you observed',
+            'Tell them not to worry — it looks minor',
+            'Do not speculate — direct the parents to your lead coach who is managing the response',
+            'Describe exactly what you saw in detail',
+          ],
+          correct: 2,
+          explanation: 'Do not speculate about the severity of an injury to parents. Direct them to your lead coach, who is managing the first aid response and communication. Incorrect information from you — even well-intentioned — can cause distress or confusion.',
+        },
+      ],
+    },
+    {
+      id: 'basic-common-injuries',
+      number: 2,
+      title: 'Common Injuries in Gymnastics & Trampolining',
+      subtitle: 'Sprains, strains, bruising and what to look for',
+      emoji: '🦵',
+      gradient: 'from-orange-600 to-red-700',
+      accent: 'text-orange-200',
+      cardBg: 'bg-orange-50',
+      cardBorder: 'border-orange-200',
+      cardText: 'text-orange-700',
+      duration: '10 mins',
+      passThreshold: 3,
+      sections: [
+        {
+          heading: 'Sprains and Strains',
+          body: 'Sprains (ligament injuries) and strains (muscle or tendon injuries) are the most common injuries in gymnastics and trampolining. They often look and feel similar but require the same initial response.',
+          bullets: [
+            'Signs: pain, swelling, bruising, limited movement, and tenderness at the injury site',
+            'Common locations in gymnastics: ankles (landings), wrists (floor work and vault), knees',
+            'Common locations in trampolining: ankles (bad landings), knees, and lower back',
+            'Apply the RICE principle: Rest, Ice (wrapped in cloth — never direct), Compression, Elevation',
+            'A child who cannot weight-bear on an injured ankle or knee after a few minutes should be assessed by a medical professional',
+          ],
+        },
+        {
+          heading: 'Bruising and Soft Tissue Injuries',
+          body: 'Bruising is common in gymnastics and usually minor — the result of falls, collisions with apparatus, or awkward landings. Most bruises require no treatment beyond reassurance. However, some situations require further assessment.',
+          bullets: [
+            'Minor bruises: clean the area if there is a graze, apply a cold compress, and reassure the child',
+            'A large, rapidly expanding bruise may indicate a more significant injury beneath — inform your lead coach',
+            'Bruising around the eye, behind the ear, or on the skull following a head impact is a red flag — escalate immediately',
+            'Any bruise on an unusual body part (torso, face, back) that cannot be explained by the session activity should be reported to the DSL as well as treated',
+            'Document all injuries — even minor ones — on the incident form',
+          ],
+        },
+        {
+          heading: 'Wrist and Finger Injuries',
+          body: 'Wrist and finger injuries are particularly common in gymnastics floor and vault work, and during incidental falls on the trampoline. These injuries range from minor sprains to fractures.',
+          bullets: [
+            'A fall onto an outstretched hand is the most common mechanism — the child will report wrist pain and swelling',
+            'Signs of a possible fracture: deformity, significant swelling, extreme tenderness at a specific point, inability to move the joint',
+            'If a fracture is suspected: immobilise the limb in the position found — do not attempt to straighten it',
+            'Apply a sling or improvised support if available and the child is more comfortable with one',
+            'All suspected fractures should be assessed by a medical professional — inform your lead coach and parents immediately',
+          ],
+        },
+        {
+          heading: 'Recognising When Something Is More Serious',
+          body: 'Not every injury in your session will be minor. Knowing the signs that an injury requires professional medical attention — or urgent emergency response — is a core first aid skill.',
+          bullets: [
+            'Call for emergency help if: the child loses consciousness at any point, cannot breathe normally, has severe pain, or has an obvious deformity',
+            'An injury that "seemed fine" and then deteriorates — increasing pain, spreading swelling, pale or clammy skin — requires escalation',
+            'Trust the child: if they tell you something feels very wrong, take it seriously even if the visible signs are minor',
+            'Trust your instincts: if something does not feel right about an injured child\'s condition, call for help',
+            'It is always better to call for help that turns out not to be needed than to delay calling for help that is',
+          ],
+        },
+      ],
+      quiz: [
+        {
+          question: 'A child lands badly from a trampoline and complains of ankle pain and swelling. What is the correct immediate response?',
+          options: [
+            'Tell them to walk it off — trampolining landings often hurt but the pain passes',
+            'Apply direct ice to the ankle and continue the session if they feel better',
+            'Apply the RICE principle (Rest, Ice wrapped in cloth, Compression, Elevation) and alert your lead coach',
+            'Ask the child to jump again to test whether the ankle is really injured',
+          ],
+          correct: 2,
+          explanation: 'Apply RICE — Rest, Ice (always wrapped in cloth, never direct), Compression, Elevation — and alert your lead coach immediately. A child who cannot weight-bear after a few minutes should be assessed by a medical professional.',
+        },
+        {
+          question: 'A child falls on an outstretched hand and their wrist looks slightly deformed. What should you do?',
+          options: [
+            'Gently straighten the wrist and apply a bandage',
+            'Tell the child to flex their wrist to test whether it is broken',
+            'Immobilise the wrist in the position found and alert your lead coach — do not attempt to straighten it',
+            'Apply ice and wait 10 minutes to see if the swelling goes down',
+          ],
+          correct: 2,
+          explanation: 'If a fracture is suspected, immobilise the limb in the position found — never attempt to straighten a deformity. Alert your lead coach and ensure the child is seen by a medical professional.',
+        },
+        {
+          question: 'A child has a bruise that cannot be explained by any incident you observed during the session. What should you do?',
+          options: [
+            'Apply a cold compress and note it in the incident form — no further action needed',
+            'Ask the child directly whether someone has hurt them',
+            'Treat the bruise, note it in the incident form, and report it to the DSL as a potential safeguarding concern',
+            'Ignore it — children bruise easily',
+          ],
+          correct: 2,
+          explanation: 'An unexplained bruise — especially on an unusual body part — should be treated medically and reported to the DSL as a potential safeguarding concern. Treating a physical injury and reporting a safeguarding concern are not mutually exclusive.',
+        },
+        {
+          question: 'Which of these signs indicates that an injured child requires urgent emergency attention?',
+          options: [
+            'Minor swelling on the ankle after a bad landing',
+            'A grazed palm from a floor roll',
+            'Loss of consciousness at any point, difficulty breathing, or severe pain with deformity',
+            'Tearfulness and reluctance to continue the session',
+          ],
+          correct: 2,
+          explanation: 'Loss of consciousness, abnormal breathing, and deformity with severe pain are all signs requiring emergency medical attention. Call 999 immediately and do not move the child unless they are in immediate danger.',
+        },
+      ],
+    },
+    {
+      id: 'basic-head-injuries',
+      number: 3,
+      title: 'Head Injuries & Concussion',
+      subtitle: 'Recognising, responding to, and never underestimating head impacts',
+      emoji: '🧠',
+      gradient: 'from-orange-600 to-red-700',
+      accent: 'text-orange-200',
+      cardBg: 'bg-orange-50',
+      cardBorder: 'border-orange-200',
+      cardText: 'text-orange-700',
+      duration: '10 mins',
+      passThreshold: 3,
+      sections: [
+        {
+          heading: 'Why Head Injuries Demand Special Attention',
+          body: 'Head injuries in gymnastics and trampolining can appear minor while masking something serious. The rule in gymnastics and trampolining is simple: any impact to the head must be taken seriously, the child must stop, and the lead coach must be informed immediately.',
+          bullets: [
+            'Concussion symptoms can be delayed — a child may feel fine immediately after impact and deteriorate minutes or hours later',
+            'A child who has had a head impact must not continue to participate — "if in doubt, sit them out"',
+            'Never judge the severity of a head injury by the force of the impact — minor-looking impacts can cause significant injury',
+            'Children in gymnastics and trampolining are at particular risk from head impacts due to inversions, rotational skills, and falls from height',
+            'Any child who loses consciousness at any point — even briefly — requires emergency medical assessment',
+          ],
+        },
+        {
+          heading: 'Signs and Symptoms of Concussion',
+          body: 'Concussion is a brain injury caused by an impact to the head that disrupts normal brain function. You do not need to lose consciousness to have concussion. As an assistant coach, your role is to recognise the signs and escalate.',
+          bullets: [
+            'Immediate signs: confusion, dazed or blank expression, unsteady on feet, slow to answer questions',
+            'Physical signs: headache, nausea or vomiting, sensitivity to light or noise, blurred vision',
+            'Cognitive signs: difficulty concentrating, asking the same question repeatedly, seeming "not themselves"',
+            'Emotional signs: unusual crying, irritability, or emotional flatness following a head impact',
+            'Any one of these signs after a head impact means the child must stop activity immediately',
+          ],
+        },
+        {
+          heading: 'Your Response to a Head Impact',
+          body: 'The moment you witness or are informed of a head impact, follow these steps consistently — every time, regardless of how minor it appears.',
+          bullets: [
+            'Stop the child\'s activity immediately — do not allow them to continue "to see how they get on"',
+            'Alert your lead coach immediately — head injuries are always the lead coach\'s responsibility to manage',
+            'Do not move the child if there is any possibility of neck or spinal injury — especially after a fall from height or trampoline',
+            'Keep the child calm, seated, and supervised until the lead coach or a qualified first aider assesses them',
+            'If the child loses consciousness, vomits, has a seizure, or deteriorates: call 999 immediately',
+          ],
+        },
+        {
+          heading: 'Return to Activity and Informing Parents',
+          body: 'A child who has had a head impact must not return to gymnastics or trampolining activity in the same session — and their parent must be informed before they leave.',
+          bullets: [
+            'The rule is clear: no child returns to gymnastics or trampolining activity in the same session after a head impact',
+            'Parents must be informed in person or by phone before the child leaves — not by a note home',
+            'The parent must be told: what happened, what symptoms (if any) the child showed, and what to watch for at home',
+            'Signs to watch for at home: worsening headache, repeated vomiting, unusual drowsiness, confusion, or one pupil larger than the other — seek emergency care if these occur',
+            'The child should follow the UKAG return-to-sport protocol before resuming gymnastics — this is managed by the lead coach',
+          ],
+        },
+      ],
+      quiz: [
+        {
+          question: 'A child lands awkwardly and hits their head but says they feel fine and want to continue. What should you do?',
+          options: [
+            'Allow them to continue — they know how they feel',
+            'Watch them for five minutes and let them continue if they show no symptoms',
+            'Stop the child\'s activity immediately, alert your lead coach, and apply the "if in doubt, sit them out" rule',
+            'Ask them to do a gentle skill to test their coordination before deciding',
+          ],
+          correct: 2,
+          explanation: 'Any head impact means the child stops — immediately, regardless of how they feel. Concussion symptoms can be delayed. Apply the rule: "if in doubt, sit them out." Alert your lead coach and do not allow the child to return to activity in the same session.',
+        },
+        {
+          question: 'Which of the following is a sign of possible concussion after a head impact?',
+          options: [
+            'A small cut on the scalp',
+            'Asking the same question repeatedly and seeming dazed',
+            'Crying immediately after the impact',
+            'A slight headache that goes away within a minute',
+          ],
+          correct: 1,
+          explanation: 'Repeating questions, a dazed expression, confusion, and unsteadiness are all signs of concussion. A child showing any of these signs after a head impact must stop activity and be assessed by a qualified first aider or medical professional.',
+        },
+        {
+          question: 'A child hits their head on the trampoline frame. They briefly lost consciousness and are now awake and confused. What do you do?',
+          options: [
+            'Sit them down, give them water, and continue monitoring',
+            'Call 999 immediately, do not move the child, and alert your lead coach',
+            'Ask the child to walk to the bench so they are out of the way',
+            'Phone their parents and wait for them to arrive before deciding whether to call an ambulance',
+          ],
+          correct: 1,
+          explanation: 'Loss of consciousness — even brief — always requires emergency medical assessment. Call 999 immediately. Do not move the child unless they are in immediate danger of further harm. Alert your lead coach and stay with the child until help arrives.',
+        },
+        {
+          question: 'A child has had a head impact and the session is ending. The parent arrives to collect them. What must happen?',
+          options: [
+            'Give the parent a written note explaining what happened',
+            'Let the child explain to their parent what happened',
+            'Inform the parent in person what happened, what symptoms were observed, and what signs to watch for at home',
+            'Nothing additional — the incident has been logged',
+          ],
+          correct: 2,
+          explanation: 'Parents must be informed in person before the child leaves — not by a note. Tell them what happened, what symptoms the child showed, and what warning signs to watch for at home (worsening headache, vomiting, unusual drowsiness, confusion). Seek emergency care if these occur.',
+        },
+      ],
+    },
+    {
+      id: 'basic-bleeding-wounds',
+      number: 4,
+      title: 'Bleeding & Wound Management',
+      subtitle: 'Grazes, cuts, and managing blood safely in a session',
+      emoji: '🩹',
+      gradient: 'from-orange-600 to-red-700',
+      accent: 'text-orange-200',
+      cardBg: 'bg-orange-50',
+      cardBorder: 'border-orange-200',
+      cardText: 'text-orange-700',
+      duration: '8 mins',
+      passThreshold: 3,
+      sections: [
+        {
+          heading: 'Managing Minor Cuts and Grazes',
+          body: 'Minor cuts and grazes from falls on gym mats, floor surfaces, or apparatus are common in gymnastics. Most can be managed quickly and safely with basic first aid, allowing the session to continue with minimal disruption.',
+          bullets: [
+            'Put on disposable gloves before managing any bleeding — always use the gloves from the first aid kit',
+            'Apply gentle pressure with a clean pad or dressing — do not remove the pad if it becomes soaked, add more on top',
+            'Once bleeding has stopped, clean the wound gently with clean water if available, then apply a plaster or dressing',
+            'Do not blow on a wound or use your mouth near it for any reason',
+            'Dispose of used dressings and gloves in a sealed bag — never leave blood-contaminated materials in a bin accessible to children',
+          ],
+        },
+        {
+          heading: 'Managing More Significant Bleeding',
+          body: 'Serious bleeding — where blood is flowing freely and does not stop with initial pressure — requires escalation to your lead coach and potentially to emergency services.',
+          bullets: [
+            'Apply firm, direct pressure to the wound using the cleanest material available — maintain pressure without releasing to "check" it',
+            'Raise the injured limb above the level of the heart if possible — this reduces blood flow to the wound',
+            'Do not apply a tourniquet unless specifically trained to do so',
+            'If blood soaks through the dressing, apply a second layer — do not remove the first',
+            'If bleeding does not slow with firm pressure within a few minutes, call 999 and alert your lead coach immediately',
+          ],
+        },
+        {
+          heading: 'Blood and Cross-Contamination',
+          body: 'Blood on gym equipment, mats, or clothing creates a cross-contamination risk. This must be managed promptly and safely.',
+          bullets: [
+            'Any mat or equipment with blood on it must be removed from use immediately and cleaned with an appropriate disinfectant',
+            'Blood on clothing should prompt the child to change if possible — if not, cover the area',
+            'Wash your own hands thoroughly with soap and water after any contact with blood, even if you wore gloves',
+            'If blood contacts your eyes, mouth, or a cut on your own skin, wash thoroughly and report to the school office',
+            'Never allow another child to come into contact with blood-contaminated equipment or surfaces',
+          ],
+        },
+        {
+          heading: 'Nosebleeds',
+          body: 'Nosebleeds are common in children — particularly in warm, active environments — and are usually not serious. They can look alarming but are manageable with calm, correct technique.',
+          bullets: [
+            'Sit the child upright with their head slightly forward — not tilted back',
+            'Pinch the soft part of the nose (just below the bony bridge) firmly for 10 minutes without releasing',
+            'Breathe through the mouth — tell the child not to sniff, swallow, or blow their nose',
+            'Do not tilt the head back — swallowing blood causes nausea',
+            'If the nosebleed does not stop after 20–30 minutes, or the child has had a recent head injury, seek medical advice',
+          ],
+        },
+      ],
+      quiz: [
+        {
+          question: 'Before managing a bleeding wound, what must you always do first?',
+          options: [
+            'Ask the child how the injury happened',
+            'Put on disposable gloves from the first aid kit',
+            'Clean the wound with water',
+            'Alert all parents that a first aid incident has occurred',
+          ],
+          correct: 1,
+          explanation: 'Always put on disposable gloves before managing any bleeding. This protects both you and the child from cross-contamination. Gloves should always be available in the first aid kit.',
+        },
+        {
+          question: 'You are applying pressure to a wound and the dressing becomes soaked with blood. What should you do?',
+          options: [
+            'Remove the soaked dressing and replace it with a fresh one',
+            'Release pressure briefly to check the wound before adding more dressing',
+            'Apply a second dressing on top of the first and continue applying firm pressure',
+            'Stop applying pressure — continuous pressure can cause damage',
+          ],
+          correct: 2,
+          explanation: 'Apply a second dressing on top — never remove the first, as this disrupts the clotting process. Continue applying firm, direct pressure. If significant bleeding continues, alert your lead coach and call 999 if needed.',
+        },
+        {
+          question: 'A child has a nosebleed during a session. What is the correct position and technique?',
+          options: [
+            'Tilt the head back and pinch the nose — this prevents blood going forward',
+            'Sit them upright with head slightly forward, pinch the soft part of the nose for 10 minutes',
+            'Lie them down and apply a cold compress to the forehead',
+            'Ask them to blow their nose firmly to clear the blockage',
+          ],
+          correct: 1,
+          explanation: 'Sit upright with head slightly forward — not back. Tilting the head back causes blood to be swallowed, which causes nausea. Pinch the soft part of the nose for a full 10 minutes without releasing to check.',
+        },
+        {
+          question: 'A mat has blood on it from a child\'s cut. What should you do?',
+          options: [
+            'Continue the session on that mat — a small amount of blood is not a risk',
+            'Wipe it with a tissue and continue',
+            'Remove the mat from use immediately and clean it with disinfectant before it is returned',
+            'Cover the blood with a towel until the session ends',
+          ],
+          correct: 2,
+          explanation: 'Blood-contaminated equipment must be removed from use immediately and cleaned with an appropriate disinfectant. No other child should come into contact with blood-contaminated surfaces.',
+        },
+      ],
+    },
+    {
+      id: 'basic-calling-for-help',
+      number: 5,
+      title: 'Calling for Help & Incident Reporting',
+      subtitle: 'When and how to escalate, what to tell the emergency services, and recording accurately',
+      emoji: '📞',
+      gradient: 'from-orange-600 to-red-700',
+      accent: 'text-orange-200',
+      cardBg: 'bg-orange-50',
+      cardBorder: 'border-orange-200',
+      cardText: 'text-orange-700',
+      duration: '8 mins',
+      passThreshold: 3,
+      sections: [
+        {
+          heading: 'When to Call 999',
+          body: 'Calling 999 is the right decision in a wide range of emergencies. As an assistant coach, you should never hesitate to call if you believe a child\'s life is at risk — waiting for your lead coach in a life-threatening situation is not correct procedure.',
+          bullets: [
+            'Call 999 immediately if: the child is unconscious and unresponsive, has stopped breathing normally, has a suspected spinal injury, has uncontrolled serious bleeding, or has a suspected serious fracture',
+            'Also call for: a severe allergic reaction (anaphylaxis), a seizure lasting more than 5 minutes, or any situation where you are genuinely unsure and the child\'s condition is deteriorating',
+            'If you are alone: call 999 first, then attempt first aid — do not attempt first aid and delay calling',
+            'Stay on the line — the emergency operator will guide you through what to do while help is on the way',
+            'Send someone to meet the ambulance at the school entrance if possible',
+          ],
+        },
+        {
+          heading: 'What to Tell the Emergency Services',
+          body: 'When you call 999, the operator will ask you specific questions. Being prepared to answer clearly and calmly can help get the right help to the child faster.',
+          bullets: [
+            'Give the full address of the venue, including the specific room or hall if it is a large building',
+            'Describe what has happened: "A nine-year-old girl has fallen from a beam and is unconscious"',
+            'State what first aid is being given and by whom',
+            'Stay on the line — do not hang up unless the operator tells you to',
+            'Do not leave the child — if you need to send someone else to wait for the ambulance, brief them clearly on the address and entrance',
+          ],
+        },
+        {
+          heading: 'What to Do While Waiting for Help',
+          body: 'The time between calling 999 and the arrival of emergency services is the period where your calm, focused presence makes the greatest difference.',
+          bullets: [
+            'Stay with the child — do not leave them alone at any point',
+            'Keep them warm with a coat or blanket if available — shock causes heat loss',
+            'Continue any first aid you have started — do not stop CPR unless the child shows signs of life or help arrives',
+            'Keep the rest of the group calm and away from the incident — another adult or older assistant should supervise them',
+            'Note the time of the injury, the time you called 999, and any changes in the child\'s condition — this information helps paramedics',
+          ],
+        },
+        {
+          heading: 'Completing the Incident Report',
+          body: 'Every injury — from a minor graze to a serious emergency — must be recorded on an incident form. This is a professional and legal requirement.',
+          bullets: [
+            'Complete the incident form before leaving the venue — never leave it for another day',
+            'Record: date, time, location, what happened, what injury was observed, what first aid was given, who was present',
+            'Use factual, specific language: "Child fell from beam at approx 15:20, striking left wrist on floor mat. Swelling observed. RICE applied. Parents informed." — not "child hurt their wrist"',
+            'Submit the incident report through the UKAG app the same day — your lead coach manages this but you may need to contribute your account',
+            'If the incident involved 999 being called, notify your UKAG Area Lead the same day',
+          ],
+        },
+      ],
+      quiz: [
+        {
+          question: 'You are alone with a group of children when a child collapses and is unresponsive. What should you do first?',
+          options: [
+            'Start CPR immediately and call 999 after 2 minutes',
+            'Wait for your lead coach to arrive before making any decisions',
+            'Call 999 first, then begin first aid — the operator will guide you',
+            'Send a child to get a teacher before doing anything',
+          ],
+          correct: 2,
+          explanation: 'When alone, call 999 first for an unresponsive child — the emergency operator will guide you through CPR if needed. Do not delay the call to attempt first aid first when there is no one else available.',
+        },
+        {
+          question: 'What specific information should you give when calling 999?',
+          options: [
+            'The child\'s name, date of birth, and school year',
+            'The full venue address, what happened, the child\'s condition, and what first aid is being given',
+            'The name of the head teacher and the school\'s phone number',
+            'A detailed description of how the injury occurred over the past hour',
+          ],
+          correct: 1,
+          explanation: 'The key information for 999: full venue address (with room/hall), what has happened, the child\'s current condition, and what first aid is being provided. Stay on the line — the operator will ask follow-up questions.',
+        },
+        {
+          question: 'When must an incident form be completed?',
+          options: [
+            'Within 48 hours of the incident',
+            'At the end of the school week',
+            'Before leaving the venue on the day of the incident',
+            'Only if the child required hospital treatment',
+          ],
+          correct: 2,
+          explanation: 'Incident forms must be completed before leaving the venue on the day of the incident. Memory fades quickly, and delayed records are less accurate and less defensible if the incident is later subject to formal review.',
+        },
+        {
+          question: 'A child has a minor fall and grazes their knee. It stops bleeding with a plaster. Do you need to complete an incident form?',
+          options: [
+            'No — only serious injuries require documentation',
+            'Only if the parents ask about it',
+            'Yes — every injury must be documented, regardless of severity',
+            'Only if the child cried about it',
+          ],
+          correct: 2,
+          explanation: 'Every injury must be documented — including minor ones. A graze today may become part of a safeguarding pattern tomorrow. Consistent documentation protects the child, the school, and you as a professional.',
+        },
+      ],
+    },
+  ],
+}
