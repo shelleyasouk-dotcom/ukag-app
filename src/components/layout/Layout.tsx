@@ -12,6 +12,7 @@ import {
   X,
   ChevronDown,
   ChevronRight,
+  ShieldCheck,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import type { ReactNode } from 'react'
@@ -180,6 +181,22 @@ export function Layout({ children }: { children: ReactNode }) {
             <Wrench size={18} />
             Equipment Services
           </NavLink>
+
+          {profile?.role === 'admin' && (
+            <NavLink
+              to="/admin"
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive ? 'text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                }`
+              }
+              style={({ isActive }) => isActive ? { backgroundColor: '#1e52a4' } : {}}
+            >
+              <ShieldCheck size={18} />
+              Admin
+            </NavLink>
+          )}
         </nav>
 
         <div className="px-3 py-4 border-t border-gray-800 space-y-1">
