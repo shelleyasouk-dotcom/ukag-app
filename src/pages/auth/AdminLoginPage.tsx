@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ShieldCheck } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
-import { supabase } from '../../lib/supabase'
 
 export function AdminLoginPage() {
   const { signIn } = useAuth()
@@ -24,25 +23,7 @@ export function AdminLoginPage() {
       return
     }
 
-    // Fetch profile directly to check role immediately
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      if (profile?.role === 'admin') {
-        navigate('/admin')
-      } else {
-        setError('This account does not have admin access.')
-        setLoading(false)
-      }
-    } else {
-      setError('Sign in failed — please try again.')
-      setLoading(false)
-    }
+    navigate('/admin')
   }
 
   return (

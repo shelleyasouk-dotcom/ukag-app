@@ -30,8 +30,9 @@ import { AdminPage } from './pages/admin/AdminPage'
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth()
-  if (loading) return null
-  if (!profile || profile.role !== 'admin') return <Navigate to="/dashboard" replace />
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-sm text-gray-400">Loading…</div>
+  if (!profile) return <Navigate to="/admin/login" replace />
+  if (profile.role !== 'admin') return <Navigate to="/dashboard" replace />
   return <>{children}</>
 }
 
