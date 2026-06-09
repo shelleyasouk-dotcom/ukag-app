@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { useAuth } from './contexts/AuthContext'
@@ -31,8 +31,28 @@ import { AdminPage } from './pages/admin/AdminPage'
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth()
   if (loading) return <div className="min-h-screen flex items-center justify-center text-sm text-gray-400">Loading…</div>
-  if (!profile) return <Navigate to="/admin/login" replace />
-  if (profile.role !== 'admin') return <Navigate to="/dashboard" replace />
+  if (!profile) return (
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="bg-white rounded-xl border border-red-200 p-6 max-w-sm text-center">
+        <p className="font-bold text-red-700 mb-2">Profile not found</p>
+        <p className="text-sm text-gray-600 mb-4">Your account has no profile row in the database. Run this SQL in Supabase:</p>
+        <pre className="text-xs bg-gray-50 rounded p-3 text-left whitespace-pre-wrap mb-4">{`insert into profiles (id, email, full_name, role)\nselect id, email, email, 'admin'\nfrom auth.users\nwhere email = 'your-email@here.com'\non conflict (id) do update set role = 'admin';`}</pre>
+        <Link to="/admin/login" className="text-sm text-blue-600 underline">Back to login</Link>
+      </div>
+    </div>
+  )
+  if (profile.role !== 'admin') return (
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="bg-white rounded-xl border border-amber-200 p-6 max-w-sm text-center">
+        <p className="font-bold text-amber-700 mb-2">Not an admin account</p>
+        <p className="text-sm text-gray-600 mb-1">Signed in as: <strong>{profile.email}</strong></p>
+        <p className="text-sm text-gray-600 mb-4">Current role: <strong>{profile.role}</strong></p>
+        <p className="text-xs text-gray-500 mb-4">Run this SQL in Supabase to fix it:</p>
+        <pre className="text-xs bg-gray-50 rounded p-3 text-left mb-4">{`update profiles\nset role = 'admin'\nwhere email = '${profile.email}';`}</pre>
+        <Link to="/admin/login" className="text-sm text-blue-600 underline">Back to login</Link>
+      </div>
+    </div>
+  )
   return <>{children}</>
 }
 

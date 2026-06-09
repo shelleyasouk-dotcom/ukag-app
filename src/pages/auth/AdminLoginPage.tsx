@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ShieldCheck } from 'lucide-react'
-import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../contexts/AuthContext'
 
 export function AdminLoginPage() {
+  const { signIn } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -14,39 +15,13 @@ export function AdminLoginPage() {
     e.preventDefault()
     setError(null)
     setLoading(true)
-
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
-
+    const { error: signInError } = await signIn(email, password)
     if (signInError) {
-      setError(signInError.message)
+      setError(signInError)
       setLoading(false)
       return
     }
-
-    const userId = data.user?.id
-    if (!userId) {
-      setError('Sign in failed — please try again.')
-      setLoading(false)
-      return
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single()
-
-    if (profile?.role === 'admin') {
-      navigate('/admin')
-    } else {
-      await supabase.auth.signOut()
-      setError(
-        profile
-          ? 'This account does not have admin access.'
-          : 'Profile not found — please contact support.'
-      )
-      setLoading(false)
-    }
+    navigate('/admin')
   }
 
   return (
