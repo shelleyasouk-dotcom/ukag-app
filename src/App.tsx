@@ -26,6 +26,10 @@ import { FirstAidAdvancedCoursePage } from './pages/courses/FirstAidAdvancedCour
 import { FirstAidAdvancedModulePage } from './pages/courses/FirstAidAdvancedModulePage'
 import { BehaviourCoursePage } from './pages/courses/BehaviourCoursePage'
 import { BehaviourModulePage } from './pages/courses/BehaviourModulePage'
+import { SendAwarenessCoursePage } from './pages/courses/SendAwarenessCoursePage'
+import { SendAwarenessModulePage } from './pages/courses/SendAwarenessModulePage'
+import { EqualityInclusionCoursePage } from './pages/courses/EqualityInclusionCoursePage'
+import { EqualityInclusionModulePage } from './pages/courses/EqualityInclusionModulePage'
 import { AdminPage } from './pages/admin/AdminPage'
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
@@ -84,6 +88,10 @@ function AppRoutes() {
       <Route path="/courses/first-aid-advanced/:moduleId" element={<ProtectedRoute><FirstAidAdvancedModulePage /></ProtectedRoute>} />
       <Route path="/courses/behaviour" element={<ProtectedRoute><BehaviourCoursePage /></ProtectedRoute>} />
       <Route path="/courses/behaviour/:moduleId" element={<ProtectedRoute><BehaviourModulePage /></ProtectedRoute>} />
+      <Route path="/courses/send" element={<ProtectedRoute><SendAwarenessCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/send/:moduleId" element={<ProtectedRoute><SendAwarenessModulePage /></ProtectedRoute>} />
+      <Route path="/courses/equality" element={<ProtectedRoute><EqualityInclusionCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/equality/:moduleId" element={<ProtectedRoute><EqualityInclusionModulePage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />

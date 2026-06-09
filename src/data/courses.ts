@@ -5,4 +5,6 @@ export const COURSE_REGISTRY = [
   { id: 'first_aid_basic_v1', title: 'First Aid in Gymnastics & Trampolining — Basic' },
   { id: 'first_aid_advanced_v1', title: 'First Aid in Gymnastics & Trampolining — Advanced' },
   { id: 'behaviour_v1', title: 'Behaviour Management in Gymnastics & Trampolining' },
+  { id: 'send_v1', title: 'SEND Awareness in Gymnastics & Trampolining' },
+  { id: 'equality_v1', title: 'Equality & Inclusion in Gymnastics & Trampolining' },
 ] as const
