@@ -13,6 +13,7 @@ import { LibraryPage } from './pages/library/LibraryPage'
 import { LevelDetailPage } from './pages/library/LevelDetailPage'
 import { ResourcesPage } from './pages/resources/ResourcesPage'
 import { CertificationsPage } from './pages/profile/CertificationsPage'
+import { ProfilePage } from './pages/profile/ProfilePage'
 import { LeadershipCoursePage } from './pages/courses/LeadershipCoursePage'
 import { LeadershipModulePage } from './pages/courses/LeadershipModulePage'
 import { AreaLeadCoursePage } from './pages/courses/AreaLeadCoursePage'
@@ -74,7 +75,8 @@ function AppRoutes() {
       <Route path="/library" element={<ProtectedRoute><LibraryPage /></ProtectedRoute>} />
       <Route path="/library/:level" element={<ProtectedRoute><LevelDetailPage /></ProtectedRoute>} />
       <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
-      <Route path="/certifications" element={<ProtectedRoute><CertificationsPage /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/certifications" element={<Navigate to="/profile" replace />} />
       <Route path="/courses/leadership" element={<ProtectedRoute><LeadershipCoursePage /></ProtectedRoute>} />
       <Route path="/courses/leadership/:moduleId" element={<ProtectedRoute><LeadershipModulePage /></ProtectedRoute>} />
       <Route path="/courses/area-lead" element={<ProtectedRoute><AreaLeadCoursePage /></ProtectedRoute>} />

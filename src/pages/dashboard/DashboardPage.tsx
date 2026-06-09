@@ -32,9 +32,9 @@ const QUICK_ACTIONS = [
     Icon: FolderOpen,
   },
   {
-    label: 'My Certifications',
-    desc: 'View your qualifications and compliance',
-    to: '/certifications',
+    label: 'My Profile',
+    desc: 'View and edit your profile and CPD record',
+    to: '/profile',
     colour: '#8b5cf6',
     Icon: Award,
   },

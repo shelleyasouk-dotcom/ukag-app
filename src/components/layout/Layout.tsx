@@ -155,7 +155,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </NavLink>
 
           <NavLink
-            to="/certifications"
+            to="/profile"
             onClick={() => setSidebarOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -165,7 +165,7 @@ export function Layout({ children }: { children: ReactNode }) {
             style={({ isActive }) => isActive ? { backgroundColor: '#ef462c' } : {}}
           >
             <Award size={18} />
-            My Certifications
+            My Profile
           </NavLink>
 
           <NavLink
