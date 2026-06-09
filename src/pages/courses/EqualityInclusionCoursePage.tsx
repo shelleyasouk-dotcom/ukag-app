@@ -45,9 +45,9 @@ export function EqualityInclusionCoursePage() {
   return (
     <Layout>
       <div className="mb-2">
-        <Link to="/academies/inclusion" className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 mb-4">
+        <Link to="/academies/safety" className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 mb-4">
           <ArrowLeft size={14} />
-          Back to Inclusion Academy
+          Back to Safety Academy
         </Link>
       </div>
 
@@ -55,7 +55,7 @@ export function EqualityInclusionCoursePage() {
       <div className="bg-gradient-to-br from-rose-600 to-pink-700 text-white rounded-xl px-5 pt-5 pb-6 mb-6">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div>
-            <p className="text-xs font-extrabold uppercase tracking-widest text-rose-200 mb-1">CPD — Inclusion Academy</p>
+            <p className="text-xs font-extrabold uppercase tracking-widest text-rose-200 mb-1">CPD — Safety Academy</p>
             <h1 className="text-2xl font-black leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>{course.title}</h1>
             <p className="text-rose-100 text-sm mt-1">{course.subtitle}</p>
           </div>
