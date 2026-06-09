@@ -1,40 +1,48 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ShieldCheck } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../lib/supabase'
 
 export function AdminLoginPage() {
-  const { signIn, profile } = useAuth()
+  const { signIn } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [awaitingProfile, setAwaitingProfile] = useState(false)
-
-  // Once signed in, wait for profile to load then check role
-  useEffect(() => {
-    if (!awaitingProfile || !profile) return
-    if (profile.role === 'admin') {
-      navigate('/admin')
-    } else {
-      setError('This account does not have admin access.')
-      setLoading(false)
-      setAwaitingProfile(false)
-    }
-  }, [awaitingProfile, profile, navigate])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
+
     const { error: signInError } = await signIn(email, password)
     if (signInError) {
       setError(signInError)
       setLoading(false)
       return
     }
-    setAwaitingProfile(true)
+
+    // Fetch profile directly to check role immediately
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      if (profile?.role === 'admin') {
+        navigate('/admin')
+      } else {
+        setError('This account does not have admin access.')
+        setLoading(false)
+      }
+    } else {
+      setError('Sign in failed — please try again.')
+      setLoading(false)
+    }
   }
 
   return (
