@@ -39,6 +39,16 @@ const ROLE_LABELS: Record<string, string> = {
   teacher: 'Teacher',
 }
 
+const ROLE_OPTIONS = [
+  { value: 'junior_coach', label: 'Junior Coach' },
+  { value: 'assistant_coach', label: 'Assistant Coach (Level 1)' },
+  { value: 'lead_coach', label: 'Lead Coach (Level 2)' },
+  { value: 'area_lead', label: 'Area Lead' },
+  { value: 'teacher', label: 'Teacher / School Staff' },
+  { value: 'coach', label: 'Coach' },
+  { value: 'admin', label: 'Admin' },
+]
+
 export function AdminPage() {
   const { profile } = useAuth()
   const [tab, setTab] = useState<'coaches' | 'requests'>('coaches')
@@ -100,6 +110,13 @@ export function AdminPage() {
       reviewed_at: new Date().toISOString(),
       reviewed_by: profile?.id,
     }).eq('id', req.id)
+    setWorking(false)
+    loadAll()
+  }
+
+  async function changeRole(userId: string, newRole: string) {
+    setWorking(true)
+    await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
     setWorking(false)
     loadAll()
   }
@@ -184,6 +201,21 @@ export function AdminPage() {
 
                 {isExpanded && (
                   <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-4">
+                    {/* Role */}
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Role</div>
+                      <select
+                        value={p.role}
+                        onChange={e => changeRole(p.id, e.target.value)}
+                        disabled={working}
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-50"
+                      >
+                        {ROLE_OPTIONS.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
                     {/* Current enrollments */}
                     <div>
                       <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Enrolled Courses</div>

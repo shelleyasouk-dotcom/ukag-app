@@ -17,7 +17,8 @@ function UkagMark({ size = 100 }: { size?: number }) {
 
 export function SignUpPage() {
   const navigate = useNavigate()
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<UserRole>('assistant_coach')
@@ -28,6 +29,8 @@ export function SignUpPage() {
     e.preventDefault()
     setError(null)
     setLoading(true)
+
+    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()
 
     const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
     if (signUpError) {
@@ -87,17 +90,31 @@ export function SignUpPage() {
             <p className="text-gray-500 text-sm mb-6">Join the UKAG coaching portal</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Full name</label>
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  required
-                  autoComplete="name"
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400"
-                  placeholder="Jane Smith"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">First name</label>
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={e => setFirstName(e.target.value)}
+                    required
+                    autoComplete="given-name"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400"
+                    placeholder="Jane"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Last name</label>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                    required
+                    autoComplete="family-name"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400"
+                    placeholder="Smith"
+                  />
+                </div>
               </div>
 
               <div>
