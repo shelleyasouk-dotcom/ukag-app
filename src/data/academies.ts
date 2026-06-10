@@ -23,6 +23,7 @@ export interface Course {
   bookingUrl: string
   dates?: CourseDateBlock[]
   interestForm?: boolean
+  interestLabel?: string
 }
 
 export interface Academy {
@@ -207,6 +208,8 @@ export const ACADEMIES: Academy[] = [
         assessment: 'Attendance + Practical Observation',
         certification: 'UKAG Refresher Certificate',
         bookingUrl: '#',
+        interestForm: true,
+        interestLabel: 'Book a Refresher Day',
       },
     ],
   },
@@ -533,6 +536,8 @@ export const ACADEMIES: Academy[] = [
         assessment: 'Online Learning + Practical Assessment',
         certification: 'UKAG Primary Gymnastics Teacher Award',
         bookingUrl: '#',
+        interestForm: true,
+        interestLabel: 'Request a Date / Information',
       },
       {
         id: 'primary-trampolining-teacher',
@@ -551,6 +556,8 @@ export const ACADEMIES: Academy[] = [
         assessment: 'Online Learning + Practical Assessment',
         certification: 'UKAG Primary Trampolining Teacher Award',
         bookingUrl: '#',
+        interestForm: true,
+        interestLabel: 'Request a Date / Information',
       },
       {
         id: 'pe-subject-leader',
@@ -569,6 +576,8 @@ export const ACADEMIES: Academy[] = [
         assessment: 'Online Learning + Workshop',
         certification: 'UKAG PE Subject Leader Certificate',
         bookingUrl: '#',
+        interestForm: true,
+        interestLabel: 'Request a Date / Information',
       },
       {
         id: 'active-lunchtimes',
@@ -587,6 +596,8 @@ export const ACADEMIES: Academy[] = [
         assessment: 'Online Assessment',
         certification: 'CPD Certificate',
         bookingUrl: '#',
+        interestForm: true,
+        interestLabel: 'Request a Date / Information',
       },
     ],
   },

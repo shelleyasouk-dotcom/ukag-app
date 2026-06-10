@@ -7,7 +7,7 @@ import { ChevronDown, ChevronUp, ArrowLeft, Calendar, Clock, X, CheckCircle } fr
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 
-function InterestModal({ course, onClose }: { course: Course; onClose: () => void }) {
+function InterestModal({ course, label, onClose }: { course: Course; label: string; onClose: () => void }) {
   const { profile } = useAuth()
   const [name, setName] = useState(profile?.full_name ?? '')
   const [email, setEmail] = useState(profile?.email ?? '')
@@ -45,7 +45,7 @@ function InterestModal({ course, onClose }: { course: Course; onClose: () => voi
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <div>
             <h2 className="font-black text-gray-900 text-base" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-              Register Interest
+              {label}
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">{course.title}</p>
           </div>
@@ -61,7 +61,7 @@ function InterestModal({ course, onClose }: { course: Course; onClose: () => voi
               Interest Registered!
             </h3>
             <p className="text-sm text-gray-500 mb-5">
-              Thanks {name.split(' ')[0]}! We'll be in touch with booking details soon.
+              Thanks {name.split(' ')[0]}! We'll be in touch shortly.
             </p>
             <button
               onClick={onClose}
@@ -136,7 +136,7 @@ function InterestModal({ course, onClose }: { course: Course; onClose: () => voi
                 className="flex-1 px-4 py-2.5 rounded-lg text-sm font-bold text-white disabled:opacity-60 transition-colors"
                 style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
               >
-                {submitting ? 'Submitting…' : 'Register Interest'}
+                {submitting ? 'Submitting…' : label}
               </button>
             </div>
           </form>
@@ -155,7 +155,7 @@ function CourseCard({ course, colour }: { course: Course; colour: string }) {
   return (
     <>
       {showInterestModal && (
-        <InterestModal course={course} onClose={() => setShowInterestModal(false)} />
+        <InterestModal course={course} label={course.interestLabel ?? 'Register Interest'} onClose={() => setShowInterestModal(false)} />
       )}
 
       <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-4">
@@ -248,7 +248,7 @@ function CourseCard({ course, colour }: { course: Course; colour: string }) {
             className="mt-auto px-4 py-2.5 rounded-lg text-sm font-bold text-white text-center"
             style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
           >
-            Register Interest
+            {course.interestLabel ?? 'Register Interest'}
           </button>
         ) : course.bookingUrl.startsWith('/') ? (
           <Link
