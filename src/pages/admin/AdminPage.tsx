@@ -3,7 +3,7 @@ import { Layout } from '../../components/layout/Layout'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { COURSE_REGISTRY } from '../../data/courses'
-import { CheckCircle, XCircle, UserPlus, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
+import { CheckCircle, XCircle, UserPlus, Trash2, ChevronDown, ChevronUp, Mail, Phone } from 'lucide-react'
 
 interface ProfileRow {
   id: string
@@ -29,6 +29,17 @@ interface RequestRow {
   requested_at: string
 }
 
+interface InterestRow {
+  id: string
+  created_at: string
+  course_id: string
+  course_title: string
+  name: string
+  email: string
+  phone: string | null
+  message: string | null
+}
+
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',
   coach: 'Coach',
@@ -51,10 +62,11 @@ const ROLE_OPTIONS = [
 
 export function AdminPage() {
   const { profile } = useAuth()
-  const [tab, setTab] = useState<'coaches' | 'requests'>('coaches')
+  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
+  const [interests, setInterests] = useState<InterestRow[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
   const [addCourse, setAddCourse] = useState<Record<string, string>>({})
@@ -64,14 +76,16 @@ export function AdminPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: p }, { data: e }, { data: r }] = await Promise.all([
+    const [{ data: p }, { data: e }, { data: r }, { data: i }] = await Promise.all([
       supabase.from('profiles').select('id, email, full_name, role').order('full_name'),
       supabase.from('course_enrollments').select('*'),
       supabase.from('course_access_requests').select('*').order('requested_at', { ascending: false }),
+      supabase.from('course_interest').select('*').order('created_at', { ascending: false }),
     ])
     setProfiles(p || [])
     setEnrollments(e || [])
     setRequests(r || [])
+    setInterests(i || [])
     setLoading(false)
   }
 
@@ -161,6 +175,18 @@ export function AdminPage() {
           {pendingCount > 0 && (
             <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#ef462c' }}>
               {pendingCount}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setTab('interest')}
+          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors relative ${tab === 'interest' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Course Interest
+          {interests.length > 0 && (
+            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#1e52a4' }}>
+              {interests.length}
             </span>
           )}
         </button>
@@ -275,6 +301,52 @@ export function AdminPage() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* Course Interest tab */}
+      {!loading && tab === 'interest' && (
+        <div className="space-y-3">
+          {interests.length === 0 && (
+            <p className="text-sm text-gray-400 py-8 text-center">No interest registrations yet.</p>
+          )}
+          {interests.map(item => (
+            <div key={item.id} className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white flex-shrink-0"
+                  style={{ backgroundColor: '#1e52a4' }}>
+                  {item.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-sm text-gray-900">{item.name}</span>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                      Interest
+                    </span>
+                  </div>
+                  <div className="text-xs font-semibold text-gray-700 mt-1">{item.course_title}</div>
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    <a href={`mailto:${item.email}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                      <Mail size={11} />
+                      {item.email}
+                    </a>
+                    {item.phone && (
+                      <a href={`tel:${item.phone}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                        <Phone size={11} />
+                        {item.phone}
+                      </a>
+                    )}
+                  </div>
+                  {item.message && (
+                    <div className="text-xs text-gray-600 mt-2 bg-gray-50 rounded px-2.5 py-1.5 italic">"{item.message}"</div>
+                  )}
+                  <div className="text-xs text-gray-400 mt-1.5">
+                    {new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
