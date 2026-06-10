@@ -123,7 +123,7 @@ export const ACADEMIES: Academy[] = [
           },
           {
             label: 'Practical Assessment Days',
-            note: 'In-person — venue to be confirmed',
+            note: 'South location — venue to be confirmed',
             sessions: [
               { date: 'Monday 10 August 2026', time: '09:30–14:30' },
               { date: 'Tuesday 11 August 2026', time: '09:30–14:30' },
