@@ -3,7 +3,8 @@ import { Layout } from '../../components/layout/Layout'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { COURSE_REGISTRY } from '../../data/courses'
-import { CheckCircle, XCircle, UserPlus, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin } from 'lucide-react'
+import { EVENTS } from '../../data/events'
+import { CheckCircle, XCircle, UserPlus, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink } from 'lucide-react'
 
 interface ProfileRow {
   id: string
@@ -38,6 +39,29 @@ interface InterestRow {
   email: string
   phone: string | null
   message: string | null
+}
+
+interface EventRegistrationRow {
+  id: string
+  created_at: string
+  event_id: string
+  event_title: string
+  course_option_id: string
+  course_option_label: string
+  name: string
+  email: string
+  phone: string | null
+  job_title: string | null
+  school_name: string
+  school_contact_name: string | null
+  school_contact_email: string | null
+  billing_address: string | null
+  emergency_name: string
+  emergency_phone: string
+  emergency_relation: string | null
+  additional_needs: string | null
+  notes: string | null
+  status: 'registered' | 'confirmed' | 'cancelled'
 }
 
 interface BookingRow {
@@ -85,13 +109,15 @@ const ROLE_OPTIONS = [
 
 export function AdminPage() {
   const { profile } = useAuth()
-  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings'>('coaches')
+  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
   const [interests, setInterests] = useState<InterestRow[]>([])
   const [bookings, setBookings] = useState<BookingRow[]>([])
+  const [eventRegs, setEventRegs] = useState<EventRegistrationRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [copiedLink, setCopiedLink] = useState<string | null>(null)
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
   const [addCourse, setAddCourse] = useState<Record<string, string>>({})
   const [working, setWorking] = useState(false)
@@ -100,19 +126,35 @@ export function AdminPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }] = await Promise.all([
+    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }] = await Promise.all([
       supabase.from('profiles').select('id, email, full_name, role').order('full_name'),
       supabase.from('course_enrollments').select('*'),
       supabase.from('course_access_requests').select('*').order('requested_at', { ascending: false }),
       supabase.from('course_interest').select('*').order('created_at', { ascending: false }),
       supabase.from('course_bookings').select('*').order('created_at', { ascending: false }),
+      supabase.from('event_registrations').select('*').order('created_at', { ascending: false }),
     ])
     setProfiles(p || [])
     setEnrollments(e || [])
     setRequests(r || [])
     setInterests(i || [])
     setBookings(b || [])
+    setEventRegs(er || [])
     setLoading(false)
+  }
+
+  async function changeEventRegStatus(id: string, status: EventRegistrationRow['status']) {
+    setWorking(true)
+    await supabase.from('event_registrations').update({ status }).eq('id', id)
+    setWorking(false)
+    loadAll()
+  }
+
+  function copyLink(eventId: string) {
+    const url = `${window.location.origin}/events/${eventId}`
+    navigator.clipboard.writeText(url)
+    setCopiedLink(eventId)
+    setTimeout(() => setCopiedLink(null), 2000)
   }
 
   async function enrolUser(userId: string) {
@@ -233,6 +275,18 @@ export function AdminPage() {
           {pendingBookingsCount > 0 && (
             <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#ef462c' }}>
               {pendingBookingsCount}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setTab('events')}
+          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors relative ${tab === 'events' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Events
+          {eventRegs.length > 0 && (
+            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#1e52a4' }}>
+              {eventRegs.length}
             </span>
           )}
         </button>
@@ -502,6 +556,148 @@ export function AdminPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Events tab */}
+      {!loading && tab === 'events' && (
+        <div className="space-y-6">
+          {EVENTS.map(event => {
+            const regs = eventRegs.filter(r => r.event_id === event.id)
+            const regLink = `${window.location.origin}/events/${event.id}`
+
+            return (
+              <div key={event.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                {/* Event header */}
+                <div className="p-5 border-b border-gray-100" style={{ backgroundColor: '#1e52a4' }}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-black text-white text-base" style={{ fontFamily: 'Montserrat, sans-serif' }}>{event.title}</h3>
+                      <div className="flex items-center gap-3 mt-1 text-blue-200 text-xs">
+                        <span className="flex items-center gap-1"><MapPin size={11} />{event.location}</span>
+                        <span>{event.dates}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => copyLink(event.id)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white/20 hover:bg-white/30 text-white transition-colors"
+                        style={{ fontFamily: 'Montserrat, sans-serif' }}
+                      >
+                        <Copy size={12} />
+                        {copiedLink === event.id ? 'Copied!' : 'Copy link'}
+                      </button>
+                      <a
+                        href={regLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white/20 hover:bg-white/30 text-white transition-colors"
+                        style={{ fontFamily: 'Montserrat, sans-serif' }}
+                      >
+                        <ExternalLink size={12} />
+                        Preview
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Participant counts per course option */}
+                <div className="p-4 border-b border-gray-100 bg-gray-50">
+                  <div className="text-xs font-black uppercase tracking-wide text-gray-500 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                    Registrations by course — {regs.length} total
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {event.courseOptions.map(opt => {
+                      const count = regs.filter(r => r.course_option_id === opt.id).length
+                      return (
+                        <div key={opt.id} className="bg-white rounded-lg border border-gray-200 px-3 py-2 text-center">
+                          <div className="text-xl font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>{count}</div>
+                          <div className="text-xs text-gray-500 leading-tight mt-0.5">{opt.label}</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Participant list */}
+                {regs.length === 0 ? (
+                  <div className="p-6 text-center text-sm text-gray-400">
+                    No registrations yet. Share the link above with participants.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {regs.map(reg => (
+                      <div key={reg.id} className="p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0"
+                            style={{ backgroundColor: reg.status === 'confirmed' ? '#22c55e' : reg.status === 'cancelled' ? '#ef462c' : '#1e52a4' }}>
+                            {reg.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-sm text-gray-900">{reg.name}</span>
+                                {reg.job_title && <span className="text-xs text-gray-500">{reg.job_title}</span>}
+                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                                  reg.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                                  reg.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                  'bg-blue-100 text-blue-700'
+                                }`}>
+                                  {reg.status.charAt(0).toUpperCase() + reg.status.slice(1)}
+                                </span>
+                              </div>
+                              <select
+                                value={reg.status}
+                                onChange={e => changeEventRegStatus(reg.id, e.target.value as EventRegistrationRow['status'])}
+                                disabled={working}
+                                className="px-2 py-1 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-50 flex-shrink-0"
+                              >
+                                <option value="registered">Registered</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="cancelled">Cancelled</option>
+                              </select>
+                            </div>
+                            <div className="text-xs font-semibold text-blue-700 mt-0.5">{reg.course_option_label}</div>
+                            <div className="text-xs font-semibold text-gray-600 mt-0.5">{reg.school_name}</div>
+                            <div className="flex flex-wrap gap-3 mt-1.5">
+                              <a href={`mailto:${reg.email}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                                <Mail size={11} />
+                                {reg.email}
+                              </a>
+                              {reg.phone && (
+                                <a href={`tel:${reg.phone}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                                  <Phone size={11} />
+                                  {reg.phone}
+                                </a>
+                              )}
+                            </div>
+                            {(reg.school_contact_name || reg.school_contact_email) && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                Invoice contact: {reg.school_contact_name}{reg.school_contact_name && reg.school_contact_email ? ' — ' : ''}{reg.school_contact_email && (
+                                  <a href={`mailto:${reg.school_contact_email}`} className="text-blue-600 hover:underline">{reg.school_contact_email}</a>
+                                )}
+                              </div>
+                            )}
+                            <div className="mt-1 text-xs text-gray-600">
+                              <span className="font-semibold">Emergency:</span> {reg.emergency_name}
+                              {reg.emergency_relation && ` (${reg.emergency_relation})`}
+                              {' — '}
+                              <a href={`tel:${reg.emergency_phone}`} className="text-blue-600 hover:underline">{reg.emergency_phone}</a>
+                            </div>
+                            {reg.additional_needs && (
+                              <div className="text-xs text-yellow-800 mt-1.5 bg-yellow-50 border border-yellow-200 rounded px-2.5 py-1.5">
+                                <span className="font-semibold">Additional needs:</span> {reg.additional_needs}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
 
