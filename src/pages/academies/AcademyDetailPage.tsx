@@ -3,7 +3,7 @@ import { Link, useParams, Navigate } from 'react-router-dom'
 import { Layout } from '../../components/layout/Layout'
 import { ACADEMIES } from '../../data/academies'
 import type { Course } from '../../data/academies'
-import { ChevronDown, ChevronUp, ArrowLeft, Calendar, Clock, X, CheckCircle } from 'lucide-react'
+import { ChevronDown, ChevronUp, ArrowLeft, Calendar, Clock, X, CheckCircle, MapPin } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -146,9 +146,182 @@ function InterestModal({ course, label, onClose }: { course: Course; label: stri
   )
 }
 
+function BookingModal({ course, onClose }: { course: Course; onClose: () => void }) {
+  const { profile } = useAuth()
+  const [name, setName] = useState(profile?.full_name ?? '')
+  const [email, setEmail] = useState(profile?.email ?? '')
+  const [phone, setPhone] = useState(profile?.phone ?? '')
+  const [organisation, setOrganisation] = useState('')
+  const [billingAddress, setBillingAddress] = useState('')
+  const [notes, setNotes] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [done, setDone] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setSubmitting(true)
+    setError(null)
+    const { error: dbErr } = await supabase.from('course_bookings').insert({
+      course_id: course.id,
+      course_title: course.title,
+      course_price: course.price,
+      name,
+      email,
+      phone: phone || null,
+      organisation: organisation || null,
+      billing_address: billingAddress,
+      notes: notes || null,
+      user_id: profile?.id ?? null,
+      status: 'pending',
+    })
+    if (dbErr) {
+      setError(dbErr.message)
+      setSubmitting(false)
+      return
+    }
+    setDone(true)
+    setSubmitting(false)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl">
+          <div>
+            <h2 className="font-black text-gray-900 text-base" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              Book a Place
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">{course.title}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+
+        {done ? (
+          <div className="p-8 text-center">
+            <CheckCircle size={48} className="text-green-500 mx-auto mb-3" />
+            <h3 className="font-black text-gray-900 text-lg mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              Booking Confirmed!
+            </h3>
+            <p className="text-sm text-gray-600 mb-2">
+              Thanks {name.split(' ')[0]}! Your place has been reserved.
+            </p>
+            <p className="text-sm text-gray-500 mb-5">
+              An invoice for <strong>{course.price}</strong> will be sent to <strong>{email}</strong> within 2 working days.
+            </p>
+            <button
+              onClick={onClose}
+              className="px-5 py-2.5 rounded-lg text-sm font-bold text-white"
+              style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+            >
+              Close
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="p-5 space-y-4">
+            {/* Course dates summary */}
+            {course.dates && course.dates.length > 0 && (
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 space-y-2">
+                <div className="text-xs font-black uppercase tracking-wide text-blue-700 flex items-center gap-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  <Calendar size={12} />
+                  Your Course Dates
+                </div>
+                {course.dates.map((block, bi) => (
+                  <div key={bi}>
+                    <div className="text-xs font-bold text-gray-700">{block.label}</div>
+                    {block.note && (
+                      <div className="flex items-center gap-1 text-xs text-gray-500 italic mt-0.5">
+                        <MapPin size={10} className="text-blue-400 flex-shrink-0" />
+                        {block.note}
+                      </div>
+                    )}
+                    <div className="space-y-0.5 mt-1">
+                      {block.sessions.map((s, si) => (
+                        <div key={si} className="flex items-center gap-2 text-xs text-gray-700">
+                          <Clock size={10} className="text-blue-400 flex-shrink-0" />
+                          <span className="font-semibold">{s.date}</span>
+                          <span className="text-gray-400">·</span>
+                          <span>{s.time}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Full name</label>
+                <input value={name} onChange={e => setName(e.target.value)} required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400"
+                  placeholder="Jane Smith" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Email address</label>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400"
+                  placeholder="you@example.com" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Phone number <span className="font-normal text-gray-400">(optional)</span></label>
+                <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400"
+                  placeholder="07700 000000" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Organisation / Club name <span className="font-normal text-gray-400">(optional)</span></label>
+                <input value={organisation} onChange={e => setOrganisation(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400"
+                  placeholder="Springfield Gymnastics Club" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Billing address <span className="font-normal text-gray-400">(for invoice)</span></label>
+                <textarea value={billingAddress} onChange={e => setBillingAddress(e.target.value)} required rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400 resize-none"
+                  placeholder={"123 Example Street\nSpringfield\nSP1 2AB"} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Notes <span className="font-normal text-gray-400">(optional)</span></label>
+                <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400 resize-none"
+                  placeholder="Any special requirements or questions?" />
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-800">
+              <strong>Payment by invoice.</strong> An invoice for {course.price} will be emailed to you within 2 working days of booking.
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2">{error}</div>
+            )}
+
+            <div className="flex gap-2 pt-1">
+              <button type="button" onClick={onClose}
+                className="flex-1 px-4 py-2.5 rounded-lg text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                Cancel
+              </button>
+              <button type="submit" disabled={submitting}
+                className="flex-1 px-4 py-2.5 rounded-lg text-sm font-bold text-white disabled:opacity-60 transition-colors"
+                style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}>
+                {submitting ? 'Booking…' : 'Confirm Booking'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function CourseCard({ course, colour }: { course: Course; colour: string }) {
   const [modulesExpanded, setModulesExpanded] = useState(false)
   const [showInterestModal, setShowInterestModal] = useState(false)
+  const [showBookingModal, setShowBookingModal] = useState(false)
   const showToggle = course.modules.length > 4
   const visibleModules = modulesExpanded ? course.modules : course.modules.slice(0, 4)
 
@@ -156,6 +329,9 @@ function CourseCard({ course, colour }: { course: Course; colour: string }) {
     <>
       {showInterestModal && (
         <InterestModal course={course} label={course.interestLabel ?? 'Register Interest'} onClose={() => setShowInterestModal(false)} />
+      )}
+      {showBookingModal && (
+        <BookingModal course={course} onClose={() => setShowBookingModal(false)} />
       )}
 
       <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-4">
@@ -242,7 +418,15 @@ function CourseCard({ course, colour }: { course: Course; colour: string }) {
           </span>
         </div>
 
-        {course.interestForm ? (
+        {course.bookingForm ? (
+          <button
+            onClick={() => setShowBookingModal(true)}
+            className="mt-auto px-4 py-2.5 rounded-lg text-sm font-bold text-white text-center"
+            style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
+          >
+            Book a Place
+          </button>
+        ) : course.interestForm ? (
           <button
             onClick={() => setShowInterestModal(true)}
             className="mt-auto px-4 py-2.5 rounded-lg text-sm font-bold text-white text-center"

@@ -24,6 +24,7 @@ export interface Course {
   dates?: CourseDateBlock[]
   interestForm?: boolean
   interestLabel?: string
+  bookingForm?: boolean
 }
 
 export interface Academy {
@@ -112,7 +113,7 @@ export const ACADEMIES: Academy[] = [
         assessment: 'Online Learning + Portfolio + Practical Assessment',
         certification: 'UKAG Level 2 Lead Coach (Gymnastics)',
         bookingUrl: '#',
-        interestForm: true,
+        bookingForm: true,
         dates: [
           {
             label: 'Online Learning Sessions',

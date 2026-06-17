@@ -3,7 +3,7 @@ import { Layout } from '../../components/layout/Layout'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { COURSE_REGISTRY } from '../../data/courses'
-import { CheckCircle, XCircle, UserPlus, Trash2, ChevronDown, ChevronUp, Mail, Phone } from 'lucide-react'
+import { CheckCircle, XCircle, UserPlus, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin } from 'lucide-react'
 
 interface ProfileRow {
   id: string
@@ -40,6 +40,21 @@ interface InterestRow {
   message: string | null
 }
 
+interface BookingRow {
+  id: string
+  created_at: string
+  course_id: string
+  course_title: string
+  course_price: string
+  name: string
+  email: string
+  phone: string | null
+  organisation: string | null
+  billing_address: string
+  notes: string | null
+  status: 'pending' | 'invoiced' | 'paid' | 'cancelled'
+}
+
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',
   coach: 'Coach',
@@ -62,11 +77,12 @@ const ROLE_OPTIONS = [
 
 export function AdminPage() {
   const { profile } = useAuth()
-  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest'>('coaches')
+  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
   const [interests, setInterests] = useState<InterestRow[]>([])
+  const [bookings, setBookings] = useState<BookingRow[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
   const [addCourse, setAddCourse] = useState<Record<string, string>>({})
@@ -76,16 +92,18 @@ export function AdminPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: p }, { data: e }, { data: r }, { data: i }] = await Promise.all([
+    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }] = await Promise.all([
       supabase.from('profiles').select('id, email, full_name, role').order('full_name'),
       supabase.from('course_enrollments').select('*'),
       supabase.from('course_access_requests').select('*').order('requested_at', { ascending: false }),
       supabase.from('course_interest').select('*').order('created_at', { ascending: false }),
+      supabase.from('course_bookings').select('*').order('created_at', { ascending: false }),
     ])
     setProfiles(p || [])
     setEnrollments(e || [])
     setRequests(r || [])
     setInterests(i || [])
+    setBookings(b || [])
     setLoading(false)
   }
 
@@ -146,7 +164,15 @@ export function AdminPage() {
     loadAll()
   }
 
+  async function changeBookingStatus(bookingId: string, status: BookingRow['status']) {
+    setWorking(true)
+    await supabase.from('course_bookings').update({ status }).eq('id', bookingId)
+    setWorking(false)
+    loadAll()
+  }
+
   const pendingCount = requests.filter(r => r.status === 'pending').length
+  const pendingBookingsCount = bookings.filter(b => b.status === 'pending').length
 
   return (
     <Layout>
@@ -187,6 +213,18 @@ export function AdminPage() {
           {interests.length > 0 && (
             <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#1e52a4' }}>
               {interests.length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setTab('bookings')}
+          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors relative ${tab === 'bookings' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Bookings
+          {pendingBookingsCount > 0 && (
+            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#ef462c' }}>
+              {pendingBookingsCount}
             </span>
           )}
         </button>
@@ -342,6 +380,82 @@ export function AdminPage() {
                   )}
                   <div className="text-xs text-gray-400 mt-1.5">
                     {new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Bookings tab */}
+      {!loading && tab === 'bookings' && (
+        <div className="space-y-3">
+          {bookings.length === 0 && (
+            <p className="text-sm text-gray-400 py-8 text-center">No bookings yet.</p>
+          )}
+          {bookings.map(booking => (
+            <div key={booking.id} className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white flex-shrink-0"
+                  style={{ backgroundColor: booking.status === 'paid' ? '#22c55e' : booking.status === 'invoiced' ? '#f4cc2c' : booking.status === 'cancelled' ? '#ef462c' : '#1e52a4' }}>
+                  {booking.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-sm text-gray-900">{booking.name}</span>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          booking.status === 'paid' ? 'bg-green-100 text-green-700' :
+                          booking.status === 'invoiced' ? 'bg-amber-100 text-amber-700' :
+                          booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>
+                          {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                        </span>
+                        <span className="text-xs font-black text-gray-700">{booking.course_price}</span>
+                      </div>
+                      <div className="text-xs font-semibold text-gray-700 mt-0.5">{booking.course_title}</div>
+                    </div>
+                    <select
+                      value={booking.status}
+                      onChange={e => changeBookingStatus(booking.id, e.target.value as BookingRow['status'])}
+                      disabled={working}
+                      className="px-2 py-1 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-50 flex-shrink-0"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="invoiced">Invoiced</option>
+                      <option value="paid">Paid</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    <a href={`mailto:${booking.email}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                      <Mail size={11} />
+                      {booking.email}
+                    </a>
+                    {booking.phone && (
+                      <a href={`tel:${booking.phone}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                        <Phone size={11} />
+                        {booking.phone}
+                      </a>
+                    )}
+                  </div>
+                  {booking.organisation && (
+                    <div className="text-xs text-gray-600 mt-1.5">
+                      <span className="font-semibold">Organisation:</span> {booking.organisation}
+                    </div>
+                  )}
+                  <div className="text-xs text-gray-600 mt-1 flex items-start gap-1">
+                    <MapPin size={11} className="text-gray-400 flex-shrink-0 mt-0.5" />
+                    <span className="whitespace-pre-line">{booking.billing_address}</span>
+                  </div>
+                  {booking.notes && (
+                    <div className="text-xs text-gray-600 mt-2 bg-gray-50 rounded px-2.5 py-1.5 italic">"{booking.notes}"</div>
+                  )}
+                  <div className="text-xs text-gray-400 mt-1.5">
+                    {new Date(booking.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
               </div>
