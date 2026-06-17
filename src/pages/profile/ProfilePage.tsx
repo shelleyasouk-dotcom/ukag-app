@@ -3,7 +3,8 @@ import { Layout } from '../../components/layout/Layout'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { COURSE_REGISTRY } from '../../data/courses'
-import { Pencil, Check, X, Award, User } from 'lucide-react'
+import { ACADEMIES } from '../../data/academies'
+import { Pencil, Check, X, Award, User, Calendar, Clock } from 'lucide-react'
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',
@@ -21,6 +22,17 @@ interface CertRow {
   completed_at: string
 }
 
+interface BookingRow {
+  id: string
+  created_at: string
+  course_id: string
+  course_title: string
+  course_price: string
+  status: 'pending' | 'invoiced' | 'paid' | 'cancelled'
+  payment_type: 'self' | 'employer' | 'funded'
+  employer_name: string | null
+}
+
 export function ProfilePage() {
   const { profile, refreshProfile } = useAuth()
 
@@ -34,6 +46,8 @@ export function ProfilePage() {
 
   const [certificates, setCertificates] = useState<CertRow[]>([])
   const [certsLoading, setCertsLoading] = useState(true)
+  const [bookings, setBookings] = useState<BookingRow[]>([])
+  const [bookingsLoading, setBookingsLoading] = useState(true)
 
   useEffect(() => {
     if (!profile) return
@@ -51,6 +65,16 @@ export function ProfilePage() {
       .then(({ data }) => {
         setCertificates(data ?? [])
         setCertsLoading(false)
+      })
+    supabase
+      .from('course_bookings')
+      .select('id, created_at, course_id, course_title, course_price, status, payment_type, employer_name')
+      .eq('user_id', profile.id)
+      .neq('status', 'cancelled')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        setBookings(data ?? [])
+        setBookingsLoading(false)
       })
   }, [profile])
 
@@ -232,6 +256,85 @@ export function ProfilePage() {
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* Upcoming Course Bookings */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h2 className="font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Upcoming Courses</h2>
+            {bookingsLoading ? (
+              <p className="text-sm text-gray-400">Loading…</p>
+            ) : bookings.length === 0 ? (
+              <p className="text-sm text-gray-400 italic">No upcoming course bookings. Browse the <a href="/academies" className="text-blue-600 hover:underline">Academies</a> to book a course.</p>
+            ) : (
+              <div className="space-y-3">
+                {bookings.map(booking => {
+                  // Look up dates from academies data
+                  const academyCourse = ACADEMIES.flatMap(a => a.courses).find(c => c.id === booking.course_id)
+                  const statusConfig = {
+                    pending:  { label: 'Pending confirmation', cls: 'bg-amber-100 text-amber-700' },
+                    invoiced: { label: 'Invoice sent',         cls: 'bg-blue-100 text-blue-700' },
+                    paid:     { label: 'Confirmed & paid',     cls: 'bg-green-100 text-green-700' },
+                    cancelled:{ label: 'Cancelled',            cls: 'bg-red-100 text-red-700' },
+                  }[booking.status]
+
+                  return (
+                    <div key={booking.id} className="border border-gray-200 rounded-xl overflow-hidden">
+                      <div className="flex items-start justify-between gap-3 p-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <p className="text-sm font-bold text-gray-900 leading-tight">{booking.course_title}</p>
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusConfig.cls}`}>
+                              {statusConfig.label}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            {booking.course_price}
+                            {booking.payment_type === 'employer' && booking.employer_name && ` · Invoiced to ${booking.employer_name}`}
+                            {booking.payment_type === 'funded' && ' · Funded place'}
+                          </p>
+                          {booking.status === 'pending' && (
+                            <p className="text-xs text-amber-600 mt-1">
+                              Your booking is awaiting confirmation. An invoice will be sent within 2 working days.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Course dates if available */}
+                      {academyCourse?.dates && academyCourse.dates.length > 0 && (
+                        <div className="border-t border-gray-100 bg-blue-50 px-4 py-3 space-y-2">
+                          {academyCourse.dates.map((block, bi) => (
+                            <div key={bi}>
+                              <div className="text-xs font-bold text-blue-700 flex items-center gap-1 mb-1">
+                                <Calendar size={11} />
+                                {block.label}
+                              </div>
+                              {block.note && <div className="text-xs text-gray-500 italic mb-1">{block.note}</div>}
+                              <div className="space-y-0.5">
+                                {block.sessions.map((s, si) => (
+                                  <div key={si} className="flex items-center gap-2 text-xs text-gray-700">
+                                    <Clock size={10} className="text-blue-400 flex-shrink-0" />
+                                    <span className="font-semibold">{s.date}</span>
+                                    <span className="text-gray-400">·</span>
+                                    <span>{s.time}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="border-t border-gray-100 px-4 py-2 bg-gray-50">
+                        <p className="text-xs text-gray-400">
+                          Booked {new Date(booking.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           {/* CPD Certificates */}

@@ -170,7 +170,8 @@ function BookingModal({ course, onClose }: { course: Course; onClose: () => void
     e.preventDefault()
     setSubmitting(true)
     setError(null)
-    const { error: dbErr } = await supabase.from('course_bookings').insert({
+
+    const bookingData = {
       course_id: course.id,
       course_title: course.title,
       course_price: course.price,
@@ -190,12 +191,20 @@ function BookingModal({ course, onClose }: { course: Course; onClose: () => void
       notes: notes || null,
       user_id: profile?.id ?? null,
       status: 'pending',
-    })
+    }
+
+    const { error: dbErr } = await supabase.from('course_bookings').insert(bookingData)
     if (dbErr) {
       setError(dbErr.message)
       setSubmitting(false)
       return
     }
+
+    // Send confirmation email (non-blocking — don't fail the booking if email fails)
+    supabase.functions.invoke('send-booking-confirmation', {
+      body: { booking: bookingData, courseDates: course.dates ?? [] },
+    }).catch(console.error)
+
     setDone(true)
     setSubmitting(false)
   }
