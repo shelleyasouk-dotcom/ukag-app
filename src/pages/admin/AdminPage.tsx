@@ -51,6 +51,14 @@ interface BookingRow {
   phone: string | null
   organisation: string | null
   billing_address: string
+  payment_type: 'self' | 'employer' | 'funded'
+  employer_name: string | null
+  employer_contact: string | null
+  funding_body: string | null
+  emergency_name: string
+  emergency_phone: string
+  emergency_relation: string | null
+  additional_needs: string | null
   notes: string | null
   status: 'pending' | 'invoiced' | 'paid' | 'cancelled'
 }
@@ -447,10 +455,43 @@ export function AdminPage() {
                       <span className="font-semibold">Organisation:</span> {booking.organisation}
                     </div>
                   )}
-                  <div className="text-xs text-gray-600 mt-1 flex items-start gap-1">
-                    <MapPin size={11} className="text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="whitespace-pre-line">{booking.billing_address}</span>
+
+                  {/* Payment */}
+                  <div className="mt-2 flex flex-wrap gap-1.5 items-center">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      booking.payment_type === 'employer' ? 'bg-purple-100 text-purple-700' :
+                      booking.payment_type === 'funded' ? 'bg-green-100 text-green-700' :
+                      'bg-gray-100 text-gray-600'
+                    }`}>
+                      {booking.payment_type === 'employer' ? 'Employer-paid' : booking.payment_type === 'funded' ? 'Funded place' : 'Self-funded'}
+                    </span>
+                    {booking.employer_name && <span className="text-xs text-gray-600">{booking.employer_name}</span>}
+                    {booking.funding_body && <span className="text-xs text-gray-600">{booking.funding_body}</span>}
                   </div>
+
+                  {/* Billing address */}
+                  {booking.billing_address && (
+                    <div className="text-xs text-gray-600 mt-1.5 flex items-start gap-1">
+                      <MapPin size={11} className="text-gray-400 flex-shrink-0 mt-0.5" />
+                      <span className="whitespace-pre-line">{booking.billing_address}</span>
+                    </div>
+                  )}
+
+                  {/* Emergency contact */}
+                  <div className="mt-2 text-xs text-gray-600">
+                    <span className="font-semibold">Emergency:</span> {booking.emergency_name}
+                    {booking.emergency_relation && ` (${booking.emergency_relation})`}
+                    {' — '}
+                    <a href={`tel:${booking.emergency_phone}`} className="text-blue-600 hover:underline">{booking.emergency_phone}</a>
+                  </div>
+
+                  {/* Additional needs */}
+                  {booking.additional_needs && (
+                    <div className="text-xs text-gray-600 mt-1.5 bg-yellow-50 border border-yellow-200 rounded px-2.5 py-1.5">
+                      <span className="font-semibold text-yellow-800">Additional needs:</span> {booking.additional_needs}
+                    </div>
+                  )}
+
                   {booking.notes && (
                     <div className="text-xs text-gray-600 mt-2 bg-gray-50 rounded px-2.5 py-1.5 italic">"{booking.notes}"</div>
                   )}

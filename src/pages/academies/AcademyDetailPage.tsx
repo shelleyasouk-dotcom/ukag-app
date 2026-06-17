@@ -153,6 +153,14 @@ function BookingModal({ course, onClose }: { course: Course; onClose: () => void
   const [phone, setPhone] = useState(profile?.phone ?? '')
   const [organisation, setOrganisation] = useState('')
   const [billingAddress, setBillingAddress] = useState('')
+  const [paymentType, setPaymentType] = useState<'self' | 'employer' | 'funded'>('self')
+  const [employerName, setEmployerName] = useState('')
+  const [employerContact, setEmployerContact] = useState('')
+  const [fundingBody, setFundingBody] = useState('')
+  const [emergencyName, setEmergencyName] = useState('')
+  const [emergencyPhone, setEmergencyPhone] = useState('')
+  const [emergencyRelation, setEmergencyRelation] = useState('')
+  const [additionalNeeds, setAdditionalNeeds] = useState('')
   const [notes, setNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
@@ -171,6 +179,14 @@ function BookingModal({ course, onClose }: { course: Course; onClose: () => void
       phone: phone || null,
       organisation: organisation || null,
       billing_address: billingAddress,
+      payment_type: paymentType,
+      employer_name: employerName || null,
+      employer_contact: employerContact || null,
+      funding_body: fundingBody || null,
+      emergency_name: emergencyName,
+      emergency_phone: emergencyPhone,
+      emergency_relation: emergencyRelation || null,
+      additional_needs: additionalNeeds || null,
       notes: notes || null,
       user_id: profile?.id ?? null,
       status: 'pending',
@@ -184,10 +200,15 @@ function BookingModal({ course, onClose }: { course: Course; onClose: () => void
     setSubmitting(false)
   }
 
+  const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400'
+  const labelCls = 'block text-xs font-semibold text-gray-700 mb-1'
+  const sectionCls = 'space-y-3 pt-4 border-t border-gray-100'
+  const sectionHeadCls = 'text-xs font-black uppercase tracking-wide text-gray-500 mb-3'
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
           <div>
             <h2 className="font-black text-gray-900 text-base" style={{ fontFamily: 'Montserrat, sans-serif' }}>
               Book a Place
@@ -209,19 +230,19 @@ function BookingModal({ course, onClose }: { course: Course; onClose: () => void
               Thanks {name.split(' ')[0]}! Your place has been reserved.
             </p>
             <p className="text-sm text-gray-500 mb-5">
-              An invoice for <strong>{course.price}</strong> will be sent to <strong>{email}</strong> within 2 working days.
+              {paymentType === 'self' && <>An invoice for <strong>{course.price}</strong> will be sent to <strong>{email}</strong> within 2 working days.</>}
+              {paymentType === 'employer' && <>An invoice for <strong>{course.price}</strong> will be sent to <strong>{employerName}</strong> within 2 working days.</>}
+              {paymentType === 'funded' && <>We'll confirm your funded place and be in touch via <strong>{email}</strong> shortly.</>}
             </p>
-            <button
-              onClick={onClose}
+            <button onClick={onClose}
               className="px-5 py-2.5 rounded-lg text-sm font-bold text-white"
-              style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
-            >
+              style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}>
               Close
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-5 space-y-4">
-            {/* Course dates summary */}
+            {/* Course dates */}
             {course.dates && course.dates.length > 0 && (
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 space-y-2">
                 <div className="text-xs font-black uppercase tracking-wide text-blue-700 flex items-center gap-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -252,47 +273,140 @@ function BookingModal({ course, onClose }: { course: Course; onClose: () => void
               </div>
             )}
 
+            {/* Personal details */}
             <div className="space-y-3">
+              <div className={sectionHeadCls} style={{ fontFamily: 'Montserrat, sans-serif' }}>Your Details</div>
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Full name</label>
-                <input value={name} onChange={e => setName(e.target.value)} required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400"
-                  placeholder="Jane Smith" />
+                <label className={labelCls}>Full name</label>
+                <input value={name} onChange={e => setName(e.target.value)} required className={inputCls} placeholder="Jane Smith" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>Email address</label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} required className={inputCls} placeholder="you@example.com" />
+                </div>
+                <div>
+                  <label className={labelCls}>Phone number</label>
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required className={inputCls} placeholder="07700 000000" />
+                </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Email address</label>
-                <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400"
-                  placeholder="you@example.com" />
+                <label className={labelCls}>Organisation / Club name <span className="font-normal text-gray-400">(optional)</span></label>
+                <input value={organisation} onChange={e => setOrganisation(e.target.value)} className={inputCls} placeholder="Springfield Gymnastics Club" />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Phone number <span className="font-normal text-gray-400">(optional)</span></label>
-                <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400"
-                  placeholder="07700 000000" />
+            </div>
+
+            {/* Emergency contact */}
+            <div className={sectionCls}>
+              <div className={sectionHeadCls} style={{ fontFamily: 'Montserrat, sans-serif' }}>Emergency Contact</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <label className={labelCls}>Contact name</label>
+                  <input value={emergencyName} onChange={e => setEmergencyName(e.target.value)} required className={inputCls} placeholder="John Smith" />
+                </div>
+                <div>
+                  <label className={labelCls}>Contact phone</label>
+                  <input type="tel" value={emergencyPhone} onChange={e => setEmergencyPhone(e.target.value)} required className={inputCls} placeholder="07700 000001" />
+                </div>
+                <div>
+                  <label className={labelCls}>Relationship <span className="font-normal text-gray-400">(optional)</span></label>
+                  <input value={emergencyRelation} onChange={e => setEmergencyRelation(e.target.value)} className={inputCls} placeholder="Partner, Parent…" />
+                </div>
               </div>
+            </div>
+
+            {/* Additional needs */}
+            <div className={sectionCls}>
+              <div className={sectionHeadCls} style={{ fontFamily: 'Montserrat, sans-serif' }}>Additional Needs</div>
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Organisation / Club name <span className="font-normal text-gray-400">(optional)</span></label>
-                <input value={organisation} onChange={e => setOrganisation(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400"
-                  placeholder="Springfield Gymnastics Club" />
+                <label className={labelCls}>Accessibility, dietary, or medical needs <span className="font-normal text-gray-400">(optional)</span></label>
+                <textarea value={additionalNeeds} onChange={e => setAdditionalNeeds(e.target.value)} rows={2}
+                  className={`${inputCls} resize-none`}
+                  placeholder="e.g. wheelchair access required, vegetarian, epi-pen carrier…" />
               </div>
+            </div>
+
+            {/* Payment */}
+            <div className={sectionCls}>
+              <div className={sectionHeadCls} style={{ fontFamily: 'Montserrat, sans-serif' }}>Payment</div>
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Billing address <span className="font-normal text-gray-400">(for invoice)</span></label>
-                <textarea value={billingAddress} onChange={e => setBillingAddress(e.target.value)} required rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400 resize-none"
-                  placeholder={"123 Example Street\nSpringfield\nSP1 2AB"} />
+                <label className={labelCls}>Who is paying for this course?</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { value: 'self', label: 'Self-funded' },
+                    { value: 'employer', label: 'Employer' },
+                    { value: 'funded', label: 'Funded place' },
+                  ] as const).map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setPaymentType(opt.value)}
+                      className={`px-3 py-2 rounded-lg text-xs font-bold border-2 transition-colors ${
+                        paymentType === opt.value
+                          ? 'border-blue-600 text-blue-700 bg-blue-50'
+                          : 'border-gray-200 text-gray-500 bg-white hover:border-gray-300'
+                      }`}
+                      style={{ fontFamily: 'Montserrat, sans-serif' }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {paymentType === 'self' && (
+                <div>
+                  <label className={labelCls}>Billing address</label>
+                  <textarea value={billingAddress} onChange={e => setBillingAddress(e.target.value)} required rows={3}
+                    className={`${inputCls} resize-none`}
+                    placeholder={"123 Example Street\nSpringfield\nSP1 2AB"} />
+                </div>
+              )}
+
+              {paymentType === 'employer' && (
+                <div className="space-y-3">
+                  <div>
+                    <label className={labelCls}>Employer / Organisation name</label>
+                    <input value={employerName} onChange={e => setEmployerName(e.target.value)} required className={inputCls} placeholder="Springfield School" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Invoice contact name or email <span className="font-normal text-gray-400">(optional)</span></label>
+                    <input value={employerContact} onChange={e => setEmployerContact(e.target.value)} className={inputCls} placeholder="finance@springfieldschool.co.uk" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Billing address</label>
+                    <textarea value={billingAddress} onChange={e => setBillingAddress(e.target.value)} required rows={3}
+                      className={`${inputCls} resize-none`}
+                      placeholder={"Finance Dept\n123 School Lane\nSpringfield\nSP1 2AB"} />
+                  </div>
+                </div>
+              )}
+
+              {paymentType === 'funded' && (
+                <div>
+                  <label className={labelCls}>Funding body / scheme name</label>
+                  <input value={fundingBody} onChange={e => setFundingBody(e.target.value)} required className={inputCls} placeholder="e.g. Active Partnership, local council grant…" />
+                </div>
+              )}
+            </div>
+
+            {/* Notes */}
+            <div className={sectionCls}>
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Notes <span className="font-normal text-gray-400">(optional)</span></label>
+                <label className={labelCls}>Any other notes <span className="font-normal text-gray-400">(optional)</span></label>
                 <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400 resize-none"
-                  placeholder="Any special requirements or questions?" />
+                  className={`${inputCls} resize-none`}
+                  placeholder="Anything else we should know?" />
               </div>
             </div>
 
             <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-800">
-              <strong>Payment by invoice.</strong> An invoice for {course.price} will be emailed to you within 2 working days of booking.
+              <strong>Payment by invoice.</strong>{' '}
+              {paymentType === 'employer'
+                ? `An invoice for ${course.price} will be sent to ${employerName || 'your employer'} within 2 working days.`
+                : paymentType === 'funded'
+                ? "We'll verify your funded place and confirm your booking shortly."
+                : `An invoice for ${course.price} will be emailed to you within 2 working days.`}
             </div>
 
             {error && (
