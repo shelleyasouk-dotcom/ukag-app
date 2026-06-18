@@ -617,7 +617,7 @@ export const ACADEMIES: Academy[] = [
         audience: 'School PE Teachers (UK & International)',
         delivery: 'Online + Practical (3 days)',
         duration: '8 modules',
-        price: 'From £295',
+        price: '£420 per person | £4,950 up to 12 + £395 per additional',
         overview: 'The UKAG combined Level 1 and Level 2 Trampolining Teacher Certificate is designed specifically for school-based PE and sports teachers. Delivered as an intensive three-day programme (online modules + practical assessment), this qualification gives teachers the skills to safely deliver trampolining as part of a PE curriculum.',
         modules: [
           'Code of Practice & Your Responsibilities',
