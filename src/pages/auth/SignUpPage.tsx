@@ -3,15 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import type { UserRole } from '../../types'
 
-const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
-  { value: 'junior_coach', label: 'Junior Coach' },
-  { value: 'assistant_coach', label: 'Assistant Coach (Level 1)' },
-  { value: 'lead_coach', label: 'Lead Coach (Level 2)' },
-  { value: 'area_lead', label: 'Area Lead' },
-  { value: 'teacher', label: 'Teacher / School Staff (UK)' },
-  { value: 'trampoline_teacher', label: 'Trampolining Teacher — International' },
-]
-
 function UkagMark({ size = 100 }: { size?: number }) {
   return <img src="/ukag-mark.png" width={size} height={size} alt="UKAG" style={{ objectFit: 'contain', display: 'block' }} />
 }
@@ -23,6 +14,7 @@ export function SignUpPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<UserRole>('assistant_coach')
+  const [organisationName, setOrganisationName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -46,6 +38,7 @@ export function SignUpPage() {
         email,
         full_name: fullName,
         role,
+        organisation_name: organisationName || null,
       })
     }
 
@@ -146,17 +139,46 @@ export function SignUpPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Coaching role</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Account type</label>
                 <select
                   value={role}
                   onChange={e => setRole(e.target.value as UserRole)}
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400 bg-white"
                 >
-                  {ROLE_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
+                  <optgroup label="Coaching">
+                    <option value="junior_coach">Junior Coach</option>
+                    <option value="assistant_coach">Assistant Coach (Level 1)</option>
+                    <option value="lead_coach">Lead Coach (Level 2)</option>
+                    <option value="area_lead">Area Lead</option>
+                    <option value="coach">Coach</option>
+                    <option value="assessor">Tutor / Assessor</option>
+                  </optgroup>
+                  <optgroup label="Teaching">
+                    <option value="teacher">Teacher / School Staff (UK)</option>
+                    <option value="trampoline_teacher">Trampolining Teacher — International</option>
+                  </optgroup>
+                  <optgroup label="Organisation">
+                    <option value="organisation">Organisation / School Account</option>
+                  </optgroup>
+                  <optgroup label="Other">
+                    <option value="maintenance">Maintenance Staff</option>
+                  </optgroup>
                 </select>
               </div>
+
+              {role === 'organisation' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Organisation name</label>
+                  <input
+                    type="text"
+                    value={organisationName}
+                    onChange={e => setOrganisationName(e.target.value)}
+                    required
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-blue-400"
+                    placeholder="e.g. Springfield Primary School"
+                  />
+                </div>
+              )}
 
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">
