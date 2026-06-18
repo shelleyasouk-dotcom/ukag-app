@@ -10,15 +10,13 @@ import {
   Shield,
   School,
   Users,
-  Building2,
   Globe,
-  Calendar,
-  MapPin,
   ChevronRight,
   Wrench,
   ClipboardCheck,
   CalendarCheck,
   AlertTriangle,
+  FileText,
 } from 'lucide-react'
 
 function UkagMark({ size = 36 }: { size?: number }) {
@@ -41,15 +39,16 @@ const ACADEMIES_LIST = [
   { id: 'safety', name: 'Safety Academy', purpose: 'Maintain high standards of safeguarding and welfare', colour: '#0f172a', Icon: Shield },
   { id: 'schools', name: 'Schools Academy', purpose: 'Support teachers, schools and education providers', colour: '#22c55e', Icon: School },
   { id: 'operations', name: 'Operations Academy', purpose: 'Support the operational delivery of programmes', colour: '#8b5cf6', Icon: Settings },
+  { id: 'international', name: 'International Academy', purpose: 'Delivering UKAG trampolining and gymnastics teacher qualifications to teachers and coaches worldwide', colour: '#0e7490', Icon: Globe },
 ]
 
-const WHO_WE_SERVE = [
-  { label: 'Individual Coaches', desc: 'Qualifications, CPD, and career development for coaches at every level.', Icon: GraduationCap },
-  { label: 'Schools & Academies', desc: 'Teacher awards, curriculum resources, and school partnership programmes.', Icon: School },
-  { label: 'Sports Providers', desc: 'Frameworks, compliance, and operational support for gymnastics providers.', Icon: Building2 },
-  { label: 'Gymnastics Clubs', desc: 'Coaching pathways, quality assurance, and accreditation for clubs.', Icon: Award },
-  { label: 'Holiday Club Providers', desc: 'Session plans, risk assessments, and staff training for holiday clubs.', Icon: Calendar },
-  { label: 'Local Authorities', desc: 'Partnership programmes, Active Kids initiatives, and workforce development.', Icon: MapPin },
+const PORTAL_RESOURCES = [
+  { label: 'Safety & Safeguarding', desc: 'Safeguarding policies, risk assessments, incident report forms and behaviour management templates.', colour: '#0f172a' },
+  { label: 'Leadership Resources', desc: 'Area lead toolkits, quality assurance checklists, coach observation forms and programme planning guides.', colour: '#ef462c' },
+  { label: 'Session Plans', desc: 'Ready-to-use gymnastics and trampolining session plans for Levels 1–6, organised by skill and age group.', colour: '#1e52a4' },
+  { label: 'Operational Templates', desc: 'Registration forms, parent consent, registers, accident books, equipment checklists and insurance templates.', colour: '#8b5cf6' },
+  { label: 'Coach CPD Records', desc: 'Certificate downloads, CPD logs, self-assessment tools and renewal reminders for all UKAG qualifications.', colour: '#22c55e' },
+  { label: 'International Resources', desc: 'Trampolining teacher manuals, Level 1 & 2 course packs, curriculum integration guides and overseas delivery support.', colour: '#0e7490' },
 ]
 
 export function HomePage() {
@@ -69,8 +68,8 @@ export function HomePage() {
             </div>
             <div className="hidden md:flex items-center gap-8">
               <a href="#academies" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Academies</a>
-              <a href="#pathway" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Career Pathway</a>
-              <a href="#resources" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Resources</a>
+              <a href="#pathway" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Coaching Pathway</a>
+              <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Portal Resources</Link>
               <a href="#equipment" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Equipment Services</a>
             </div>
             <div>
@@ -230,8 +229,8 @@ export function HomePage() {
       <section id="academies" className="bg-gray-50 py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-black mb-3" style={{ color: '#0f172a', fontFamily: 'Montserrat, sans-serif' }}>Six Academies. One Framework.</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">Every qualification, every resource, and every pathway — all within one unified national framework.</p>
+            <h2 className="text-3xl font-black mb-3" style={{ color: '#0f172a', fontFamily: 'Montserrat, sans-serif' }}>Seven Academies. One Framework.</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">Every qualification, every resource, and every pathway — all within one unified national framework. Now including international delivery.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {ACADEMIES_LIST.map(({ id, name, purpose, colour, Icon }) => (
@@ -294,21 +293,33 @@ export function HomePage() {
       <section id="resources" className="bg-white py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-black mb-3" style={{ color: '#0f172a', fontFamily: 'Montserrat, sans-serif' }}>Who We Serve</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">UKAG supports everyone involved in delivering gymnastics and trampolining across the UK.</p>
+            <h2 className="text-3xl font-black mb-3" style={{ color: '#0f172a', fontFamily: 'Montserrat, sans-serif' }}>Portal Resources</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">Sign in to access session plans, risk assessments, safeguarding documents, certificates and more — all organised by academy.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {WHO_WE_SERVE.map(({ label, desc, Icon }) => (
+            {PORTAL_RESOURCES.map(({ label, desc, colour }) => (
               <div key={label} className="flex gap-4 p-5 rounded-xl border border-gray-100 bg-gray-50">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1e52a418' }}>
-                  <Icon size={20} style={{ color: '#1e52a4' }} />
+                <div className="flex-shrink-0 mt-1">
+                  <div className="w-1 h-full rounded-full min-h-[3rem]" style={{ backgroundColor: colour }} />
                 </div>
-                <div>
-                  <div className="font-bold text-gray-900 mb-1 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>{label}</div>
-                  <div className="text-sm text-gray-600 leading-relaxed">{desc}</div>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: colour + '18' }}>
+                    <FileText size={16} style={{ color: colour }} />
+                  </div>
+                  <div>
+                    <div className="font-bold text-gray-900 mb-1 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>{label}</div>
+                    <div className="text-sm text-gray-600 leading-relaxed">{desc}</div>
+                  </div>
                 </div>
               </div>
             ))}
+          </div>
+          <div className="mt-10 text-center">
+            <p className="text-gray-500 mb-4 text-sm">All resources are available to registered portal users. Sign in or create a free account to get started.</p>
+            <div className="flex justify-center gap-4">
+              <Link to="/login" className="px-6 py-3 rounded-lg font-bold text-sm text-white" style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}>Sign In to Access</Link>
+              <Link to="/signup" className="px-6 py-3 rounded-lg font-bold text-sm border-2 border-gray-300 text-gray-700 hover:border-gray-400 transition-colors" style={{ fontFamily: 'Montserrat, sans-serif' }}>Create Free Account</Link>
+            </div>
           </div>
         </div>
       </section>
@@ -330,14 +341,14 @@ export function HomePage() {
               <p className="text-gray-600 leading-relaxed mb-6">
                 UKAG provides professional maintenance, inspection, and servicing for school gymnastics and trampolining equipment. All visits are carried out by trained technicians and produce written reports suitable for school compliance and insurance records.
               </p>
-              <a
-                href="mailto:info@ukacademiesofgymnastics.com"
+              <Link
+                to="/services"
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-bold text-white"
                 style={{ backgroundColor: '#0d9488', fontFamily: 'Montserrat, sans-serif' }}
               >
-                Enquire About Servicing
+                View Services &amp; Book
                 <ChevronRight size={15} />
-              </a>
+              </Link>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               {[
@@ -355,19 +366,6 @@ export function HomePage() {
                 </div>
               ))}
             </div>
-          </div>
-          <div className="bg-gray-900 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-              <div className="font-black text-white text-sm mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>Multi-school &amp; regional contracts available</div>
-              <div className="text-gray-400 text-sm">Fixed annual pricing for organisations managing equipment across multiple schools.</div>
-            </div>
-            <a
-              href="mailto:info@ukacademiesofgymnastics.com"
-              className="whitespace-nowrap inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white flex-shrink-0"
-              style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
-            >
-              Get in touch <ChevronRight size={14} />
-            </a>
           </div>
         </div>
       </section>
@@ -389,7 +387,7 @@ export function HomePage() {
               className="px-6 py-3 rounded-lg font-bold text-sm border-2 border-white text-white hover:bg-white hover:text-red-600 transition-colors"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
-              Sign In
+              Access Portal
             </Link>
           </div>
         </div>
@@ -413,7 +411,7 @@ export function HomePage() {
             <div>
               <div className="text-white font-bold text-sm mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Academies</div>
               <ul className="space-y-1.5">
-                {['Coach Academy', 'Leadership Academy', 'Coach Development', 'Safety Academy', 'Schools Academy', 'Operations Academy'].map(a => (
+                {['Coach Academy', 'Leadership Academy', 'Coach Development', 'Safety Academy', 'Schools Academy', 'Operations Academy', 'International Academy'].map(a => (
                   <li key={a}><span className="text-gray-400 text-sm">{a}</span></li>
                 ))}
               </ul>

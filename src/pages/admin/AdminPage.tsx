@@ -86,6 +86,21 @@ interface EventRegistrationRow {
   status: 'registered' | 'confirmed' | 'cancelled'
 }
 
+interface ServiceInquiryRow {
+  id: string
+  created_at: string
+  user_id: string | null
+  service_type: string
+  school_name: string
+  contact_name: string
+  contact_email: string
+  contact_phone: string | null
+  equipment_details: string | null
+  preferred_dates: string | null
+  notes: string | null
+  status: string
+}
+
 interface BookingRow {
   id: string
   created_at: string
@@ -139,13 +154,15 @@ const ROLE_OPTIONS = [
 
 export function AdminPage() {
   const { profile } = useAuth()
-  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations'>('coaches')
+  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
   const [interests, setInterests] = useState<InterestRow[]>([])
   const [bookings, setBookings] = useState<BookingRow[]>([])
   const [eventRegs, setEventRegs] = useState<EventRegistrationRow[]>([])
+  const [serviceInquiries, setServiceInquiries] = useState<ServiceInquiryRow[]>([])
+  const [expandedInquiry, setExpandedInquiry] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [copiedLink, setCopiedLink] = useState<string | null>(null)
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
@@ -159,13 +176,14 @@ export function AdminPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }] = await Promise.all([
+    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }, { data: si }] = await Promise.all([
       supabase.from('profiles').select('id, email, full_name, role, organisation_name').order('full_name'),
       supabase.from('course_enrollments').select('*'),
       supabase.from('course_access_requests').select('*').order('requested_at', { ascending: false }),
       supabase.from('course_interest').select('*').order('created_at', { ascending: false }),
       supabase.from('course_bookings').select('*').order('created_at', { ascending: false }),
       supabase.from('event_registrations').select('*').order('created_at', { ascending: false }),
+      supabase.from('service_inquiries').select('*').order('created_at', { ascending: false }),
     ])
     setProfiles(p || [])
     setEnrollments(e || [])
@@ -173,6 +191,7 @@ export function AdminPage() {
     setInterests(i || [])
     setBookings(b || [])
     setEventRegs(er || [])
+    setServiceInquiries(si || [])
     setLoading(false)
   }
 
@@ -250,6 +269,13 @@ export function AdminPage() {
   async function changeInterestStatus(id: string, status: string) {
     setWorking(true)
     await supabase.from('course_interest').update({ status }).eq('id', id)
+    setWorking(false)
+    loadAll()
+  }
+
+  async function changeInquiryStatus(id: string, status: string) {
+    setWorking(true)
+    await supabase.from('service_inquiries').update({ status }).eq('id', id)
     setWorking(false)
     loadAll()
   }
@@ -373,6 +399,18 @@ export function AdminPage() {
           style={{ fontFamily: 'Montserrat, sans-serif' }}
         >
           Organisations
+        </button>
+        <button
+          onClick={() => setTab('services')}
+          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors relative ${tab === 'services' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Services
+          {serviceInquiries.filter(s => s.status === 'new').length > 0 && (
+            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#0d9488' }}>
+              {serviceInquiries.filter(s => s.status === 'new').length}
+            </span>
+          )}
         </button>
       </div>
 
@@ -1416,6 +1454,100 @@ export function AdminPage() {
               )
             })()}
           </div>
+        </div>
+      )}
+
+      {/* Services tab */}
+      {!loading && tab === 'services' && (
+        <div className="space-y-3">
+          {/* Stats row */}
+          <div className="grid grid-cols-4 gap-3 mb-2">
+            {['new', 'quoted', 'booked', 'completed'].map(s => {
+              const count = serviceInquiries.filter(i => i.status === s).length
+              const colours: Record<string, string> = { new: '#0d9488', quoted: '#f59e0b', booked: '#1e52a4', completed: '#22c55e' }
+              return (
+                <div key={s} className="bg-white rounded-xl border border-gray-200 p-3 text-center">
+                  <div className="text-2xl font-black" style={{ color: colours[s], fontFamily: 'Montserrat, sans-serif' }}>{count}</div>
+                  <div className="text-xs text-gray-500 capitalize">{s}</div>
+                </div>
+              )
+            })}
+          </div>
+
+          {serviceInquiries.length === 0 && (
+            <p className="text-sm text-gray-400 py-8 text-center">No service inquiries yet.</p>
+          )}
+
+          {serviceInquiries.map(inq => {
+            const isExpanded = expandedInquiry === inq.id
+            const statusColours: Record<string, string> = { new: 'bg-teal-100 text-teal-700', quoted: 'bg-amber-100 text-amber-700', booked: 'bg-blue-100 text-blue-700', completed: 'bg-green-100 text-green-700', cancelled: 'bg-red-100 text-red-700' }
+            return (
+              <div key={inq.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <button onClick={() => setExpandedInquiry(isExpanded ? null : inq.id)} className="w-full flex items-center gap-3 p-4 text-left hover:bg-gray-50 transition-colors">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white flex-shrink-0" style={{ backgroundColor: '#0d9488' }}>
+                    {inq.contact_name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-gray-900 text-sm">{inq.contact_name}</div>
+                    <div className="text-xs text-gray-500 truncate">{inq.school_name} — {inq.service_type}</div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColours[inq.status] || 'bg-gray-100 text-gray-600'}`}>{inq.status}</span>
+                    <select
+                      value={inq.status}
+                      onClick={e => e.stopPropagation()}
+                      onChange={e => changeInquiryStatus(inq.id, e.target.value)}
+                      disabled={working}
+                      className="px-2 py-1 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none disabled:opacity-50"
+                    >
+                      <option value="new">New</option>
+                      <option value="quoted">Quoted</option>
+                      <option value="booked">Booked</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                    {isExpanded ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-3">
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div>
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Contact</div>
+                        <div className="space-y-1">
+                          <a href={`mailto:${inq.contact_email}`} className="flex items-center gap-1 text-xs text-blue-600 hover:underline"><Mail size={11}/>{inq.contact_email}</a>
+                          {inq.contact_phone && <a href={`tel:${inq.contact_phone}`} className="flex items-center gap-1 text-xs text-blue-600 hover:underline"><Phone size={11}/>{inq.contact_phone}</a>}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Submitted</div>
+                        <div className="text-xs text-gray-600">{new Date(inq.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+                      </div>
+                    </div>
+                    {inq.equipment_details && (
+                      <div>
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Equipment</div>
+                        <div className="text-xs text-gray-700 bg-white rounded-lg border border-gray-200 px-3 py-2">{inq.equipment_details}</div>
+                      </div>
+                    )}
+                    {inq.preferred_dates && (
+                      <div>
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Preferred Dates</div>
+                        <div className="text-xs text-gray-700">{inq.preferred_dates}</div>
+                      </div>
+                    )}
+                    {inq.notes && (
+                      <div>
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Notes</div>
+                        <div className="text-xs text-gray-600 italic">"{inq.notes}"</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
 
