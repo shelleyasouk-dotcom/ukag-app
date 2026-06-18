@@ -32,6 +32,7 @@ import { EqualityInclusionCoursePage } from './pages/courses/EqualityInclusionCo
 import { EqualityInclusionModulePage } from './pages/courses/EqualityInclusionModulePage'
 import { TrampolineTeacherCoursePage } from './pages/courses/TrampolineTeacherCoursePage'
 import { TrampolineTeacherModulePage } from './pages/courses/TrampolineTeacherModulePage'
+import { CourseRegistrationPage } from './pages/courses/CourseRegistrationPage'
 import { AdminPage } from './pages/admin/AdminPage'
 import { EventRegistrationPage } from './pages/events/EventRegistrationPage'
 import { InternationalPage } from './pages/international/InternationalPage'
@@ -99,6 +100,7 @@ function AppRoutes() {
       <Route path="/courses/equality/:moduleId" element={<ProtectedRoute><EqualityInclusionModulePage /></ProtectedRoute>} />
       <Route path="/courses/trampoline-teacher" element={<ProtectedRoute><TrampolineTeacherCoursePage /></ProtectedRoute>} />
       <Route path="/courses/trampoline-teacher/:moduleId" element={<ProtectedRoute><TrampolineTeacherModulePage /></ProtectedRoute>} />
+      <Route path="/courses/:courseId/register" element={<ProtectedRoute><CourseRegistrationPage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
 
       {/* Public pages — no login required */}

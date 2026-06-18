@@ -33,12 +33,33 @@ interface RequestRow {
 interface InterestRow {
   id: string
   created_at: string
+  user_id: string | null
   course_id: string
   course_title: string
+  academy_id: string | null
+  academy_name: string | null
   name: string
   email: string
   phone: string | null
+  country: string | null
+  job_title: string | null
+  organisation: string | null
+  organisation_type: string | null
+  preferred_dates: string | null
+  payment_type: string | null
+  employer_name: string | null
+  employer_contact_email: string | null
+  billing_address: string | null
+  funding_body: string | null
+  funding_reference: string | null
+  emergency_name: string | null
+  emergency_phone: string | null
+  emergency_relation: string | null
+  additional_needs: string | null
+  heard_from: string | null
+  notes: string | null
   message: string | null
+  status: string | null
 }
 
 interface EventRegistrationRow {
@@ -123,6 +144,8 @@ export function AdminPage() {
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
   const [addCourse, setAddCourse] = useState<Record<string, string>>({})
   const [working, setWorking] = useState(false)
+  const [interestFilter, setInterestFilter] = useState<{ course: string; status: string; search: string }>({ course: '', status: '', search: '' })
+  const [expandedInterest, setExpandedInterest] = useState<string | null>(null)
 
   useEffect(() => { loadAll() }, [])
 
@@ -216,6 +239,13 @@ export function AdminPage() {
     loadAll()
   }
 
+  async function changeInterestStatus(id: string, status: string) {
+    setWorking(true)
+    await supabase.from('course_interest').update({ status }).eq('id', id)
+    setWorking(false)
+    loadAll()
+  }
+
   async function changeBookingStatus(bookingId: string, status: BookingRow['status']) {
     setWorking(true)
     await supabase.from('course_bookings').update({ status }).eq('id', bookingId)
@@ -225,6 +255,7 @@ export function AdminPage() {
 
   const pendingCount = requests.filter(r => r.status === 'pending').length
   const pendingBookingsCount = bookings.filter(b => b.status === 'pending').length
+  const newInterestCount = interests.filter(i => (i.status || 'new') === 'new').length
 
   return (
     <Layout>
@@ -262,9 +293,9 @@ export function AdminPage() {
           style={{ fontFamily: 'Montserrat, sans-serif' }}
         >
           Course Interest
-          {interests.length > 0 && (
+          {newInterestCount > 0 && (
             <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#1e52a4' }}>
-              {interests.length}
+              {newInterestCount}
             </span>
           )}
         </button>
@@ -407,50 +438,245 @@ export function AdminPage() {
       )}
 
       {/* Course Interest tab */}
-      {!loading && tab === 'interest' && (
-        <div className="space-y-3">
-          {interests.length === 0 && (
-            <p className="text-sm text-gray-400 py-8 text-center">No interest registrations yet.</p>
-          )}
-          {interests.map(item => (
-            <div key={item.id} className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white flex-shrink-0"
-                  style={{ backgroundColor: '#1e52a4' }}>
-                  {item.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-sm text-gray-900">{item.name}</span>
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                      Interest
-                    </span>
+      {!loading && tab === 'interest' && (() => {
+        const interestStatuses = ['new', 'contacted', 'enrolled', 'completed', 'cancelled']
+        const statusCounts = interestStatuses.map(s => ({
+          status: s,
+          count: interests.filter(i => (i.status || 'new') === s).length,
+        }))
+        const statusBadgeCls = (s: string) => {
+          if (s === 'new') return 'bg-blue-100 text-blue-700'
+          if (s === 'contacted') return 'bg-amber-100 text-amber-700'
+          if (s === 'enrolled') return 'bg-green-100 text-green-700'
+          if (s === 'completed') return 'bg-purple-100 text-purple-700'
+          return 'bg-gray-100 text-gray-500'
+        }
+        const uniqueCourseIds = [...new Set(interests.map(i => i.course_id))]
+        const uniqueCourses = uniqueCourseIds.map(id => ({
+          id,
+          title: interests.find(i => i.course_id === id)?.course_title ?? id,
+        }))
+        const filteredInterests = interests.filter(i => {
+          if (interestFilter.course && i.course_id !== interestFilter.course) return false
+          if (interestFilter.status && (i.status || 'new') !== interestFilter.status) return false
+          if (interestFilter.search) {
+            const q = interestFilter.search.toLowerCase()
+            if (!i.name.toLowerCase().includes(q) && !i.email.toLowerCase().includes(q) && !(i.organisation || '').toLowerCase().includes(q)) return false
+          }
+          return true
+        })
+
+        return (
+          <div className="space-y-4">
+            {/* Stats row */}
+            <div className="flex flex-wrap gap-2">
+              <div className="bg-white rounded-lg border border-gray-200 px-4 py-2 text-center min-w-[80px]">
+                <div className="text-xl font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>{interests.length}</div>
+                <div className="text-xs text-gray-500">Total</div>
+              </div>
+              {statusCounts.map(({ status, count }) => (
+                <div key={status} className="bg-white rounded-lg border border-gray-200 px-4 py-2 text-center min-w-[80px]">
+                  <div className="text-xl font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>{count}</div>
+                  <div className={`text-xs font-semibold px-1.5 py-0.5 rounded-full inline-block ${statusBadgeCls(status)}`}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
                   </div>
-                  <div className="text-xs font-semibold text-gray-700 mt-1">{item.course_title}</div>
-                  <div className="flex flex-wrap gap-3 mt-2">
-                    <a href={`mailto:${item.email}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
-                      <Mail size={11} />
-                      {item.email}
-                    </a>
-                    {item.phone && (
-                      <a href={`tel:${item.phone}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
-                        <Phone size={11} />
-                        {item.phone}
-                      </a>
+                </div>
+              ))}
+            </div>
+
+            {/* Filter row */}
+            <div className="flex flex-wrap gap-2">
+              <input
+                type="text"
+                value={interestFilter.search}
+                onChange={e => setInterestFilter(f => ({ ...f, search: e.target.value }))}
+                placeholder="Search name, email, organisation…"
+                className="flex-1 min-w-[200px] px-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+              <select
+                value={interestFilter.course}
+                onChange={e => setInterestFilter(f => ({ ...f, course: e.target.value }))}
+                className="px-2 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
+                <option value="">All courses</option>
+                {uniqueCourses.map(c => (
+                  <option key={c.id} value={c.id}>{c.title}</option>
+                ))}
+              </select>
+              <select
+                value={interestFilter.status}
+                onChange={e => setInterestFilter(f => ({ ...f, status: e.target.value }))}
+                className="px-2 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
+                <option value="">All statuses</option>
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                <option value="enrolled">Enrolled</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            {filteredInterests.length === 0 && (
+              <p className="text-sm text-gray-400 py-8 text-center">
+                {interests.length === 0 ? 'No interest registrations yet.' : 'No results match your filters.'}
+              </p>
+            )}
+
+            <div className="space-y-3">
+              {filteredInterests.map(item => {
+                const isExpanded = expandedInterest === item.id
+                const itemStatus = item.status || 'new'
+                return (
+                  <div key={item.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    {/* Header row — clickable */}
+                    <button
+                      onClick={() => setExpandedInterest(isExpanded ? null : item.id)}
+                      className="w-full flex items-center gap-3 p-4 text-left hover:bg-gray-50 transition-colors"
+                    >
+                      <div
+                        className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white flex-shrink-0"
+                        style={{ backgroundColor: '#1e52a4' }}
+                      >
+                        {item.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-sm text-gray-900">{item.name}</span>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusBadgeCls(itemStatus)}`}>
+                            {itemStatus.charAt(0).toUpperCase() + itemStatus.slice(1)}
+                          </span>
+                        </div>
+                        <div className="text-xs font-semibold text-gray-700 mt-0.5 truncate">{item.course_title}</div>
+                        {item.academy_name && (
+                          <div className="text-xs text-gray-400 truncate">{item.academy_name}</div>
+                        )}
+                        {item.organisation && (
+                          <div className="text-xs text-gray-500 truncate">{item.organisation}</div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                        <select
+                          value={itemStatus}
+                          onChange={e => changeInterestStatus(item.id, e.target.value)}
+                          disabled={working}
+                          className="px-2 py-1 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-50"
+                        >
+                          <option value="new">New</option>
+                          <option value="contacted">Contacted</option>
+                          <option value="enrolled">Enrolled</option>
+                          <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </div>
+                      <div className="text-xs text-gray-400 flex-shrink-0 hidden sm:block">
+                        {new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </div>
+                      {isExpanded ? <ChevronUp size={16} className="text-gray-400 flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />}
+                    </button>
+
+                    {/* Expanded details */}
+                    {isExpanded && (
+                      <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {/* Contact info */}
+                          <div>
+                            <div className="text-xs font-black uppercase tracking-wide text-gray-400 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>Contact</div>
+                            <div className="space-y-1">
+                              <a href={`mailto:${item.email}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                                <Mail size={11} />{item.email}
+                              </a>
+                              {item.phone && (
+                                <div>
+                                  <a href={`tel:${item.phone}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                                    <Phone size={11} />{item.phone}
+                                  </a>
+                                </div>
+                              )}
+                              {item.country && <div className="text-xs text-gray-600">{item.country}</div>}
+                            </div>
+                          </div>
+
+                          {/* Professional */}
+                          <div>
+                            <div className="text-xs font-black uppercase tracking-wide text-gray-400 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>Professional</div>
+                            <div className="space-y-0.5 text-xs text-gray-700">
+                              {item.job_title && <div><span className="font-semibold">Role:</span> {item.job_title}</div>}
+                              {item.organisation && <div><span className="font-semibold">Org:</span> {item.organisation}</div>}
+                              {item.organisation_type && <div><span className="font-semibold">Type:</span> {item.organisation_type}</div>}
+                              {item.preferred_dates && <div><span className="font-semibold">Availability:</span> {item.preferred_dates}</div>}
+                            </div>
+                          </div>
+
+                          {/* Payment */}
+                          {(item.payment_type || item.employer_name || item.funding_body) && (
+                            <div>
+                              <div className="text-xs font-black uppercase tracking-wide text-gray-400 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>Payment</div>
+                              <div className="space-y-0.5 text-xs text-gray-700">
+                                {item.payment_type && <div><span className="font-semibold">Type:</span> {item.payment_type}</div>}
+                                {item.employer_name && <div><span className="font-semibold">Employer:</span> {item.employer_name}</div>}
+                                {item.employer_contact_email && (
+                                  <div>
+                                    <span className="font-semibold">Employer contact:</span>{' '}
+                                    <a href={`mailto:${item.employer_contact_email}`} className="text-blue-600 hover:underline">{item.employer_contact_email}</a>
+                                  </div>
+                                )}
+                                {item.billing_address && <div className="whitespace-pre-line"><span className="font-semibold">Billing:</span> {item.billing_address}</div>}
+                                {item.funding_body && <div><span className="font-semibold">Funding body:</span> {item.funding_body}</div>}
+                                {item.funding_reference && <div><span className="font-semibold">Funding ref:</span> {item.funding_reference}</div>}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Emergency contact */}
+                          {(item.emergency_name || item.emergency_phone) && (
+                            <div>
+                              <div className="text-xs font-black uppercase tracking-wide text-gray-400 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>Emergency Contact</div>
+                              <div className="space-y-0.5 text-xs text-gray-700">
+                                {item.emergency_name && <div>{item.emergency_name}{item.emergency_relation ? ` (${item.emergency_relation})` : ''}</div>}
+                                {item.emergency_phone && (
+                                  <a href={`tel:${item.emergency_phone}`} className="inline-flex items-center gap-1 text-blue-600 hover:underline">
+                                    <Phone size={11} />{item.emergency_phone}
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Additional needs */}
+                        {item.additional_needs && (
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-xs text-yellow-800">
+                            <span className="font-semibold">Additional needs:</span> {item.additional_needs}
+                          </div>
+                        )}
+
+                        {/* Heard from */}
+                        {item.heard_from && (
+                          <div className="text-xs text-gray-600">
+                            <span className="font-semibold">How they heard about us:</span> {item.heard_from}
+                          </div>
+                        )}
+
+                        {/* Notes / message */}
+                        {(item.notes || item.message) && (
+                          <div className="bg-gray-100 rounded-lg px-3 py-2 text-xs text-gray-600 italic">
+                            "{item.notes || item.message}"
+                          </div>
+                        )}
+
+                        <div className="text-xs text-gray-400">
+                          Registered: {new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
                     )}
                   </div>
-                  {item.message && (
-                    <div className="text-xs text-gray-600 mt-2 bg-gray-50 rounded px-2.5 py-1.5 italic">"{item.message}"</div>
-                  )}
-                  <div className="text-xs text-gray-400 mt-1.5">
-                    {new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                </div>
-              </div>
+                )
+              })}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        )
+      })()}
 
       {/* Bookings tab */}
       {!loading && tab === 'bookings' && (
