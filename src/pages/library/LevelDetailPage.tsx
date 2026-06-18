@@ -1,17 +1,19 @@
 import { useState } from 'react'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { Layout } from '../../components/layout/Layout'
-import { COACHING_LIBRARY } from '../../data/coachingLibrary'
+import { COACHING_LIBRARY, TRAMPOLINE_LIBRARY } from '../../data/coachingLibrary'
 import { ArrowLeft } from 'lucide-react'
 
 type Tab = 'session' | 'skills' | 'notes'
 
-export function LevelDetailPage() {
+export function LevelDetailPage({ discipline }: { discipline?: 'gymnastics' | 'trampolining' }) {
   const { level } = useParams<{ level: string }>()
   const [activeTab, setActiveTab] = useState<Tab>('session')
 
   const levelNum = parseInt(level ?? '', 10)
-  const data = COACHING_LIBRARY.find(l => l.level === levelNum)
+  const library = discipline === 'trampolining' ? TRAMPOLINE_LIBRARY : COACHING_LIBRARY
+  const data = library.find(l => l.level === levelNum)
+  const backPath = discipline === 'trampolining' ? '/library' : '/library'
 
   if (!data) return <Navigate to="/library" replace />
 
@@ -20,7 +22,7 @@ export function LevelDetailPage() {
   return (
     <Layout>
       <div className="mb-6">
-        <Link to="/library" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <Link to={backPath} className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-4">
           <ArrowLeft size={14} />
           Coaching Library
         </Link>

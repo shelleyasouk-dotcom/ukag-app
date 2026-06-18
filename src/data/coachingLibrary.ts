@@ -713,3 +713,289 @@ export const COACHING_LIBRARY: LibraryLevel[] = [
     ],
   },
 ]
+
+const TRAMPOLINE_BASE_OVERVIEW: SessionStage[] = [
+  {
+    stage: 'Pre-Session Setup',
+    time: '15 min before',
+    description: 'Check trampoline frame, springs, and bed. Ensure mats are in position and end-deck mats are fitted.',
+    coachingFocus: 'Spring tension even, no damaged springs, safety pads secure.',
+  },
+  {
+    stage: 'Welcome & Safety Brief',
+    time: '5 min',
+    description: 'Introduce coaches, explain trampoline rules (one at a time, stop signal, stepping off safely).',
+    coachingFocus: 'Emphasise "one on" rule and how to safely stop bouncing.',
+  },
+  {
+    stage: 'Floor Warm-Up',
+    time: '8 min',
+    description: 'Jogging, arm circles, ankle rotations, leg swings, shallow squats. Core activation (plank / dish).',
+    coachingFocus: 'Prepare joints for repetitive impact — focus on ankles and core.',
+  },
+  {
+    stage: 'Trampoline Familiarisation',
+    time: '5 min',
+    description: 'Controlled walking on bed, gentle bouncing, stop practice.',
+    coachingFocus: 'Teach "Kill the Bounce" — bend knees, absorb and stop.',
+  },
+  {
+    stage: 'Skill Work',
+    time: '25 min',
+    description: 'Progressive skill stations on trampoline and floor. Rotate every 6–8 min.',
+    coachingFocus: 'One skill at a time, demonstrate then allow practice with spot if needed.',
+  },
+  {
+    stage: 'Cool Down & Reflection',
+    time: '5 min',
+    description: 'Seated stretches, partner quad stretch, recap of skills covered.',
+    coachingFocus: 'Positive reinforcement, ask gymnasts to name one thing they improved.',
+  },
+  {
+    stage: 'Pack Down & Feedback',
+    time: '5–10 min',
+    description: 'End-deck mats back in position, update register, log any incidents.',
+    coachingFocus: 'Ensure all gymnasts signed out safely before dismantling.',
+  },
+]
+
+export const TRAMPOLINE_LIBRARY: LibraryLevel[] = [
+  {
+    level: 1,
+    name: 'Foundation',
+    fullTitle: 'UKAG Trampoline Level 1 — Foundation',
+    ageGroup: 'Ages 5+',
+    delivery: 'BG/UKAG Qualified Trampoline Coach',
+    duration: '45 mins active (65–70 mins total)',
+    colour: '#0891b2',
+    textColour: 'white',
+    tagline: 'Safe bouncing, body shapes, seat drop and controlled stops',
+    sessionOverview: TRAMPOLINE_BASE_OVERVIEW,
+    objectives: [
+      'Establish safe trampolining habits and the "one on" rule.',
+      'Develop controlled bouncing with consistent height.',
+      'Introduce tuck, straddle and pike body shapes in the air.',
+      'Learn seat drop from low bounce.',
+      'Practice "Kill the Bounce" stop on command.',
+    ],
+    apparatusSkills: [
+      {
+        apparatus: 'Trampoline Bed',
+        coreSkills: [
+          'Straight bounce (controlled, consistent height)',
+          'Tuck shape in air',
+          'Straddle shape in air',
+          'Pike shape in air',
+          'Seat drop (from low bounce)',
+          'Kill the Bounce (controlled stop)',
+        ],
+        progressionPathway: 'Walk → gentle bounce → shape in air → seat drop → combination',
+        keyCoachingCues: '"Hips up – shape – return to feet – soft knees on land."',
+      },
+      {
+        apparatus: 'Floor / Crash Mat',
+        coreSkills: [
+          'Tuck jump (land and absorb)',
+          'Straddle jump',
+          'Seated bounce (core activation)',
+          'Standing to seated fall safely',
+        ],
+        progressionPathway: 'Floor shapes → jump shapes → transfer to trampoline',
+        keyCoachingCues: '"Tight tummy – reach up – land and absorb."',
+      },
+    ],
+    teachingFocus: [
+      'Safety culture first — every session begins with rules.',
+      'Short turns (6–8 bounces) to maintain focus and control.',
+      'Demonstrate every skill before athletes attempt it.',
+      'Spot physically from end-deck for seat drop until consistent.',
+    ],
+    assistantCoachRoles: [
+      { area: 'End-Deck Spotting', responsibility: 'Stand ready at end-deck for seat drop progressions.' },
+      { area: 'Queue Management', responsibility: 'Keep waiting gymnasts calm and off the trampoline frame.' },
+      { area: 'Floor Skills', responsibility: 'Lead shape jumps and core work for gymnasts not on trampoline.' },
+      { area: 'Register & Feedback', responsibility: 'Record attendance and any individual achievement notes.' },
+    ],
+    safetyChecklist: [
+      'Springs and frame pads checked before session',
+      'End-deck safety mats in position',
+      'Only one gymnast on trampoline at a time',
+      'No jewellery or socks on trampoline',
+      'Clear run-off space around all four sides',
+      'First aid kit accessible',
+    ],
+    coachingReminders: [
+      'Never leave trampoline unattended with gymnasts present.',
+      'Strength-to-weight ratio matters — progress each gymnast individually.',
+      'Kill the Bounce before gymnast steps off — always.',
+      'Celebrate small wins: consistent stop, first seat drop, clean shape.',
+    ],
+  },
+
+  {
+    level: 2,
+    name: 'Development',
+    fullTitle: 'UKAG Trampoline Level 2 — Development',
+    ageGroup: 'Ages 6+',
+    delivery: 'BG/UKAG Qualified Trampoline Coach',
+    duration: '45 mins active (65–70 mins total)',
+    colour: '#0e7490',
+    textColour: 'white',
+    tagline: 'Front drop, back drop, half-twists and short routines',
+    sessionOverview: TRAMPOLINE_BASE_OVERVIEW.map((s, i) =>
+      i === 4 ? { ...s, description: 'Front drop, back drop, half-twist combinations and short routine building.', coachingFocus: 'Spot landings physically; reinforce safe technique before height.' }
+      : s
+    ),
+    objectives: [
+      'Develop height and consistency in straight bounce.',
+      'Introduce front drop and back drop safely.',
+      'Learn swivel hips (seat drop — half twist — seat drop).',
+      'Build a 6-skill routine from Level 2 elements.',
+      'Understand basic competition format and scoring concepts.',
+    ],
+    apparatusSkills: [
+      {
+        apparatus: 'Trampoline — Drops',
+        coreSkills: [
+          'Front drop (from low bounce)',
+          'Back drop (from low bounce)',
+          'Seat drop to back drop',
+          'Back drop to feet',
+          'Swivel hips (seat drop — ½ twist — seat drop)',
+        ],
+        progressionPathway: 'Seat drop secure → front drop on crash mat → trampoline front drop → back drop → combinations',
+        keyCoachingCues: '"Hips lead – body flat – push from bed – return to feet."',
+      },
+      {
+        apparatus: 'Trampoline — Twists',
+        coreSkills: [
+          'Half-twist jump (180°)',
+          'Full twist jump (360°) — entry level',
+          'Straddle half-twist',
+        ],
+        progressionPathway: 'Body rotation on floor → half twist bouncing → full twist with spot',
+        keyCoachingCues: '"Spot a point – arms pull – feet follow – land central."',
+      },
+      {
+        apparatus: 'Routine Building',
+        coreSkills: [
+          '6-skill routine (Level 2 syllabus)',
+          'Consistent takeoff and landing on cross',
+          'Controlled height throughout',
+        ],
+        progressionPathway: 'Individual skills → linked pairs → 4-skill → 6-skill routine',
+        keyCoachingCues: '"One skill at a time, land on cross, build the routine."',
+      },
+    ],
+    teachingFocus: [
+      'Ensure secure seat drop before introducing drops.',
+      'Front drop: prone landing — hips, chest, head simultaneously.',
+      'Back drop: hands up, chin to chest, no head contact with bed.',
+      'Video analysis (phone) is a powerful coaching tool at this level.',
+    ],
+    assistantCoachRoles: [
+      { area: 'Physical Spotting', responsibility: 'Support front/back drop learning from end-deck and side-deck.' },
+      { area: 'Routine Recording', responsibility: 'Count and note skills in each gymnast\'s routine attempt.' },
+      { area: 'Floor Drill Station', responsibility: 'Lead crash-mat progressions for drops and twists.' },
+      { area: 'Register & Achievements', responsibility: 'Record skill sign-offs and any incidents.' },
+    ],
+    safetyChecklist: [
+      'Crash mats available alongside trampoline for drop progressions',
+      'End-deck mats fitted and secure',
+      'Spotting belt available for back somersault introduction (Level 3+)',
+      'No unsupervised practice of drops',
+      'Height limited until technique is consistent',
+      'Session ratio: max 1 coach per 4 gymnasts on drops',
+    ],
+    coachingReminders: [
+      'Do not rush to increase height — technique must come first.',
+      'Front drop: hips and shoulders level on landing every time.',
+      'Back drop: protect the head — chin to chest always.',
+      'Keep sessions varied; routine work mixed with skill games.',
+    ],
+  },
+
+  {
+    level: 3,
+    name: 'Performance',
+    fullTitle: 'UKAG Trampoline Level 3 — Performance',
+    ageGroup: 'Ages 8+',
+    delivery: 'BG/UKAG Qualified Trampoline Coach (with spotter training)',
+    duration: '55 mins active (75–80 mins total)',
+    colour: '#155e75',
+    textColour: 'white',
+    tagline: 'Somersaults, 10-skill routines and competition preparation',
+    sessionOverview: TRAMPOLINE_BASE_OVERVIEW.map((s, i) =>
+      i === 4 ? { ...s, description: 'Somersault progressions (belted/spotted), full routines, tariff building.', coachingFocus: 'Safety harness for somersaults; physical spot mandatory until confident.' }
+      : i === 3 ? { ...s, description: 'Bed walk, controlled straight bounce to height, stop on command.', coachingFocus: 'Ensure consistent kill-the-bounce before any somersault work.' }
+      : s
+    ),
+    objectives: [
+      'Develop consistent 10-skill competition routine.',
+      'Introduce front somersault (tucked) using overhead rig or belt.',
+      'Introduce back somersault (tucked) using overhead rig or belt.',
+      'Build technical understanding of tariff (difficulty scoring).',
+      'Prepare gymnasts for their first BG/UKAG club competition entry.',
+    ],
+    apparatusSkills: [
+      {
+        apparatus: 'Somersaults (Belted / Spotted)',
+        coreSkills: [
+          'Front somersault — tuck (belted)',
+          'Back somersault — tuck (belted)',
+          'Front somersault — open tuck (physical spot)',
+          'Back somersault — pike (advanced)',
+        ],
+        progressionPathway: 'Crash mat → overhead rig / belt → physical spot → independent (when consistent)',
+        keyCoachingCues: '"Punch the bed – tight tuck – spot your landing – kick out and land tall."',
+      },
+      {
+        apparatus: 'Routine Construction',
+        coreSkills: [
+          '10-skill routine (BG competition format)',
+          'Opening 3 skills to height',
+          'Consistent landing on cross',
+          'Controlled stop after skill 10',
+        ],
+        progressionPathway: 'Drill each skill → link in pairs → build to 6 skills → full 10-skill routine',
+        keyCoachingCues: '"Flow through the routine – never stop – central landing every time."',
+      },
+      {
+        apparatus: 'DMT Introduction (Optional)',
+        coreSkills: [
+          'Run-up and take-off (DMT)',
+          'Shape jumps over DMT',
+          'Front somersault over DMT (spotted)',
+        ],
+        progressionPathway: 'Approach and takeoff only → shape jumps → front somi with spot',
+        keyCoachingCues: '"Run tall – drive through the bed – stay tight – look for landing."',
+      },
+    ],
+    teachingFocus: [
+      'Never attempt somersaults without harness/belt until the gymnast is fully consistent.',
+      'Tariff education: gymnasts should understand which skills add difficulty.',
+      'Video review every second session — gymnasts see themselves improve.',
+      'Mental prep: visualisation before routine attempts.',
+    ],
+    assistantCoachRoles: [
+      { area: 'Harness Operation', responsibility: 'Operate overhead rig under head coach direction (trained only).' },
+      { area: 'Physical Spotting', responsibility: 'Spot twisting and combination somersaults from end-deck.' },
+      { area: 'Routine Judging Practice', responsibility: 'Act as practice judge to familiarise gymnasts with competition format.' },
+      { area: 'Register & Incident Log', responsibility: 'Detailed session log including height assessments.' },
+    ],
+    safetyChecklist: [
+      'Overhead rig/belt checked and certified before use',
+      'Minimum 2 coaches present for somersault sessions',
+      'Crash mats positioned for all somersault progressions',
+      'No independent somersault practice — coach present at all times',
+      'Parent/guardian written consent for harness work',
+      'Session ratio: max 1 coach per 3 gymnasts in somersault sessions',
+    ],
+    coachingReminders: [
+      'Only progress to unbelted somersaults when technique is 100% consistent.',
+      'Encourage gymnasts to know their own routine by heart.',
+      'Competition mindset: treat every practice routine as a competition.',
+      'Look after the mental wellbeing of gymnasts — competition pressure is real.',
+    ],
+  },
+]
