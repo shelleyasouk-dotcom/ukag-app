@@ -117,6 +117,9 @@ const ROLE_LABELS: Record<string, string> = {
   area_lead: 'Area Lead',
   teacher: 'Teacher (UK)',
   trampoline_teacher: 'Trampoline Teacher (Intl)',
+  organisation: 'Organisation',
+  assessor: 'Tutor / Assessor',
+  maintenance: 'Maintenance',
 }
 
 const ROLE_OPTIONS = [
@@ -124,9 +127,12 @@ const ROLE_OPTIONS = [
   { value: 'assistant_coach', label: 'Assistant Coach (Level 1)' },
   { value: 'lead_coach', label: 'Lead Coach (Level 2)' },
   { value: 'area_lead', label: 'Area Lead' },
+  { value: 'coach', label: 'Coach' },
+  { value: 'assessor', label: 'Tutor / Assessor' },
   { value: 'teacher', label: 'Teacher / School Staff (UK)' },
   { value: 'trampoline_teacher', label: 'Trampolining Teacher (International)' },
-  { value: 'coach', label: 'Coach' },
+  { value: 'organisation', label: 'Organisation / School Account' },
+  { value: 'maintenance', label: 'Maintenance Staff' },
   { value: 'admin', label: 'Admin' },
 ]
 
