@@ -14,6 +14,10 @@ const ROLE_LABELS: Record<string, string> = {
   lead_coach: 'Lead Coach',
   area_lead: 'Area Lead',
   teacher: 'Teacher',
+  trampoline_teacher: 'Trampolining Teacher',
+  organisation: 'Organisation',
+  assessor: 'Tutor / Assessor',
+  maintenance: 'Maintenance',
 }
 
 interface CertRow {
@@ -40,6 +44,7 @@ export function ProfilePage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [organisationName, setOrganisationName] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [emailNote, setEmailNote] = useState<string | null>(null)
@@ -54,6 +59,7 @@ export function ProfilePage() {
     setFullName(profile.full_name ?? '')
     setEmail(profile.email ?? '')
     setPhone(profile.phone ?? '')
+    setOrganisationName(profile.organisation_name ?? '')
   }, [profile])
 
   useEffect(() => {
@@ -82,6 +88,7 @@ export function ProfilePage() {
     setFullName(profile?.full_name ?? '')
     setEmail(profile?.email ?? '')
     setPhone(profile?.phone ?? '')
+    setOrganisationName(profile?.organisation_name ?? '')
     setSaveError(null)
     setEmailNote(null)
     setEditing(true)
@@ -100,7 +107,11 @@ export function ProfilePage() {
     setEmailNote(null)
 
     try {
-      const updates: Record<string, string> = { full_name: fullName, phone }
+      const updates: Record<string, string | null> = {
+        full_name: fullName,
+        phone,
+        ...(profile.role === 'organisation' ? { organisation_name: organisationName || null } : {}),
+      }
 
       if (email !== profile.email) {
         const { error: authErr } = await supabase.auth.updateUser({ email })
@@ -245,6 +256,26 @@ export function ProfilePage() {
                   </span>
                 )}
               </div>
+
+              {editing && profile?.role === 'organisation' && (
+                <div className="py-2.5 border-b border-gray-100">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Organisation Name</label>
+                  <input
+                    value={organisationName}
+                    onChange={e => setOrganisationName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    placeholder="e.g. Springfield Primary School"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">This name links your portal account to staff course registrations</p>
+                </div>
+              )}
+
+              {!editing && profile?.organisation_name && (
+                <div className="flex items-center gap-2 py-2.5 border-b border-gray-100">
+                  <span className="text-xs text-gray-500 w-16 flex-shrink-0">Organisation</span>
+                  <span className="text-sm font-medium text-gray-800">{profile.organisation_name}</span>
+                </div>
+              )}
 
               <div className="flex items-center justify-between py-2.5">
                 <span className="text-sm text-gray-500">Role</span>

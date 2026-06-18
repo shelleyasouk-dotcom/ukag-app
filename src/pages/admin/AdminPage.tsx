@@ -11,6 +11,7 @@ interface ProfileRow {
   email: string
   full_name: string
   role: string
+  organisation_name?: string
 }
 
 interface EnrollmentRow {
@@ -138,7 +139,7 @@ const ROLE_OPTIONS = [
 
 export function AdminPage() {
   const { profile } = useAuth()
-  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics'>('coaches')
+  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
@@ -152,13 +153,14 @@ export function AdminPage() {
   const [working, setWorking] = useState(false)
   const [interestFilter, setInterestFilter] = useState<{ course: string; status: string; search: string }>({ course: '', status: '', search: '' })
   const [expandedInterest, setExpandedInterest] = useState<string | null>(null)
+  const [expandedOrg, setExpandedOrg] = useState<string | null>(null)
 
   useEffect(() => { loadAll() }, [])
 
   async function loadAll() {
     setLoading(true)
     const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }] = await Promise.all([
-      supabase.from('profiles').select('id, email, full_name, role').order('full_name'),
+      supabase.from('profiles').select('id, email, full_name, role, organisation_name').order('full_name'),
       supabase.from('course_enrollments').select('*'),
       supabase.from('course_access_requests').select('*').order('requested_at', { ascending: false }),
       supabase.from('course_interest').select('*').order('created_at', { ascending: false }),
@@ -364,6 +366,13 @@ export function AdminPage() {
           style={{ fontFamily: 'Montserrat, sans-serif' }}
         >
           Analytics
+        </button>
+        <button
+          onClick={() => setTab('organisations')}
+          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${tab === 'organisations' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Organisations
         </button>
       </div>
 
@@ -1258,6 +1267,155 @@ export function AdminPage() {
             )}
           </div>
 
+        </div>
+      )}
+
+      {/* Organisations tab */}
+      {!loading && tab === 'organisations' && (
+        <div className="space-y-4">
+          {/* Header stats */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="text-2xl font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                {profiles.filter(p => p.role === 'organisation').length}
+              </div>
+              <div className="text-sm text-gray-500">Organisation accounts</div>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="text-2xl font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                {[...new Set(interests.filter(i => i.organisation).map(i => i.organisation))].length}
+              </div>
+              <div className="text-sm text-gray-500">Orgs with registrations</div>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="text-2xl font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                {interests.filter(i => i.payment_type === 'employer').length}
+              </div>
+              <div className="text-sm text-gray-500">Employer-funded registrations</div>
+            </div>
+          </div>
+
+          {/* Organisation accounts */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <h3 className="text-sm font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Organisation Accounts</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Users with the Organisation role</p>
+            </div>
+            {profiles.filter(p => p.role === 'organisation').length === 0 ? (
+              <div className="p-6 text-center text-sm text-gray-400">No organisation accounts yet.</div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {profiles.filter(p => p.role === 'organisation').map(org => {
+                  const orgName = org.organisation_name || ''
+                  const orgInterests = orgName
+                    ? interests.filter(i => i.organisation?.toLowerCase().includes(orgName.toLowerCase()))
+                    : []
+                  const isExpanded = expandedOrg === org.id
+
+                  return (
+                    <div key={org.id}>
+                      <button
+                        onClick={() => setExpandedOrg(isExpanded ? null : org.id)}
+                        className="w-full flex items-center gap-3 p-4 text-left hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white flex-shrink-0" style={{ backgroundColor: '#1e52a4' }}>
+                          {(org.full_name || org.email).charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-gray-900 text-sm">{org.full_name || '—'}</div>
+                          <div className="text-xs text-gray-500 truncate">{orgName || org.email}</div>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <span className="text-xs text-gray-400">{orgInterests.length} registrations</span>
+                          {isExpanded ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                        </div>
+                      </button>
+
+                      {isExpanded && (
+                        <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-4">
+                          <div className="flex items-center gap-4 text-xs">
+                            <a href={`mailto:${org.email}`} className="inline-flex items-center gap-1 text-blue-600 hover:underline">
+                              <Mail size={11} />{org.email}
+                            </a>
+                          </div>
+                          {orgInterests.length > 0 && (
+                            <div>
+                              <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Course Registrations from this Organisation</div>
+                              <div className="space-y-2">
+                                {orgInterests.slice(0, 10).map(reg => (
+                                  <div key={reg.id} className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-3 py-2">
+                                    <div className="min-w-0">
+                                      <div className="text-xs font-semibold text-gray-900">{reg.name}</div>
+                                      <div className="text-xs text-gray-500 truncate">{reg.course_title}</div>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                                      {(() => {
+                                        const s = reg.status || 'new'
+                                        const cls = s === 'enrolled' ? 'bg-green-100 text-green-700' : s === 'completed' ? 'bg-purple-100 text-purple-700' : s === 'contacted' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+                                        return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cls}`}>{s}</span>
+                                      })()}
+                                    </div>
+                                  </div>
+                                ))}
+                                {orgInterests.length > 10 && (
+                                  <p className="text-xs text-gray-400 text-center">+{orgInterests.length - 10} more — view in Course Interest tab</p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          {orgInterests.length === 0 && (
+                            <p className="text-xs text-gray-400">No course registrations linked to this organisation yet.</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* All unique organisations from registrations */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <h3 className="text-sm font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>All Organisations from Registrations</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Every unique organisation name from course interest forms</p>
+            </div>
+            {(() => {
+              const orgGroups = interests.reduce((acc, i) => {
+                if (!i.organisation) return acc
+                if (!acc[i.organisation]) acc[i.organisation] = []
+                acc[i.organisation].push(i)
+                return acc
+              }, {} as Record<string, typeof interests>)
+              const sortedOrgs = Object.entries(orgGroups).sort((a, b) => b[1].length - a[1].length)
+              if (sortedOrgs.length === 0) return (
+                <div className="p-6 text-center text-sm text-gray-400">No organisations in registrations yet.</div>
+              )
+              return (
+                <div className="divide-y divide-gray-100">
+                  {sortedOrgs.map(([orgName, regs]) => (
+                    <div key={orgName} className="flex items-center justify-between p-4">
+                      <div>
+                        <div className="text-sm font-semibold text-gray-900">{orgName}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {regs.length} registration{regs.length !== 1 ? 's' : ''} — {[...new Set(regs.map(r => r.course_title))].length} course{[...new Set(regs.map(r => r.course_title))].length !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+                      <div className="flex gap-1 flex-wrap justify-end">
+                        {['new', 'contacted', 'enrolled', 'completed'].map(s => {
+                          const count = regs.filter(r => (r.status || 'new') === s).length
+                          if (!count) return null
+                          const cls = s === 'enrolled' ? 'bg-green-100 text-green-700' : s === 'completed' ? 'bg-purple-100 text-purple-700' : s === 'contacted' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+                          return <span key={s} className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cls}`}>{count} {s}</span>
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
+          </div>
         </div>
       )}
 

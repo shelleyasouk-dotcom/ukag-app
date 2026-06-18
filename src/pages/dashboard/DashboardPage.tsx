@@ -436,10 +436,17 @@ function OrganisationDashboard({ profile }: { profile: Profile }) {
 
   const QUICK_ACTIONS: QuickAction[] = [
     {
+      label: 'Organisation Portal',
+      desc: 'Manage your team, registrations and CPD records',
+      to: '/organisation',
+      colour: '#1e52a4',
+      Icon: Building2,
+    },
+    {
       label: 'Browse Courses',
       desc: 'Find the right training for your staff',
       to: '/academies',
-      colour: '#1e52a4',
+      colour: '#ef462c',
       Icon: GraduationCap,
     },
     {
@@ -556,13 +563,22 @@ function OrganisationDashboard({ profile }: { profile: Profile }) {
             <p className="text-sm text-gray-600 leading-relaxed">
               To book training for your staff, browse our academies and register interest in any course. We'll be in touch to confirm and invoice your organisation directly.
             </p>
-            <Link
-              to="/academies"
-              className="inline-flex items-center gap-1 mt-3 text-xs font-bold px-3 py-1.5 rounded-lg text-white"
-              style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
-            >
-              Browse Academies
-            </Link>
+            <div className="flex gap-2 flex-wrap mt-3">
+              <Link
+                to="/academies"
+                className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white"
+                style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Browse Academies
+              </Link>
+              <Link
+                to="/organisation"
+                className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg"
+                style={{ backgroundColor: '#1e52a408', color: '#1e52a4', border: '1px solid #1e52a440', fontFamily: 'Montserrat, sans-serif' }}
+              >
+                View Organisation Portal →
+              </Link>
+            </div>
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 p-5">
