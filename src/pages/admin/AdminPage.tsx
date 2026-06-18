@@ -132,7 +132,7 @@ const ROLE_OPTIONS = [
 
 export function AdminPage() {
   const { profile } = useAuth()
-  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events'>('coaches')
+  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
@@ -257,6 +257,35 @@ export function AdminPage() {
   const pendingBookingsCount = bookings.filter(b => b.status === 'pending').length
   const newInterestCount = interests.filter(i => (i.status || 'new') === 'new').length
 
+  // Analytics computations (derived from already-loaded state)
+  const analyticsRegByStatus = ['new', 'contacted', 'enrolled', 'completed', 'cancelled'].map(s => ({
+    status: s,
+    count: interests.filter(i => (i.status || 'new') === s).length,
+  }))
+  const analyticsRegByAcademy = Object.entries(
+    interests.reduce((acc, i) => { const k = i.academy_name || 'Other'; acc[k] = (acc[k] || 0) + 1; return acc }, {} as Record<string, number>)
+  ).sort((a, b) => b[1] - a[1])
+  const analyticsRegByCourse = Object.entries(
+    interests.reduce((acc, i) => { acc[i.course_title] = (acc[i.course_title] || 0) + 1; return acc }, {} as Record<string, number>)
+  ).sort((a, b) => b[1] - a[1]).slice(0, 10)
+  const analyticsRegByPayment = Object.entries(
+    interests.reduce((acc, i) => { const k = i.payment_type || 'not specified'; acc[k] = (acc[k] || 0) + 1; return acc }, {} as Record<string, number>)
+  ).sort((a, b) => b[1] - a[1])
+  const analyticsRegByCountry = Object.entries(
+    interests.reduce((acc, i) => { if (i.country) { acc[i.country] = (acc[i.country] || 0) + 1 } return acc }, {} as Record<string, number>)
+  ).sort((a, b) => b[1] - a[1]).slice(0, 10)
+  const analyticsUsersByRole = Object.entries(
+    profiles.reduce((acc, p) => { acc[p.role] = (acc[p.role] || 0) + 1; return acc }, {} as Record<string, number>)
+  ).sort((a, b) => b[1] - a[1])
+  const analyticsBookingsByStatus = Object.entries(
+    bookings.reduce((acc, b) => { acc[b.status] = (acc[b.status] || 0) + 1; return acc }, {} as Record<string, number>)
+  ).sort((a, b) => b[1] - a[1])
+  const analyticsRecentActivity = [
+    ...interests.slice(0, 10).map(i => ({ type: 'registration' as const, name: i.name, detail: i.course_title, subdetail: i.organisation || null, date: i.created_at, status: i.status || 'new' })),
+    ...bookings.slice(0, 5).map(b => ({ type: 'booking' as const, name: b.name, detail: b.course_title, subdetail: b.organisation || null, date: b.created_at, status: b.status })),
+    ...eventRegs.slice(0, 5).map(e => ({ type: 'event' as const, name: e.name, detail: e.event_title, subdetail: e.school_name || null, date: e.created_at, status: e.status })),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 15)
+
   return (
     <Layout>
       <div className="mb-6">
@@ -322,6 +351,13 @@ export function AdminPage() {
               {eventRegs.length}
             </span>
           )}
+        </button>
+        <button
+          onClick={() => setTab('analytics')}
+          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${tab === 'analytics' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Analytics
         </button>
       </div>
 
@@ -992,6 +1028,233 @@ export function AdminPage() {
           })}
         </div>
       )}
+      {/* Analytics tab */}
+      {!loading && tab === 'analytics' && (
+        <div className="space-y-6">
+
+          {/* Stat cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: 'Course Registrations', value: interests.length, sub: `${newInterestCount} new`, colour: '#1e52a4' },
+              { label: 'Bookings', value: bookings.length, sub: `${pendingBookingsCount} pending`, colour: '#22c55e' },
+              { label: 'Event Registrations', value: eventRegs.length, sub: `${eventRegs.filter(e => e.status === 'registered').length} awaiting confirmation`, colour: '#8b5cf6' },
+              { label: 'Portal Users', value: profiles.length, sub: `${profiles.filter(p => p.role === 'admin').length} admin`, colour: '#f4cc2c' },
+            ].map(card => (
+              <div key={card.label} className="bg-white rounded-xl border border-gray-200 p-5">
+                <div className="text-3xl font-black mb-1" style={{ color: card.colour, fontFamily: 'Montserrat, sans-serif' }}>{card.value}</div>
+                <div className="text-sm font-semibold text-gray-800">{card.label}</div>
+                <div className="text-xs text-gray-400 mt-0.5">{card.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Registration pipeline */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 className="text-sm font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Registration Pipeline</h3>
+            <div className="grid grid-cols-5 gap-2">
+              {analyticsRegByStatus.map((s, i) => {
+                const colours: Record<string, string> = { new: '#1e52a4', contacted: '#f59e0b', enrolled: '#22c55e', completed: '#8b5cf6', cancelled: '#ef4444' }
+                const pct = interests.length > 0 ? Math.round((s.count / interests.length) * 100) : 0
+                return (
+                  <div key={s.status} className="text-center">
+                    <div className="relative h-24 flex items-end justify-center mb-2">
+                      {i < 4 && <div className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-300 text-lg z-10">›</div>}
+                      <div className="w-full rounded-t-lg transition-all" style={{ height: `${Math.max(pct, 4)}%`, backgroundColor: colours[s.status] + '30', border: `2px solid ${colours[s.status]}` }} />
+                    </div>
+                    <div className="text-xl font-black" style={{ color: colours[s.status], fontFamily: 'Montserrat, sans-serif' }}>{s.count}</div>
+                    <div className="text-xs text-gray-500 capitalize mt-0.5">{s.status}</div>
+                    <div className="text-xs text-gray-400">{pct}%</div>
+                  </div>
+                )
+              })}
+            </div>
+            {interests.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-100 flex gap-6 text-xs text-gray-500">
+                <span>Enrolment rate: <strong className="text-green-600">{Math.round((analyticsRegByStatus.find(s => s.status === 'enrolled')?.count || 0) / interests.length * 100)}%</strong></span>
+                <span>Completion rate: <strong className="text-purple-600">{Math.round((analyticsRegByStatus.find(s => s.status === 'completed')?.count || 0) / interests.length * 100)}%</strong></span>
+              </div>
+            )}
+          </div>
+
+          {/* Academy + Course breakdown */}
+          <div className="grid lg:grid-cols-2 gap-4">
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <h3 className="text-sm font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Registrations by Academy</h3>
+              {analyticsRegByAcademy.length === 0 ? (
+                <p className="text-xs text-gray-400">No data yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {analyticsRegByAcademy.map(([academy, count]) => (
+                    <div key={academy}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-700 font-medium truncate pr-2">{academy}</span>
+                        <span className="font-black text-gray-900">{count}</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${(count / analyticsRegByAcademy[0][1]) * 100}%`, backgroundColor: '#1e52a4' }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <h3 className="text-sm font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Top Courses by Interest</h3>
+              {analyticsRegByCourse.length === 0 ? (
+                <p className="text-xs text-gray-400">No data yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {analyticsRegByCourse.map(([course, count]) => (
+                    <div key={course}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-700 font-medium truncate pr-2">{course}</span>
+                        <span className="font-black text-gray-900">{count}</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${(count / analyticsRegByCourse[0][1]) * 100}%`, backgroundColor: '#ef462c' }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Payment types + User roles */}
+          <div className="grid lg:grid-cols-2 gap-4">
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <h3 className="text-sm font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Payment Type (Registrations)</h3>
+              {analyticsRegByPayment.length === 0 ? (
+                <p className="text-xs text-gray-400">No data yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {analyticsRegByPayment.map(([type, count]) => {
+                    const label = type === 'self' ? 'Self-funded' : type === 'employer' ? 'Employer / Organisation' : type === 'funded' ? 'Funded Place' : type
+                    const colour = type === 'employer' ? '#8b5cf6' : type === 'funded' ? '#22c55e' : type === 'self' ? '#1e52a4' : '#9ca3af'
+                    return (
+                      <div key={type}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-gray-700 font-medium capitalize">{label}</span>
+                          <span className="font-black text-gray-900">{count}</span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${(count / analyticsRegByPayment[0][1]) * 100}%`, backgroundColor: colour }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <h3 className="text-sm font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Portal Users by Role</h3>
+              {analyticsUsersByRole.length === 0 ? (
+                <p className="text-xs text-gray-400">No users yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {analyticsUsersByRole.map(([role, count]) => (
+                    <div key={role}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-700 font-medium">{ROLE_LABELS[role] || role}</span>
+                        <span className="font-black text-gray-900">{count}</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${(count / analyticsUsersByRole[0][1]) * 100}%`, backgroundColor: '#f4cc2c' }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Booking status + Country breakdown */}
+          <div className="grid lg:grid-cols-2 gap-4">
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <h3 className="text-sm font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Bookings by Status</h3>
+              {analyticsBookingsByStatus.length === 0 ? (
+                <p className="text-xs text-gray-400">No bookings yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {analyticsBookingsByStatus.map(([status, count]) => {
+                    const colour = status === 'paid' ? '#22c55e' : status === 'invoiced' ? '#f59e0b' : status === 'cancelled' ? '#ef4444' : '#1e52a4'
+                    return (
+                      <div key={status}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-gray-700 font-medium capitalize">{status}</span>
+                          <span className="font-black text-gray-900">{count}</span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${(count / analyticsBookingsByStatus[0][1]) * 100}%`, backgroundColor: colour }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <h3 className="text-sm font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Registrations by Country</h3>
+              {analyticsRegByCountry.length === 0 ? (
+                <p className="text-xs text-gray-400">No country data collected yet — countries appear here once participants fill in the registration form</p>
+              ) : (
+                <div className="space-y-3">
+                  {analyticsRegByCountry.map(([country, count]) => (
+                    <div key={country}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-700 font-medium">{country}</span>
+                        <span className="font-black text-gray-900">{count}</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${(count / analyticsRegByCountry[0][1]) * 100}%`, backgroundColor: '#0e7490' }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Recent activity */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 className="text-sm font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Recent Activity</h3>
+            {analyticsRecentActivity.length === 0 ? (
+              <p className="text-xs text-gray-400 py-4 text-center">No activity yet</p>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {analyticsRecentActivity.map((item, i) => {
+                  const typeColour = item.type === 'registration' ? '#1e52a4' : item.type === 'booking' ? '#22c55e' : '#8b5cf6'
+                  const typeLabel = item.type === 'registration' ? 'Registration' : item.type === 'booking' ? 'Booking' : 'Event'
+                  return (
+                    <div key={i} className="flex items-start gap-3 py-3">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0" style={{ backgroundColor: typeColour }}>
+                        {item.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-bold text-gray-900">{item.name}</span>
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: typeColour }}>{typeLabel}</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 capitalize">{item.status}</span>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-0.5 truncate">{item.detail}</div>
+                        {item.subdetail && <div className="text-xs text-gray-400 truncate">{item.subdetail}</div>}
+                      </div>
+                      <div className="text-xs text-gray-400 flex-shrink-0">
+                        {new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+        </div>
+      )}
+
     </Layout>
   )
 }
