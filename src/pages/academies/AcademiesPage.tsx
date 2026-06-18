@@ -8,6 +8,7 @@ import {
   Shield,
   School,
   Settings,
+  Globe,
 } from 'lucide-react'
 import type { ReactElement } from 'react'
 
@@ -18,6 +19,7 @@ const ICON_MAP: Record<string, ReactElement> = {
   Shield: <Shield size={22} />,
   School: <School size={22} />,
   Settings: <Settings size={22} />,
+  Globe: <Globe size={22} />,
 }
 
 export function AcademiesPage() {
@@ -27,7 +29,7 @@ export function AcademiesPage() {
         <h1 className="text-2xl font-black text-gray-900 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
           UKAG Academies
         </h1>
-        <p className="text-gray-500 text-sm">Six specialist academies covering every aspect of gymnastics coaching and operations.</p>
+        <p className="text-gray-500 text-sm">Seven specialist academies covering every aspect of gymnastics coaching and operations.</p>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
