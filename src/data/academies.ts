@@ -281,7 +281,7 @@ export const ACADEMIES: Academy[] = [
         ],
         assessment: 'Online Learning + Observed Assessment',
         certification: 'UKAG Tutor and Assessor Award',
-        bookingUrl: '#',
+        bookingUrl: '/courses/tutor-assessor',
       },
     ],
   },
