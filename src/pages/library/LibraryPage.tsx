@@ -47,7 +47,7 @@ export function LibraryPage() {
         <p className="text-sm text-blue-800 leading-relaxed">
           {discipline === 'gymnastics'
             ? 'This library contains the official UKAG session plans, skill progressions and coaching notes for Levels 1–6. Levels 1–3 may be delivered by Assistant Coaches (Level 1). All levels may be delivered by Lead Coaches.'
-            : 'This library contains UKAG Trampolining session plans and skill progressions for Levels 1–3. All sessions must be delivered by a BG/UKAG qualified Trampoline Coach. Somersault work (Level 3) requires a second coach and certified harness equipment.'}
+            : 'This library contains UKAG Trampolining session plans and skill progressions for Levels 1–3. All sessions must be delivered by a UKAG Qualified Trampoline Coach. Somersault work (Level 3) requires a second coach and certified harness equipment.'}
         </p>
       </div>
 

@@ -43,13 +43,13 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
           ],
         },
         {
-          heading: 'The BG/UKAG Qualification Framework',
-          body: 'UKAG coach education sits within the British Gymnastics (BG) technical framework, which is itself regulated under UK Sport and Sport England standards. Every UKAG qualification has defined learning outcomes, assessment criteria, and quality assurance processes that tutors and assessors must follow precisely. Understanding this framework means understanding where your decisions sit within a larger accountability structure.',
+          heading: 'The UKAG Qualification Framework',
+          body: 'UKAG is an entirely independent gymnastics and trampolining training provider. Our qualifications are designed and governed by UKAG, aligned to national and international coaching frameworks, UK Coaching standards, and recognised safeguarding and welfare guidelines. Every UKAG qualification has defined learning outcomes, assessment criteria, and quality assurance processes that tutors and assessors must follow precisely. Understanding this framework means understanding where your decisions sit within UKAG\'s own accountability structure.',
           bullets: [
-            'UKAG qualifications are mapped to the UK Coaching Framework levels',
+            'UKAG qualifications are aligned to the UK Coaching Framework levels',
             'Assessment criteria are set centrally by UKAG and must not be modified',
             'All assessment decisions are subject to internal and external quality assurance',
-            'BG Technical Committee oversees curriculum content and standards',
+            'UKAG\'s qualification team oversees curriculum content, criteria, and standards',
           ],
         },
         {
@@ -68,7 +68,7 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
           bullets: [
             'You are a gatekeeper for the coaching profession — only pass candidates who are ready',
             'Your feedback shapes how coaches develop beyond the qualification',
-            'You represent UKAG and BG standards in every training and assessment context',
+            'You represent UKAG standards in every training and assessment context',
             'Building relationships with candidates supports long-term retention in the sport',
           ],
         },
@@ -96,15 +96,15 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
           explanation: 'Tutors are in a developmental, facilitative role; assessors make formal, evidence-based pass/refer decisions against set criteria.',
         },
         {
-          question: 'UKAG qualifications are overseen by which national body?',
+          question: 'Who sets and oversees UKAG qualification standards and curriculum content?',
           options: [
             'UK Sport exclusively',
-            'British Gymnastics (BG) Technical Committee',
+            'UKAG\'s own qualification team, aligned to national and international coaching frameworks',
             'Sport England only',
             'The local authority',
           ],
           correct: 1,
-          explanation: 'BG\'s Technical Committee sets and oversees UKAG qualification standards and curriculum content.',
+          explanation: 'UKAG is entirely independent. Its qualification team sets and governs all standards and curriculum content, aligned to national and international coaching frameworks.',
         },
         {
           question: 'Under which legislation must tutors and assessors make reasonable adjustments for candidates with disabilities?',
@@ -123,7 +123,7 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
             'It makes the paperwork more complex',
             'Coaching a candidate towards specific assessment answers introduces bias and can invalidate decisions',
             'Candidates prefer to be assessed by someone who does not teach them',
-            'BG prohibits the same person from tutoring and assessing on the same programme',
+            'UKAG policy advises separating tutoring and assessing roles where possible to protect objectivity',
           ],
           correct: 1,
           explanation: 'Conflating the roles risks assessment bias. When assessing, judgements must be based purely on evidence against criteria, not on coaching input.',
@@ -224,7 +224,7 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
           options: [
             'It keeps the tutor from getting bored',
             'It ensures no candidate is consistently disadvantaged by a single-mode approach',
-            'It is required by BG regulations for all programmes',
+            'It ensures all candidates receive the same quality of delivery regardless of which tutor delivers',
             'It reduces the amount of content tutors need to prepare',
           ],
           correct: 1,
@@ -378,7 +378,7 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
         {
           question: 'Why should session plans be detailed enough for another tutor to deliver from?',
           options: [
-            'It satisfies BG administrative requirements only',
+            'It satisfies administrative requirements only',
             'It ensures quality, supports IQA sampling, and provides a framework for reflective practice',
             'It proves the tutor is qualified',
             'It is only required for online delivery, not face-to-face',
@@ -447,7 +447,7 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
           body: 'Difficult moments in coach education delivery include challenging questions, disputes about assessment criteria, candidates who become distressed, and group conflicts. Each of these requires a calm, professional response that protects the learning environment for everyone. Having a toolkit of responses for common difficult moments is part of your professional preparation — being caught off-guard undermines your credibility and the confidence of the group.',
           bullets: [
             'For questions you cannot answer: "I want to give you an accurate answer — let me come back to that"',
-            'For disputes about criteria: "The criteria are set by BG — here is the documentation"',
+            'For disputes about criteria: "The criteria are set by UKAG — here is the documentation"',
             'For distressed candidates: pause the session, create privacy, and respond with care',
             'For group conflict: name it calmly, refer to ground rules, and refocus on learning outcomes',
           ],
@@ -470,11 +470,11 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
           options: [
             'Acknowledge their view and change the criterion to match',
             'Dismiss the challenge to maintain your authority',
-            'Refer to the BG documentation: "The criterion is set centrally — here is the source"',
+            'Refer to the UKAG documentation: "The criterion is set centrally by UKAG — here is the source"',
             'Ask the group to vote on which interpretation is correct',
           ],
           correct: 2,
-          explanation: 'Assessment criteria are set by BG and cannot be modified by tutors. Referring to the documentation is factually correct and professionally appropriate.',
+          explanation: 'Assessment criteria are set by UKAG and cannot be modified by individual tutors. Referring to the UKAG documentation is factually correct and professionally appropriate.',
         },
         {
           question: 'What should you do BEFORE beginning a demonstration?',
@@ -705,7 +705,7 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
           question: 'Why must written assessment feedback reference specific criteria?',
           options: [
             'To make the feedback document longer and more detailed',
-            'Because it is required by BG policy but has no other practical purpose',
+            'Because it satisfies administrative requirements only and has no other practical purpose',
             'So the decision is traceable, defensible in an appeal, and useful to the IQA/EQA',
             'To prove the assessor read the qualification handbook',
           ],
@@ -894,13 +894,13 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
           ],
         },
         {
-          heading: 'External Quality Assurance (EQA) and BG/UKAG Monitoring',
-          body: 'External quality assurance is conducted by British Gymnastics or a designated EQA provider on behalf of BG. EQA provides an independent check that UKAG\'s IQA systems are working effectively and that the qualification standard is being maintained. EQA visits may involve reviewing assessment records, observing assessors, and interviewing candidates. An EQA report that identifies systematic quality failures can put UKAG\'s qualification licence at risk.',
+          heading: 'External Quality Assurance (EQA) and UKAG Monitoring',
+          body: 'External quality assurance provides an independent check that UKAG\'s internal quality assurance systems are working effectively and that qualification standards are being maintained. EQA is conducted by a designated external reviewer appointed by UKAG. EQA visits may involve reviewing assessment records, observing assessors in practice, and interviewing candidates. An EQA report that identifies systematic quality failures can put UKAG\'s ability to award the qualification at risk.',
           bullets: [
             'Keep all assessment records organised, dated, and accessible for EQA visits',
             'EQA may contact candidates directly to verify their experience of the programme',
             'Act on EQA recommendations promptly — they are not optional',
-            'A consistently positive EQA record supports UKAG\'s awarding body relationship with BG',
+            'A consistently positive EQA record supports UKAG\'s qualification integrity and reputation',
           ],
         },
         {
@@ -941,12 +941,12 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
           question: 'What can happen if an EQA report identifies systematic quality failures in UKAG\'s assessment process?',
           options: [
             'Individual assessors receive additional training and the matter is closed',
-            'UKAG\'s qualification licence with BG may be put at risk',
+            'UKAG\'s ability to continue awarding the qualification may be put at risk',
             'Candidates who passed may be invited to retake their assessments',
             'The IQA is replaced but the qualification continues as normal',
           ],
           correct: 1,
-          explanation: 'Systematic EQA failures put the awarding body relationship at risk. Maintaining EQA standards is essential for UKAG\'s licence to award BG-recognised qualifications.',
+          explanation: 'Systematic EQA failures put the integrity of the qualification at risk. Maintaining EQA standards is essential for UKAG\'s continued ability to award its qualifications.',
         },
         {
           question: 'What is a candidate appealing against in the appeals process?',
@@ -1008,7 +1008,7 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
         },
         {
           heading: 'CPD Requirements for Maintaining Tutor/Assessor Status',
-          body: 'Holding the UKAG Tutor and Assessor Award is not a permanent licence to deliver and assess without further development. UKAG requires all active tutors and assessors to maintain their status through annual CPD that demonstrates ongoing professional learning. This includes attendance at standardisation meetings, engagement with updated UKAG and BG policies, and evidence of continued coaching practice. Lapsed CPD can result in a requirement to re-register or, in serious cases, suspension of awarding authority.',
+          body: 'Holding the UKAG Tutor and Assessor Award is not a permanent licence to deliver and assess without further development. UKAG requires all active tutors and assessors to maintain their status through annual CPD that demonstrates ongoing professional learning. This includes attendance at standardisation meetings, engagement with updated UKAG policies and frameworks, and evidence of continued coaching practice. Lapsed CPD can result in a requirement to re-register or, in serious cases, suspension of awarding authority.',
           bullets: [
             'Attend all mandatory standardisation meetings in each qualification year',
             'Complete at least one CPD activity per year relevant to coach education or assessment',
@@ -1017,11 +1017,11 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
           ],
         },
         {
-          heading: 'Keeping Current with UKAG and BG Policy Updates',
+          heading: 'Keeping Current with UKAG Policy Updates',
           body: 'The UKAG qualification framework, assessment criteria, and safeguarding policies are reviewed and updated periodically. As a tutor and assessor, you are professionally responsible for being aware of these changes and implementing them in your practice. Delivering training that references outdated criteria, or making assessment decisions against superseded standards, is a quality failure that can result in invalid qualifications being awarded. Subscribe to UKAG communications and review the tutor resources section of the coaching portal regularly.',
           bullets: [
             'Check the UKAG coaching portal for policy and criteria updates before each programme cohort',
-            'Attend BG and UKAG tutor briefings when available — treat these as mandatory',
+            'Attend all UKAG tutor and assessor briefings when available — treat these as mandatory',
             'If a policy update changes an assessment criterion, contact your IQA for clarification before proceeding',
             'Document when you became aware of an update and how you implemented it in your practice',
           ],
@@ -1078,7 +1078,7 @@ export const TUTOR_ASSESSOR_COURSE: TutorAssessorCourse = {
             'It is a legal requirement under the Health and Safety at Work Act',
             'Assessors who do not coach become disconnected from the standard they are assessing against',
             'It allows tutors to demonstrate skills during standardisation meetings',
-            'Coaching practice is required to maintain BG membership only, not the assessor award',
+            'Coaching practice keeps tutors and assessors connected to the standard — it is not a separate membership requirement',
           ],
           correct: 1,
           explanation: 'Maintaining coaching practice keeps tutors and assessors grounded in the real-world context of the standard they assess. Disconnection from practice leads to drift in decision-making.',

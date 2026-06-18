@@ -461,7 +461,7 @@ export const SEND_AWARENESS_COURSE = {
             'Modify the task, not just the equipment — change the skill requirement if needed',
             'Create success early and often — confidence is foundational to continued participation',
             'Document adaptations that work and share with other coaches in your club',
-            'Contact British Gymnastics for guidance on ParaGym and adapted competition pathways',
+            'Contact UKAG for guidance on adapted participation pathways',
           ],
         },
       ],
@@ -677,7 +677,7 @@ export const SEND_AWARENESS_COURSE = {
             'The participant\'s school SENDCo',
             'The participant\'s GP',
             'The participant\'s parents or carers',
-            'The British Gymnastics welfare officer',
+            'The UKAG welfare lead',
           ],
           correct: 2,
           explanation: 'Parents and carers live with their child every day and have built up expert knowledge of their needs, triggers, and effective strategies. They are usually the most valuable source of practical information for a coach.',
@@ -687,7 +687,7 @@ export const SEND_AWARENESS_COURSE = {
           options: [
             'A medical summary prepared by a GP',
             'A document describing a person\'s strengths, needs, and communication preferences',
-            'A British Gymnastics registration form for SEND participants',
+            'A UKAG registration form for SEND participants',
             'A risk assessment for participants with physical disabilities',
           ],
           correct: 1,
@@ -696,7 +696,7 @@ export const SEND_AWARENESS_COURSE = {
         {
           question: 'Before contacting a participant\'s occupational therapist for advice, you must:',
           options: [
-            'Contact British Gymnastics for approval',
+            'Seek UKAG approval before proceeding',
             'Complete a SEND course at Level 3 or above',
             'Obtain parental or guardian consent',
             'Wait for the therapist to contact you first',
