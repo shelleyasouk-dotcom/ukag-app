@@ -32,6 +32,7 @@ import { EqualityInclusionCoursePage } from './pages/courses/EqualityInclusionCo
 import { EqualityInclusionModulePage } from './pages/courses/EqualityInclusionModulePage'
 import { AdminPage } from './pages/admin/AdminPage'
 import { EventRegistrationPage } from './pages/events/EventRegistrationPage'
+import { InternationalPage } from './pages/international/InternationalPage'
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth()
@@ -96,7 +97,8 @@ function AppRoutes() {
       <Route path="/courses/equality/:moduleId" element={<ProtectedRoute><EqualityInclusionModulePage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
 
-      {/* Public event registration — no login required */}
+      {/* Public pages — no login required */}
+      <Route path="/international" element={<InternationalPage />} />
       <Route path="/events/:eventId" element={<EventRegistrationPage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />

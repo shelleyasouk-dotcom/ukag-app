@@ -85,7 +85,7 @@ function RegistrationForm({ event }: { event: UkagEvent }) {
   if (done) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-10 max-w-md w-full text-center">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 max-w-md w-full text-center">
           <CheckCircle size={52} className="text-green-500 mx-auto mb-4" />
           <h2 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
             Registration Received!
@@ -96,7 +96,27 @@ function RegistrationForm({ event }: { event: UkagEvent }) {
           <p className="text-sm text-gray-500 mb-6">
             An invoice will be sent to <strong>{schoolName}</strong>. We'll be in touch with further details closer to the event.
           </p>
+
+          {/* Account creation prompt */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 text-left">
+            <div className="text-sm font-black text-blue-900 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              Create your UKAG account
+            </div>
+            <p className="text-xs text-blue-700 mb-3">
+              Access your digital certificate, complete your online learning modules, and track your CPD — all in one place.
+            </p>
+            <a
+              href="/signup"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-white w-full justify-center"
+              style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+            >
+              Create a free account →
+            </a>
+          </div>
+
           <div className="text-xs text-gray-400">
+            Already have an account? <a href="/login" className="text-blue-600 hover:underline">Sign in</a>
+            &nbsp;·&nbsp;
             Questions? Email{' '}
             <a href={`mailto:${event.contactEmail}`} className="text-blue-600 hover:underline">{event.contactEmail}</a>
           </div>

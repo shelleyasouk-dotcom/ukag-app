@@ -8,7 +8,8 @@ const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
   { value: 'assistant_coach', label: 'Assistant Coach (Level 1)' },
   { value: 'lead_coach', label: 'Lead Coach (Level 2)' },
   { value: 'area_lead', label: 'Area Lead' },
-  { value: 'teacher', label: 'Teacher / School Staff' },
+  { value: 'teacher', label: 'Teacher / School Staff (UK)' },
+  { value: 'trampoline_teacher', label: 'Trampolining Teacher — International' },
 ]
 
 function UkagMark({ size = 100 }: { size?: number }) {
