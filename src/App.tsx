@@ -34,6 +34,7 @@ import { TrampolineTeacherCoursePage } from './pages/courses/TrampolineTeacherCo
 import { TrampolineTeacherModulePage } from './pages/courses/TrampolineTeacherModulePage'
 import { CourseRegistrationPage } from './pages/courses/CourseRegistrationPage'
 import { AdminPage } from './pages/admin/AdminPage'
+import { OrganisationPage } from './pages/organisation/OrganisationPage'
 import { EventRegistrationPage } from './pages/events/EventRegistrationPage'
 import { InternationalPage } from './pages/international/InternationalPage'
 
@@ -80,6 +81,7 @@ function AppRoutes() {
       <Route path="/library/:level" element={<ProtectedRoute><LevelDetailPage /></ProtectedRoute>} />
       <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/organisation" element={<ProtectedRoute><OrganisationPage /></ProtectedRoute>} />
       <Route path="/certifications" element={<Navigate to="/profile" replace />} />
       <Route path="/courses/leadership" element={<ProtectedRoute><LeadershipCoursePage /></ProtectedRoute>} />
       <Route path="/courses/leadership/:moduleId" element={<ProtectedRoute><LeadershipModulePage /></ProtectedRoute>} />
