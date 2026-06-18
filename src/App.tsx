@@ -30,6 +30,8 @@ import { SendAwarenessCoursePage } from './pages/courses/SendAwarenessCoursePage
 import { SendAwarenessModulePage } from './pages/courses/SendAwarenessModulePage'
 import { EqualityInclusionCoursePage } from './pages/courses/EqualityInclusionCoursePage'
 import { EqualityInclusionModulePage } from './pages/courses/EqualityInclusionModulePage'
+import { TrampolineTeacherCoursePage } from './pages/courses/TrampolineTeacherCoursePage'
+import { TrampolineTeacherModulePage } from './pages/courses/TrampolineTeacherModulePage'
 import { AdminPage } from './pages/admin/AdminPage'
 import { EventRegistrationPage } from './pages/events/EventRegistrationPage'
 import { InternationalPage } from './pages/international/InternationalPage'
@@ -95,6 +97,8 @@ function AppRoutes() {
       <Route path="/courses/send/:moduleId" element={<ProtectedRoute><SendAwarenessModulePage /></ProtectedRoute>} />
       <Route path="/courses/equality" element={<ProtectedRoute><EqualityInclusionCoursePage /></ProtectedRoute>} />
       <Route path="/courses/equality/:moduleId" element={<ProtectedRoute><EqualityInclusionModulePage /></ProtectedRoute>} />
+      <Route path="/courses/trampoline-teacher" element={<ProtectedRoute><TrampolineTeacherCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/trampoline-teacher/:moduleId" element={<ProtectedRoute><TrampolineTeacherModulePage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
 
       {/* Public pages — no login required */}
