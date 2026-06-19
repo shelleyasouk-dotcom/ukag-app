@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Globe, Calendar, MapPin, Award, BookOpen, Users, ChevronRight, CheckCircle } from 'lucide-react'
+import { Globe, Calendar, MapPin, Award, BookOpen, Users, ChevronRight, CheckCircle, Wrench } from 'lucide-react'
 
 function UkagMark({ size = 100 }: { size?: number }) {
   return <img src="/ukag-mark.png" width={size} height={size} alt="UKAG" style={{ objectFit: 'contain', display: 'block' }} />
@@ -161,6 +161,24 @@ export function InternationalPage() {
               Book Refresher <ChevronRight size={14} />
             </Link>
           </div>
+        </div>
+
+        {/* Servicing banner */}
+        <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1e52a418' }}>
+            <Wrench size={18} style={{ color: '#1e52a4' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-black text-gray-900 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>Trampoline Inspection &amp; Servicing — August 2026</div>
+            <p className="text-xs text-gray-500 mt-0.5">UAE School Partner Rate: £250 per school · Inspection of up to 4 trampolines · Written report included</p>
+          </div>
+          <Link
+            to="/services/uae"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-white flex-shrink-0"
+            style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+          >
+            View &amp; Book <ChevronRight size={14} />
+          </Link>
         </div>
       </section>
 
