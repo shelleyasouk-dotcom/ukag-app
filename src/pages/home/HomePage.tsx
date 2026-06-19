@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import {
@@ -17,7 +18,11 @@ import {
   CalendarCheck,
   AlertTriangle,
   FileText,
+  ArrowUpFromLine,
+  CheckCircle,
 } from 'lucide-react'
+import { TrackerOrderModal } from '../../components/shop/TrackerOrderModal'
+import type { TrackerProduct } from '../../components/shop/TrackerOrderModal'
 
 function UkagMark({ size = 36 }: { size?: number }) {
   return <img src="/ukag-mark.png" width={size} height={size} alt="UKAG" style={{ objectFit: 'contain', display: 'block' }} />
@@ -53,6 +58,7 @@ const PORTAL_RESOURCES = [
 
 export function HomePage() {
   const { user } = useAuth()
+  const [trackerModalProduct, setTrackerModalProduct] = useState<TrackerProduct | null>(null)
 
   return (
     <div style={{ fontFamily: 'Raleway, sans-serif' }} className="min-h-screen bg-white">
@@ -69,6 +75,7 @@ export function HomePage() {
             <div className="hidden md:flex items-center gap-8">
               <a href="#academies" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Academies</a>
               <a href="#pathway" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Coaching Pathway</a>
+              <a href="#trackers" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Award Trackers</a>
               <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Portal Resources</Link>
               <a href="#equipment" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Equipment Services</a>
             </div>
@@ -290,6 +297,133 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* ── Award Trackers Shop Section ── */}
+      <section id="trackers" className="bg-white py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
+              style={{ backgroundColor: '#8b5cf618', color: '#8b5cf6' }}
+            >
+              <Star size={12} />
+              Personal Award Trackers
+            </div>
+            <h2 className="text-3xl font-black mb-3" style={{ color: '#0f172a', fontFamily: 'Montserrat, sans-serif' }}>
+              Personal Award Trackers
+            </h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
+              Track every skill, level by level. Each tracker covers all 6 levels with coach sign-off, skill checklists and routine builders.
+            </p>
+          </div>
+
+          {/* Product cards */}
+          <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto mb-8">
+            {/* Gymnastics Tracker */}
+            <div className="bg-white rounded-xl border-2 border-indigo-100 p-6 flex flex-col gap-4 hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#8b5cf618' }}>
+                <Star size={24} style={{ color: '#8b5cf6' }} />
+              </div>
+              <div>
+                <h3 className="font-black text-gray-900 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  Gymnastics Tracker
+                </h3>
+                <p className="text-sm text-gray-600 mb-2">Beam · Bars · Floor · Rebound</p>
+                <p className="text-xs text-gray-500">Ages 4–14 · 6 Levels · 12 Pages</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: '#8b5cf618', color: '#8b5cf6' }}>
+                  £12 each
+                </span>
+                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">
+                  12-page booklet
+                </span>
+              </div>
+              <button
+                onClick={() => setTrackerModalProduct('gymnastics')}
+                className="mt-auto w-full py-2.5 rounded-lg text-sm font-bold text-white"
+                style={{ backgroundColor: '#8b5cf6', fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Order Now
+              </button>
+            </div>
+
+            {/* Trampolining Tracker */}
+            <div className="bg-white rounded-xl border-2 border-cyan-100 p-6 flex flex-col gap-4 hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#0e749018' }}>
+                <ArrowUpFromLine size={24} style={{ color: '#0e7490' }} />
+              </div>
+              <div>
+                <h3 className="font-black text-gray-900 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  Trampolining Tracker
+                </h3>
+                <p className="text-sm text-gray-600 mb-2">6 Levels · Foundation to Excellence</p>
+                <p className="text-xs text-gray-500">Ages 4–14 · 12 Pages</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: '#0e749018', color: '#0e7490' }}>
+                  £12 each
+                </span>
+                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">
+                  12-page booklet
+                </span>
+              </div>
+              <button
+                onClick={() => setTrackerModalProduct('trampolining')}
+                className="mt-auto w-full py-2.5 rounded-lg text-sm font-bold text-white"
+                style={{ backgroundColor: '#0e7490', fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Order Now
+              </button>
+            </div>
+          </div>
+
+          {/* Bundle + pricing info */}
+          <div className="max-w-3xl mx-auto space-y-4">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex-1">
+                <div className="font-black text-gray-900 text-sm mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  Bundle: Both Trackers
+                </div>
+                <p className="text-sm text-gray-600">Gymnastics + Trampolining tracker in one order. Save £4 per set.</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <span className="text-xl font-black" style={{ color: '#8b5cf6', fontFamily: 'Montserrat, sans-serif' }}>£20</span>
+                <button
+                  onClick={() => setTrackerModalProduct('bundle')}
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-white"
+                  style={{ backgroundColor: '#8b5cf6', fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Order Bundle
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-100 rounded-xl px-5 py-4">
+              <div className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                Bulk Pricing
+              </div>
+              <div className="text-sm text-gray-700 font-medium">
+                5–9: £10 each · 10–24: £9 each · 25+: £8 each · 50+: contact for quote
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl bg-green-50 border border-green-200">
+                <CheckCircle size={16} className="text-green-600 flex-shrink-0" />
+                <span className="text-sm font-semibold text-green-800">Free PDF download with any UKAG course purchase</span>
+              </div>
+              <Link
+                to="/login"
+                className="flex-shrink-0 px-5 py-3 rounded-xl text-sm font-bold border-2 border-gray-300 text-gray-700 hover:border-gray-400 transition-colors text-center"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Sign In to Download PDF
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="resources" className="bg-white py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -392,6 +526,13 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      {trackerModalProduct && (
+        <TrackerOrderModal
+          defaultProduct={trackerModalProduct}
+          onClose={() => setTrackerModalProduct(null)}
+        />
+      )}
 
       <footer style={{ backgroundColor: '#0f172a' }} className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

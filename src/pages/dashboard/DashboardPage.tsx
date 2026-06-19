@@ -4,9 +4,11 @@ import { Layout } from '../../components/layout/Layout'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import type { Profile } from '../../types'
-import { GraduationCap, BookOpen, FolderOpen, Award, Wrench, ChevronRight, Clock, Globe, Users, Building2, ClipboardCheck, BarChart3, Mail, Shield, Settings } from 'lucide-react'
+import { GraduationCap, BookOpen, FolderOpen, Award, Wrench, ChevronRight, Clock, Globe, Users, Building2, ClipboardCheck, BarChart3, Mail, Shield, Settings, Star, ArrowUpFromLine } from 'lucide-react'
 import { ACADEMIES } from '../../data/academies'
 import { COURSE_REGISTRY } from '../../data/courses'
+import { TrackerOrderModal } from '../../components/shop/TrackerOrderModal'
+import type { TrackerProduct } from '../../components/shop/TrackerOrderModal'
 
 const coachAcademy = ACADEMIES.find(a => a.id === 'coach')!
 const FEATURED_COURSES = ['junior-coach', 'level-1-assistant', 'level-2-lead-gymnastics']
@@ -62,6 +64,8 @@ function QuickActionCard({ label, desc, to, colour, Icon }: QuickAction) {
 // ─── Coaching Dashboard ───────────────────────────────────────────────────────
 
 function CoachingDashboard({ profile }: { profile: Profile }) {
+  const [trackerModalProduct, setTrackerModalProduct] = useState<TrackerProduct | null>(null)
+
   const QUICK_ACTIONS: QuickAction[] = [
     {
       label: 'Academies',
@@ -114,6 +118,73 @@ function CoachingDashboard({ profile }: { profile: Profile }) {
           <QuickActionCard key={action.to} {...action} />
         ))}
       </div>
+
+      {/* Award Trackers section */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Award Trackers</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Personal skill tracker booklets for your gymnasts — coach signs off each level</p>
+          </div>
+          <a
+            href="/#trackers"
+            className="text-xs font-semibold text-gray-500 hover:text-gray-700"
+          >
+            View all
+          </a>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#8b5cf618' }}>
+                <Star size={18} style={{ color: '#8b5cf6' }} />
+              </div>
+              <div>
+                <div className="font-black text-gray-900 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>Gymnastics Tracker</div>
+                <div className="text-xs text-gray-500">Beam · Bars · Floor · Rebound · Ages 4–14</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-gray-600">£12 each · Free with course</span>
+              <button
+                onClick={() => setTrackerModalProduct('gymnastics')}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white"
+                style={{ backgroundColor: '#8b5cf6', fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Order Now
+              </button>
+            </div>
+          </div>
+          <div className="rounded-xl border border-cyan-100 bg-cyan-50 p-4 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#0e749018' }}>
+                <ArrowUpFromLine size={18} style={{ color: '#0e7490' }} />
+              </div>
+              <div>
+                <div className="font-black text-gray-900 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>Trampolining Tracker</div>
+                <div className="text-xs text-gray-500">6 Levels · Foundation to Excellence · Ages 4–14</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-gray-600">£12 each · Free with course</span>
+              <button
+                onClick={() => setTrackerModalProduct('trampolining')}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white"
+                style={{ backgroundColor: '#0e7490', fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Order Now
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {trackerModalProduct && (
+        <TrackerOrderModal
+          defaultProduct={trackerModalProduct}
+          onClose={() => setTrackerModalProduct(null)}
+        />
+      )}
 
       <div className="grid lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-xl border border-gray-200 p-5">
