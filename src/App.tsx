@@ -11,6 +11,7 @@ import { AcademiesPage } from './pages/academies/AcademiesPage'
 import { AcademyDetailPage } from './pages/academies/AcademyDetailPage'
 import { LibraryPage } from './pages/library/LibraryPage'
 import { LevelDetailPage } from './pages/library/LevelDetailPage'
+import { AwardsGuidePage } from './pages/library/AwardsGuidePage'
 import { ResourcesPage } from './pages/resources/ResourcesPage'
 import { ProfilePage } from './pages/profile/ProfilePage'
 import { LeadershipCoursePage } from './pages/courses/LeadershipCoursePage'
@@ -80,6 +81,7 @@ function AppRoutes() {
       <Route path="/academies" element={<ProtectedRoute><AcademiesPage /></ProtectedRoute>} />
       <Route path="/academies/:academyId" element={<ProtectedRoute><AcademyDetailPage /></ProtectedRoute>} />
       <Route path="/library" element={<ProtectedRoute><LibraryPage /></ProtectedRoute>} />
+      <Route path="/library/awards-guide" element={<ProtectedRoute><AwardsGuidePage /></ProtectedRoute>} />
       <Route path="/library/trampoline/:level" element={<ProtectedRoute><LevelDetailPage discipline="trampolining" /></ProtectedRoute>} />
       <Route path="/library/:level" element={<ProtectedRoute><LevelDetailPage /></ProtectedRoute>} />
       <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />

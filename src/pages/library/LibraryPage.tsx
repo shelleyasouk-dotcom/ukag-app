@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Layout } from '../../components/layout/Layout'
 import { COACHING_LIBRARY, TRAMPOLINE_LIBRARY } from '../../data/coachingLibrary'
-import { ChevronRight, Info } from 'lucide-react'
+import { ChevronRight, Info, BookMarked } from 'lucide-react'
 
 type Discipline = 'gymnastics' | 'trampolining'
 
@@ -41,6 +41,21 @@ export function LibraryPage() {
           Trampolining
         </button>
       </div>
+
+      {/* Awards Coach Guide banner */}
+      <Link
+        to="/library/awards-guide"
+        className="flex items-center gap-4 bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4 hover:bg-indigo-100 transition-colors"
+      >
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#4f46e520' }}>
+          <BookMarked size={18} style={{ color: '#4f46e5' }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-black text-indigo-900 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>Awards Coach Guide</div>
+          <div className="text-xs text-indigo-700">How to use the award books, sign-off standards, glossary and FAQ</div>
+        </div>
+        <ChevronRight size={16} className="text-indigo-400 flex-shrink-0" />
+      </Link>
 
       <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
         <Info size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
