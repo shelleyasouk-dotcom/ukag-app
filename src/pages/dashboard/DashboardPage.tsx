@@ -75,6 +75,13 @@ function CoachingDashboard({ profile }: { profile: Profile }) {
       Icon: GraduationCap,
     },
     {
+      label: 'International Academy',
+      desc: 'UAE and international trampolining courses',
+      to: '/international',
+      colour: '#0e7490',
+      Icon: Globe,
+    },
+    {
       label: 'Coaching Library',
       desc: 'Session plans and skill progressions',
       to: '/library',
@@ -185,6 +192,38 @@ function CoachingDashboard({ profile }: { profile: Profile }) {
           onClose={() => setTrackerModalProduct(null)}
         />
       )}
+
+      {/* UAE International Training banner */}
+      <div className="border border-[#f4cc2c] bg-[#fffbeb] rounded-xl p-5 mb-8">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#0e749018' }}>
+            <Globe size={20} style={{ color: '#0e7490' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-black uppercase tracking-wide" style={{ color: '#92400e', fontFamily: 'Montserrat, sans-serif' }}>International — August 2026</span>
+            </div>
+            <p className="text-sm font-semibold text-gray-900 mb-0.5">UAE Trampolining Teacher Training</p>
+            <p className="text-xs text-gray-600 mb-3">Combined Level 1 + Level 2 Award (24–26 Aug) · Refresher Day (Thu 27 Aug) · UAE</p>
+            <div className="flex gap-2 flex-wrap">
+              <Link
+                to="/events/uae-august-2026"
+                className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white"
+                style={{ backgroundColor: '#0e7490', fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Book Your Place
+              </Link>
+              <Link
+                to="/international"
+                className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white"
+                style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+              >
+                About the Programme
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="grid lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-xl border border-gray-200 p-5">

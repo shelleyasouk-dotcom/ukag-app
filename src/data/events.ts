@@ -14,6 +14,7 @@ export interface UkagEvent {
   week: string
   description: string
   courseOptions: EventCourseOption[]
+  schoolOptions?: string[]
   paymentNote: string
   contactEmail: string
 }
@@ -24,35 +25,33 @@ export const EVENTS: UkagEvent[] = [
     title: 'UAE Trampolining Teacher Training',
     subtitle: 'International Teacher Qualification Programme',
     location: 'UAE',
-    dates: '24–26 August 2026',
+    dates: '24–28 August 2026',
     week: 'Week commencing 24 August 2026',
     description:
-      'UKAG is delivering a three-day intensive trampolining teacher qualification programme in the UAE. Participants will complete a combined Level 1 and Level 2 Trampolining Teachers qualification, with refresher sessions also available for previously qualified coaches.',
+      'UKAG is delivering an intensive trampolining teacher qualification programme in the UAE. Participants complete the Combined Level 1 & Level 2 Trampolining Teachers Award over three days. A one-day Refresher Course is also available on Thursday 27 August for previously qualified coaches.',
     courseOptions: [
-      {
-        id: 'l1-teachers',
-        label: 'Level 1 Trampolining Teachers Award',
-        description: 'For new trampolining teachers — full Level 1 qualification',
-        days: '3 days (24–26 Aug)',
-      },
-      {
-        id: 'l2-teachers',
-        label: 'Level 2 Trampolining Teachers Award',
-        description: 'For existing L1 holders — upgrade to full Level 2 qualification',
-        days: '3 days (24–26 Aug)',
-      },
       {
         id: 'combined-l1-l2',
         label: 'Combined Level 1 + Level 2 Award',
-        description: 'Intensive combined pathway — Level 1 and Level 2 in one programme',
+        description: 'Intensive combined pathway — full Level 1 and Level 2 Trampolining Teachers qualification in one programme. Suitable for all new and returning teachers.',
         days: '3 days (24–26 Aug)',
       },
       {
         id: 'refresher',
-        label: 'Trampolining Refresher Course',
-        description: 'For previously qualified coaches needing a refresher',
-        days: 'TBC — likely 1 day',
+        label: 'Refresher Day',
+        description: 'One-day refresher for coaches who already hold a UKAG or equivalent trampolining teaching qualification. Covers updated technique, safety standards and curriculum updates.',
+        days: 'Thursday 27 August 2026',
       },
+    ],
+    schoolOptions: [
+      'Wellington International School – Dubai (South)',
+      'Wellington International School – Dubai (North)',
+      'Wellington Academy – Silicon Oasis',
+      'Wellington Academy – Al Ain',
+      'Wellington Primary – Dubai',
+      'Gems Wellington Academy – Abu Dhabi',
+      'Other Wellington school / campus',
+      'Other school (not listed)',
     ],
     paymentNote:
       'Fees are invoiced directly to each participant\'s employer/school. Please provide accurate employer and billing details below.',

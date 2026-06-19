@@ -28,9 +28,14 @@ function RegistrationForm({ event }: { event: UkagEvent }) {
 
   // Employer / school
   const [schoolName, setSchoolName] = useState('')
+  const [schoolNameOther, setSchoolNameOther] = useState('')
   const [schoolContactName, setSchoolContactName] = useState('')
   const [schoolContactEmail, setSchoolContactEmail] = useState('')
   const [billingAddress, setBillingAddress] = useState('')
+
+  const effectiveSchoolName = (event.schoolOptions && schoolName === 'Other school (not listed)')
+    ? schoolNameOther
+    : schoolName
 
   // Emergency contact
   const [emergencyName, setEmergencyName] = useState('')
@@ -59,7 +64,7 @@ function RegistrationForm({ event }: { event: UkagEvent }) {
       email,
       phone: phone || null,
       job_title: jobTitle || null,
-      school_name: schoolName,
+      school_name: effectiveSchoolName,
       school_contact_name: schoolContactName || null,
       school_contact_email: schoolContactEmail || null,
       billing_address: billingAddress || null,
@@ -230,8 +235,33 @@ function RegistrationForm({ event }: { event: UkagEvent }) {
             <p className="text-xs text-gray-500 mb-4">{event.paymentNote}</p>
             <div className="space-y-3">
               <div>
-                <label className={labelCls}>School / organisation name</label>
-                <input value={schoolName} onChange={e => setSchoolName(e.target.value)} required className={inputCls} placeholder="Springfield International School" />
+                <label className={labelCls}>Which school / campus are you from?</label>
+                {event.schoolOptions ? (
+                  <>
+                    <select
+                      value={schoolName}
+                      onChange={e => setSchoolName(e.target.value)}
+                      required
+                      className={inputCls}
+                    >
+                      <option value="">Select your school…</option>
+                      {event.schoolOptions.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    {(schoolName === 'Other school (not listed)' || schoolName === 'Other Wellington school / campus') && (
+                      <input
+                        value={schoolNameOther}
+                        onChange={e => setSchoolNameOther(e.target.value)}
+                        required
+                        className={`${inputCls} mt-2`}
+                        placeholder="Enter your school name"
+                      />
+                    )}
+                  </>
+                ) : (
+                  <input value={schoolName} onChange={e => setSchoolName(e.target.value)} required className={inputCls} placeholder="Springfield International School" />
+                )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

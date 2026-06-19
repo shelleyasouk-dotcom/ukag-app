@@ -101,6 +101,18 @@ interface ResourceOrderRow {
   status: string
 }
 
+interface CourseDateRow {
+  id: string
+  created_at: string
+  course_id: string
+  course_title: string
+  event_date: string
+  location: string
+  max_capacity: number | null
+  notes: string | null
+  status: 'open' | 'closed' | 'full'
+}
+
 interface ServiceInquiryRow {
   id: string
   created_at: string
@@ -169,7 +181,7 @@ const ROLE_OPTIONS = [
 
 export function AdminPage() {
   const { profile } = useAuth()
-  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources'>('coaches')
+  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources' | 'dates'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
@@ -178,6 +190,10 @@ export function AdminPage() {
   const [eventRegs, setEventRegs] = useState<EventRegistrationRow[]>([])
   const [serviceInquiries, setServiceInquiries] = useState<ServiceInquiryRow[]>([])
   const [resourceOrders, setResourceOrders] = useState<ResourceOrderRow[]>([])
+  const [courseDates, setCourseDates] = useState<CourseDateRow[]>([])
+  const [newDate, setNewDate] = useState<{ courseTitle: string; eventDate: string; location: string; capacity: string; notes: string; status: string }>({ courseTitle: '', eventDate: '', location: '', capacity: '', notes: '', status: 'open' })
+  const [addingDate, setAddingDate] = useState(false)
+  const [savingDate, setSavingDate] = useState(false)
   const [expandedInquiry, setExpandedInquiry] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [copiedLink, setCopiedLink] = useState<string | null>(null)
@@ -192,7 +208,7 @@ export function AdminPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }, { data: si }, { data: ro }] = await Promise.all([
+    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }, { data: si }, { data: ro }, { data: cd }] = await Promise.all([
       supabase.from('profiles').select('id, email, full_name, role, organisation_name').order('full_name'),
       supabase.from('course_enrollments').select('*'),
       supabase.from('course_access_requests').select('*').order('requested_at', { ascending: false }),
@@ -201,6 +217,7 @@ export function AdminPage() {
       supabase.from('event_registrations').select('*').order('created_at', { ascending: false }),
       supabase.from('service_inquiries').select('*').order('created_at', { ascending: false }),
       supabase.from('resource_orders').select('*').order('created_at', { ascending: false }),
+      supabase.from('course_dates').select('*').order('event_date', { ascending: true }),
     ])
     setProfiles(p || [])
     setEnrollments(e || [])
@@ -210,6 +227,7 @@ export function AdminPage() {
     setEventRegs(er || [])
     setServiceInquiries(si || [])
     setResourceOrders(ro || [])
+    setCourseDates(cd || [])
     setLoading(false)
   }
 
@@ -294,6 +312,40 @@ export function AdminPage() {
   async function changeInquiryStatus(id: string, status: string) {
     setWorking(true)
     await supabase.from('service_inquiries').update({ status }).eq('id', id)
+    setWorking(false)
+    loadAll()
+  }
+
+  async function saveNewCourseDate() {
+    if (!newDate.courseTitle || !newDate.eventDate || !newDate.location) return
+    setSavingDate(true)
+    const courseId = newDate.courseTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+    await supabase.from('course_dates').insert({
+      course_id: courseId,
+      course_title: newDate.courseTitle,
+      event_date: newDate.eventDate,
+      location: newDate.location,
+      max_capacity: newDate.capacity ? parseInt(newDate.capacity) : null,
+      notes: newDate.notes || null,
+      status: newDate.status as CourseDateRow['status'],
+    })
+    setNewDate({ courseTitle: '', eventDate: '', location: '', capacity: '', notes: '', status: 'open' })
+    setAddingDate(false)
+    setSavingDate(false)
+    loadAll()
+  }
+
+  async function deleteCourseDate(id: string) {
+    if (!confirm('Delete this course date?')) return
+    setWorking(true)
+    await supabase.from('course_dates').delete().eq('id', id)
+    setWorking(false)
+    loadAll()
+  }
+
+  async function updateCourseDateStatus(id: string, status: CourseDateRow['status']) {
+    setWorking(true)
+    await supabase.from('course_dates').update({ status }).eq('id', id)
     setWorking(false)
     loadAll()
   }
@@ -449,6 +501,13 @@ export function AdminPage() {
               {pendingResourceOrdersCount}
             </span>
           )}
+        </button>
+        <button
+          onClick={() => setTab('dates')}
+          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${tab === 'dates' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Course Dates
         </button>
       </div>
 
@@ -1687,6 +1746,157 @@ export function AdminPage() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* Course Dates tab */}
+      {!loading && tab === 'dates' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Course Dates &amp; Locations</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Add upcoming training dates for any UKAG course. These are for your internal planning — you can share the link to the relevant course page with attendees.</p>
+            </div>
+            <button
+              onClick={() => setAddingDate(a => !a)}
+              className="px-4 py-2 rounded-lg text-sm font-bold text-white flex-shrink-0"
+              style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+            >
+              {addingDate ? 'Cancel' : '+ Add Date'}
+            </button>
+          </div>
+
+          {addingDate && (
+            <div className="bg-white rounded-xl border-2 border-blue-200 p-5 space-y-4">
+              <h3 className="font-black text-gray-900 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>New Course Date</h3>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Course / Programme name</label>
+                  <input
+                    value={newDate.courseTitle}
+                    onChange={e => setNewDate(d => ({ ...d, courseTitle: e.target.value }))}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    placeholder="e.g. UAE Trampolining Teacher Training — Level 1 &amp; 2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Date</label>
+                  <input
+                    type="date"
+                    value={newDate.eventDate}
+                    onChange={e => setNewDate(d => ({ ...d, eventDate: e.target.value }))}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Location</label>
+                  <input
+                    value={newDate.location}
+                    onChange={e => setNewDate(d => ({ ...d, location: e.target.value }))}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    placeholder="e.g. Dubai, UAE"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Max capacity <span className="font-normal text-gray-400">(optional)</span></label>
+                  <input
+                    type="number"
+                    value={newDate.capacity}
+                    onChange={e => setNewDate(d => ({ ...d, capacity: e.target.value }))}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    placeholder="e.g. 20"
+                    min="1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Status</label>
+                  <select
+                    value={newDate.status}
+                    onChange={e => setNewDate(d => ({ ...d, status: e.target.value }))}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  >
+                    <option value="open">Open — accepting bookings</option>
+                    <option value="full">Full — no spaces remaining</option>
+                    <option value="closed">Closed — not taking bookings</option>
+                  </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Notes <span className="font-normal text-gray-400">(optional)</span></label>
+                  <textarea
+                    value={newDate.notes}
+                    onChange={e => setNewDate(d => ({ ...d, notes: e.target.value }))}
+                    rows={2}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
+                    placeholder="e.g. Refresher day only · Venue TBC · Invite only"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={saveNewCourseDate}
+                disabled={savingDate || !newDate.courseTitle || !newDate.eventDate || !newDate.location}
+                className="px-6 py-2.5 rounded-lg text-sm font-bold text-white disabled:opacity-50"
+                style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+              >
+                {savingDate ? 'Saving…' : 'Save Date'}
+              </button>
+            </div>
+          )}
+
+          {courseDates.length === 0 ? (
+            <div className="text-center py-12 text-gray-400 text-sm">
+              No course dates added yet. Click "+ Add Date" to create your first entry.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {courseDates.map(date => {
+                const isPast = new Date(date.event_date) < new Date()
+                return (
+                  <div key={date.id} className={`bg-white rounded-xl border p-5 ${isPast ? 'border-gray-100 opacity-60' : 'border-gray-200'}`}>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="font-black text-gray-900 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>{date.course_title}</span>
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                            date.status === 'open' ? 'bg-green-100 text-green-700' :
+                            date.status === 'full' ? 'bg-orange-100 text-orange-700' :
+                            'bg-gray-100 text-gray-500'
+                          }`}>
+                            {date.status === 'open' ? 'Open' : date.status === 'full' ? 'Full' : 'Closed'}
+                          </span>
+                          {isPast && <span className="text-xs text-gray-400 font-semibold">Past</span>}
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-600">
+                          <span>📅 {new Date(date.event_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                          <span>📍 {date.location}</span>
+                          {date.max_capacity && <span>👥 Max {date.max_capacity}</span>}
+                        </div>
+                        {date.notes && (
+                          <div className="text-xs text-gray-500 mt-1.5 italic">{date.notes}</div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <select
+                          value={date.status}
+                          onChange={e => updateCourseDateStatus(date.id, e.target.value as CourseDateRow['status'])}
+                          className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none"
+                        >
+                          <option value="open">Open</option>
+                          <option value="full">Full</option>
+                          <option value="closed">Closed</option>
+                        </select>
+                        <button
+                          onClick={() => deleteCourseDate(date.id)}
+                          className="text-xs text-red-500 hover:text-red-700 font-semibold px-2 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
 
