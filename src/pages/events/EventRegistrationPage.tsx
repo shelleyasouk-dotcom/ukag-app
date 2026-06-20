@@ -46,6 +46,13 @@ function RegistrationForm({ event }: { event: UkagEvent }) {
   const [additionalNeeds, setAdditionalNeeds] = useState('')
   const [notes, setNotes] = useState('')
 
+  // Waiver
+  const [bringingStudent, setBringingStudent] = useState<'yes' | 'no' | ''>('')
+  const [studentName, setStudentName] = useState('')
+  const [waiverPhysical, setWaiverPhysical] = useState(false)
+  const [waiverMutual, setWaiverMutual] = useState(false)
+  const [waiverMedical, setWaiverMedical] = useState(false)
+
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -72,7 +79,13 @@ function RegistrationForm({ event }: { event: UkagEvent }) {
       emergency_phone: emergencyPhone,
       emergency_relation: emergencyRelation || null,
       additional_needs: additionalNeeds || null,
-      notes: notes || null,
+      notes: [
+        notes || '',
+        bringingStudent === 'yes' ? `Assessment student: ${studentName || 'name not provided'}` : bringingStudent === 'no' ? 'Assessment: will use fellow participants' : '',
+      ].filter(Boolean).join('\n') || null,
+      waiver_accepted: true,
+      bringing_student: bringingStudent === 'yes',
+      student_name: bringingStudent === 'yes' ? (studentName || null) : null,
       status: 'registered',
     })
     if (dbErr) {
@@ -324,6 +337,100 @@ function RegistrationForm({ event }: { event: UkagEvent }) {
             </div>
           </div>
 
+          {/* Participant Waiver */}
+          <div className="bg-white rounded-2xl shadow-sm border-2 border-amber-200 p-6">
+            <h2 className="text-sm font-black text-gray-900 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              Participant Declaration &amp; Waiver
+            </h2>
+            <p className="text-xs text-gray-500 mb-4">
+              This is a practical training course. As a participant, you will be required to bounce on a full-size trampoline, demonstrate skills, and assist other participants as a subject during coaching practice. Please read and confirm each declaration below.
+            </p>
+
+            <div className="space-y-4 mb-6">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={waiverPhysical}
+                  onChange={e => setWaiverPhysical(e.target.checked)}
+                  required
+                  className="mt-0.5 flex-shrink-0 accent-blue-600 w-4 h-4"
+                />
+                <span className="text-sm text-gray-700 leading-relaxed">
+                  <strong>Physical Participation.</strong> I confirm that I am physically fit and able to participate in trampolining activities as a course participant. I understand that I will be required to bounce on a trampoline, practise landings and jumps, and physically demonstrate skills as part of this training.
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={waiverMutual}
+                  onChange={e => setWaiverMutual(e.target.checked)}
+                  required
+                  className="mt-0.5 flex-shrink-0 accent-blue-600 w-4 h-4"
+                />
+                <span className="text-sm text-gray-700 leading-relaxed">
+                  <strong>Mutual Assessment Consent.</strong> I understand that during coaching practice and assessment exercises, I may be required to act as a subject — being spotted, supported, and coached by other course participants — under the direct supervision of a UKAG lead trainer. I consent to this.
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={waiverMedical}
+                  onChange={e => setWaiverMedical(e.target.checked)}
+                  required
+                  className="mt-0.5 flex-shrink-0 accent-blue-600 w-4 h-4"
+                />
+                <span className="text-sm text-gray-700 leading-relaxed">
+                  <strong>Medical Self-Declaration.</strong> I confirm that I have no medical condition, injury, or physical limitation that would prevent me from safely participating in trampolining activities. I understand that if my condition changes before the course, I must notify UKAG in advance. I accept that UKAG and its trainers cannot be held liable for injury resulting from an undisclosed medical condition.
+                </span>
+              </label>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold text-gray-700 mb-3">
+                Assessment option — will you be bringing a student of your own for your practical assessment?
+              </p>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="bringingStudent"
+                    value="yes"
+                    checked={bringingStudent === 'yes'}
+                    onChange={() => setBringingStudent('yes')}
+                    required
+                    className="accent-blue-600"
+                  />
+                  <span className="text-sm text-gray-700">Yes — I will bring a student from my school for the assessment</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="bringingStudent"
+                    value="no"
+                    checked={bringingStudent === 'no'}
+                    onChange={() => setBringingStudent('no')}
+                    className="accent-blue-600"
+                  />
+                  <span className="text-sm text-gray-700">No — I am happy to use fellow course participants for my assessment</span>
+                </label>
+              </div>
+              {bringingStudent === 'yes' && (
+                <div className="mt-3">
+                  <label className={labelCls}>Student's name <span className="font-normal text-gray-400">(optional at this stage)</span></label>
+                  <input
+                    value={studentName}
+                    onChange={e => setStudentName(e.target.value)}
+                    className={inputCls}
+                    placeholder="e.g. Fatima Al-Rashid"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">The student will also need to be physically capable of participating in trampolining activities. UKAG will be in touch with further details.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
           {error && (
             <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
               <X size={16} className="flex-shrink-0 mt-0.5" />
@@ -333,8 +440,8 @@ function RegistrationForm({ event }: { event: UkagEvent }) {
 
           <button
             type="submit"
-            disabled={submitting}
-            className="w-full py-3.5 rounded-xl text-sm font-black text-white disabled:opacity-60 transition-colors shadow-sm"
+            disabled={submitting || !waiverPhysical || !waiverMutual || !waiverMedical || !bringingStudent}
+            className="w-full py-3.5 rounded-xl text-sm font-black text-white disabled:opacity-40 transition-colors shadow-sm"
             style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
           >
             {submitting ? 'Submitting registration…' : 'Submit Registration'}
