@@ -118,16 +118,16 @@ export function HomePage() {
                 style={{ backgroundColor: '#1e52a4', color: '#ffffff' }}
               >
                 <Globe size={12} />
-                UK's Leading Gymnastics Framework
+                Gymnastics &amp; Trampolining Education
               </div>
               <h1
                 className="text-4xl lg:text-5xl font-black text-white leading-tight mb-6"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
-                The UK's Leading Framework for Gymnastics and Trampolining Education
+                The Framework for Gymnastics and Trampolining Education
               </h1>
               <p className="text-lg text-gray-300 mb-8 leading-relaxed">
-                Training coaches, supporting schools and accrediting organisations across the country.
+                Training coaches, supporting schools and accrediting organisations across the UK and internationally.
               </p>
               <div className="flex flex-wrap gap-4">
                 <a
@@ -546,7 +546,7 @@ export function HomePage() {
                 </div>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed">
-                The UK's leading framework for gymnastics and trampolining education, accreditation and operational support.
+                The UK's leading framework for gymnastics and trampolining education, accreditation and operational support — and growing internationally.
               </p>
             </div>
             <div>
