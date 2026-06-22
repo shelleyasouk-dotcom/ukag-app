@@ -19,11 +19,6 @@ const PROGRAMMES = [
     desc: 'One-day update for previously qualified UKAG trampoline teachers.',
   },
   {
-    id: 'gymnastics-coaching',
-    label: 'Teacher Gymnastics Coaching Course',
-    desc: 'Gymnastics delivery for PE staff. Covers apparatus, progressions and safe practice.',
-  },
-  {
     id: 'cpd',
     label: 'Ongoing CPD & Curriculum Support',
     desc: 'Access to UKAG digital resources, updates, and continued professional development.',
