@@ -41,6 +41,7 @@ import { OrganisationPage } from './pages/organisation/OrganisationPage'
 import { EventRegistrationPage } from './pages/events/EventRegistrationPage'
 import { InternationalPage } from './pages/international/InternationalPage'
 import { UaeServicingPage } from './pages/services/UaeServicingPage'
+import { UaeSchoolsInterestPage } from './pages/events/UaeSchoolsInterestPage'
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth()
@@ -116,6 +117,7 @@ function AppRoutes() {
       {/* Public pages — no login required */}
       <Route path="/international" element={<InternationalPage />} />
       <Route path="/services/uae" element={<UaeServicingPage />} />
+      <Route path="/uae-schools" element={<UaeSchoolsInterestPage />} />
       <Route path="/events/:eventId" element={<EventRegistrationPage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />

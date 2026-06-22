@@ -104,11 +104,11 @@ export function InternationalPage() {
               <ChevronRight size={16} />
             </Link>
             <Link
-              to="/signup"
+              to="/uae-schools"
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold border border-white/30 text-white hover:bg-white/10 transition-colors"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
-              Create a UKAG account
+              Register School Interest
             </Link>
           </div>
         </div>
