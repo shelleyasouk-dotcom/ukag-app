@@ -20,20 +20,8 @@ const ADDITIONAL = [
   { label: 'Emergency withdrawal report', detail: 'If any equipment is unsafe, a written withdrawal recommendation is issued at no extra charge' },
 ]
 
-const SCHOOL_OPTIONS = [
-  'Wellington International School – Dubai (South)',
-  'Wellington International School – Dubai (North)',
-  'Wellington Academy – Silicon Oasis',
-  'Wellington Academy – Al Ain',
-  'Wellington Primary – Dubai',
-  'Gems Wellington Academy – Abu Dhabi',
-  'Other Wellington school / campus',
-  'Other school (not listed)',
-]
-
 function InquiryForm() {
   const [school, setSchool] = useState('')
-  const [schoolOther, setSchoolOther] = useState('')
   const [contactName, setContactName] = useState('')
   const [contactEmail, setContactEmail] = useState('')
   const [contactPhone, setContactPhone] = useState('')
@@ -45,9 +33,7 @@ function InquiryForm() {
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const effectiveSchool = (school === 'Other school (not listed)' || school === 'Other Wellington school / campus')
-    ? schoolOther
-    : school
+  const effectiveSchool = school
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -109,22 +95,14 @@ function InquiryForm() {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
         <h3 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Your School</h3>
         <div>
-          <label className={labelCls}>School / campus</label>
-          <select value={school} onChange={e => setSchool(e.target.value)} required className={inputCls}>
-            <option value="">Select your school…</option>
-            {SCHOOL_OPTIONS.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
-          {(school === 'Other school (not listed)' || school === 'Other Wellington school / campus') && (
-            <input
-              value={schoolOther}
-              onChange={e => setSchoolOther(e.target.value)}
-              required
-              className={`${inputCls} mt-2`}
-              placeholder="Enter your school name"
-            />
-          )}
+          <label className={labelCls}>School / organisation name</label>
+          <input
+            value={school}
+            onChange={e => setSchool(e.target.value)}
+            required
+            className={inputCls}
+            placeholder="e.g. Wellington International School, Dubai"
+          />
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
