@@ -420,123 +420,87 @@ export function AdminPage() {
 
   return (
     <Layout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-          Admin Panel
-        </h1>
-        <p className="text-sm text-gray-500 mt-0.5">Manage coach enrolments and access requests</p>
-      </div>
+      <div className="flex gap-6 min-h-screen">
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-1 mb-6 bg-gray-100 p-1 rounded-lg">
-        <button
-          onClick={() => setTab('coaches')}
-          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${tab === 'coaches' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Coaches
-        </button>
-        <button
-          onClick={() => setTab('requests')}
-          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors relative ${tab === 'requests' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Access Requests
-          {pendingCount > 0 && (
-            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#ef462c' }}>
-              {pendingCount}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setTab('interest')}
-          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors relative ${tab === 'interest' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Course Interest
-          {newInterestCount > 0 && (
-            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#1e52a4' }}>
-              {newInterestCount}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setTab('bookings')}
-          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors relative ${tab === 'bookings' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Bookings
-          {pendingBookingsCount > 0 && (
-            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#ef462c' }}>
-              {pendingBookingsCount}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setTab('events')}
-          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors relative ${tab === 'events' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Events
-          {eventRegs.length > 0 && (
-            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#1e52a4' }}>
-              {eventRegs.length}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setTab('analytics')}
-          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${tab === 'analytics' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Analytics
-        </button>
-        <button
-          onClick={() => setTab('organisations')}
-          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${tab === 'organisations' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Organisations
-        </button>
-        <button
-          onClick={() => setTab('services')}
-          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors relative ${tab === 'services' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Services
-          {serviceInquiries.filter(s => s.status === 'new').length > 0 && (
-            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#0d9488' }}>
-              {serviceInquiries.filter(s => s.status === 'new').length}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setTab('resources')}
-          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors relative ${tab === 'resources' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Trackers
-          {pendingResourceOrdersCount > 0 && (
-            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-black" style={{ backgroundColor: '#8b5cf6' }}>
-              {pendingResourceOrdersCount}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setTab('dates')}
-          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${tab === 'dates' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Course Dates
-        </button>
-        <button
-          onClick={() => setTab('invoices')}
-          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${tab === 'invoices' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Invoices
-        </button>
-      </div>
+        {/* Sidebar */}
+        <aside className="w-52 flex-shrink-0">
+          <div className="sticky top-6">
+            <div className="mb-5">
+              <h1 className="text-lg font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Admin Panel</h1>
+            </div>
+
+            <nav className="space-y-0.5">
+              <div className="text-xs font-black uppercase tracking-widest text-gray-400 px-3 pt-2 pb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>People</div>
+              {([
+                { key: 'coaches', label: 'Coaches' },
+                { key: 'requests', label: 'Access Requests', badge: pendingCount, badgeColour: '#ef462c' },
+                { key: 'organisations', label: 'Organisations' },
+              ] as const).map(item => (
+                <button key={item.key} onClick={() => setTab(item.key)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors text-left ${tab === item.key ? 'text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+                  style={tab === item.key ? { backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' } : { fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  {item.label}
+                  {'badge' in item && item.badge > 0 && (
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-black" style={{ backgroundColor: tab === item.key ? 'rgba(255,255,255,0.3)' : item.badgeColour, color: 'white' }}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
+
+              <div className="text-xs font-black uppercase tracking-widest text-gray-400 px-3 pt-4 pb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>Sales</div>
+              {([
+                { key: 'interest', label: 'Course Interest', badge: newInterestCount, badgeColour: '#1e52a4' },
+                { key: 'bookings', label: 'Bookings', badge: pendingBookingsCount, badgeColour: '#ef462c' },
+                { key: 'events', label: 'Events', badge: eventRegs.length, badgeColour: '#1e52a4' },
+                { key: 'invoices', label: 'Invoices' },
+              ] as const).map(item => (
+                <button key={item.key} onClick={() => setTab(item.key)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors text-left ${tab === item.key ? 'text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+                  style={tab === item.key ? { backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' } : { fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  {item.label}
+                  {'badge' in item && item.badge > 0 && (
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-black" style={{ backgroundColor: tab === item.key ? 'rgba(255,255,255,0.3)' : item.badgeColour, color: 'white' }}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
+
+              <div className="text-xs font-black uppercase tracking-widest text-gray-400 px-3 pt-4 pb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>Operations</div>
+              {([
+                { key: 'services', label: 'Services', badge: serviceInquiries.filter(s => s.status === 'new').length, badgeColour: '#0d9488' },
+                { key: 'resources', label: 'Trackers', badge: pendingResourceOrdersCount, badgeColour: '#8b5cf6' },
+                { key: 'dates', label: 'Course Dates' },
+              ] as const).map(item => (
+                <button key={item.key} onClick={() => setTab(item.key)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors text-left ${tab === item.key ? 'text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+                  style={tab === item.key ? { backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' } : { fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  {item.label}
+                  {'badge' in item && item.badge > 0 && (
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-black" style={{ backgroundColor: tab === item.key ? 'rgba(255,255,255,0.3)' : item.badgeColour, color: 'white' }}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
+
+              <div className="text-xs font-black uppercase tracking-widest text-gray-400 px-3 pt-4 pb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>Reports</div>
+              <button onClick={() => setTab('analytics')}
+                className={`w-full flex items-center px-3 py-2 rounded-lg text-sm font-semibold transition-colors text-left ${tab === 'analytics' ? 'text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+                style={tab === 'analytics' ? { backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' } : { fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Analytics
+              </button>
+            </nav>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <div className="flex-1 min-w-0">
 
       {loading && <div className="text-sm text-gray-400 py-8 text-center">Loading…</div>}
 
@@ -2060,6 +2024,8 @@ export function AdminPage() {
         />
       )}
 
+        </div> {/* end main content */}
+      </div> {/* end flex container */}
     </Layout>
   )
 }
