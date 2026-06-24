@@ -428,7 +428,7 @@ export function AdminPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
+      <div className="flex flex-wrap gap-1 mb-6 bg-gray-100 p-1 rounded-lg">
         <button
           onClick={() => setTab('coaches')}
           className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${tab === 'coaches' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
