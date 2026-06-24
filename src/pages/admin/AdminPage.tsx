@@ -1000,7 +1000,7 @@ export function AdminPage() {
                         style={{ fontFamily: 'Montserrat, sans-serif' }}
                       >
                         <ExternalLink size={12} />
-                        Preview
+                        Register Interest
                       </a>
                     </div>
                   </div>
