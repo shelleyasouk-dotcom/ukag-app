@@ -44,6 +44,7 @@ export function GroupBookingPage() {
   const [selectedCourses, setSelectedCourses] = useState<Record<string, CourseSelection>>({})
   const [trampolineCount, setTrampolineCount] = useState('')
   const [preferredDates, setPreferredDates] = useState('')
+  const [role, setRole] = useState('')
   const [notes, setNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -87,6 +88,7 @@ export function GroupBookingPage() {
       contact_email: contactEmail,
       contact_phone: contactPhone || null,
       location: location || null,
+      role: role || null,
       courses,
       needs_servicing: needsServicing,
       trampoline_count: needsServicing && trampolineCount ? parseInt(trampolineCount) : null,
@@ -160,7 +162,7 @@ export function GroupBookingPage() {
               </div>
               <div>
                 <label className={labelCls}>Your role</label>
-                <input value={notes} onChange={e => setNotes(e.target.value)} className={inputCls} placeholder="Head of PE" />
+                <input value={role} onChange={e => setRole(e.target.value)} className={inputCls} placeholder="Head of PE" />
               </div>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
