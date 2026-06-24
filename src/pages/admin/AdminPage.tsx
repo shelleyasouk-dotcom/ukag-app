@@ -4,7 +4,8 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { COURSE_REGISTRY } from '../../data/courses'
 import { EVENTS } from '../../data/events'
-import { CheckCircle, XCircle, UserPlus, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink } from 'lucide-react'
+import { CheckCircle, XCircle, UserPlus, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus } from 'lucide-react'
+import { CreateInvoiceModal } from '../../components/admin/CreateInvoiceModal'
 
 interface ProfileRow {
   id: string
@@ -113,6 +114,21 @@ interface CourseDateRow {
   status: 'open' | 'closed' | 'full'
 }
 
+interface StripeInvoiceRow {
+  id: string
+  created_at: string
+  school_name: string | null
+  contact_name: string | null
+  contact_email: string
+  line_items: Array<{ description: string; quantity: number; unit_price: number }>
+  total_amount: number
+  currency: string
+  stripe_invoice_id: string | null
+  stripe_invoice_url: string | null
+  status: string
+  notes: string | null
+}
+
 interface ServiceInquiryRow {
   id: string
   created_at: string
@@ -181,7 +197,7 @@ const ROLE_OPTIONS = [
 
 export function AdminPage() {
   const { profile } = useAuth()
-  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources' | 'dates'>('coaches')
+  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources' | 'dates' | 'invoices'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
@@ -190,6 +206,8 @@ export function AdminPage() {
   const [eventRegs, setEventRegs] = useState<EventRegistrationRow[]>([])
   const [serviceInquiries, setServiceInquiries] = useState<ServiceInquiryRow[]>([])
   const [resourceOrders, setResourceOrders] = useState<ResourceOrderRow[]>([])
+  const [invoices, setInvoices] = useState<StripeInvoiceRow[]>([])
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [courseDates, setCourseDates] = useState<CourseDateRow[]>([])
   const [newDate, setNewDate] = useState<{ courseTitle: string; eventDate: string; location: string; capacity: string; notes: string; status: string }>({ courseTitle: '', eventDate: '', location: '', capacity: '', notes: '', status: 'open' })
   const [addingDate, setAddingDate] = useState(false)
@@ -208,7 +226,7 @@ export function AdminPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }, { data: si }, { data: ro }, { data: cd }] = await Promise.all([
+    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }, { data: si }, { data: ro }, { data: cd }, { data: inv }] = await Promise.all([
       supabase.from('profiles').select('id, email, full_name, role, organisation_name').order('full_name'),
       supabase.from('course_enrollments').select('*'),
       supabase.from('course_access_requests').select('*').order('requested_at', { ascending: false }),
@@ -218,6 +236,7 @@ export function AdminPage() {
       supabase.from('service_inquiries').select('*').order('created_at', { ascending: false }),
       supabase.from('resource_orders').select('*').order('created_at', { ascending: false }),
       supabase.from('course_dates').select('*').order('event_date', { ascending: true }),
+      supabase.from('stripe_invoices').select('*').order('created_at', { ascending: false }),
     ])
     setProfiles(p || [])
     setEnrollments(e || [])
@@ -228,6 +247,7 @@ export function AdminPage() {
     setServiceInquiries(si || [])
     setResourceOrders(ro || [])
     setCourseDates(cd || [])
+    setInvoices(inv || [])
     setLoading(false)
   }
 
@@ -508,6 +528,13 @@ export function AdminPage() {
           style={{ fontFamily: 'Montserrat, sans-serif' }}
         >
           Course Dates
+        </button>
+        <button
+          onClick={() => setTab('invoices')}
+          className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${tab === 'invoices' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Invoices
         </button>
       </div>
 
@@ -1898,6 +1925,139 @@ export function AdminPage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Invoices tab */}
+      {!loading && tab === 'invoices' && (
+        <div className="space-y-5">
+          {/* Header row */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Stripe Invoices</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Send professional invoices to schools and clients via Stripe. Payments land in your Wise account.</p>
+            </div>
+            <button
+              onClick={() => setShowInvoiceModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white shadow-sm flex-shrink-0"
+              style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+            >
+              <Plus size={15} />
+              Create Invoice
+            </button>
+          </div>
+
+          {/* Stats */}
+          {invoices.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: 'Total sent', value: invoices.length, colour: '#1e52a4' },
+                { label: 'Open', value: invoices.filter(inv => inv.status === 'open').length, colour: '#f59e0b' },
+                { label: 'Paid', value: invoices.filter(inv => inv.status === 'paid').length, colour: '#22c55e' },
+                {
+                  label: 'Total value',
+                  value: `£${invoices.reduce((s, inv) => s + (inv.total_amount || 0), 0).toLocaleString('en-GB', { minimumFractionDigits: 2 })}`,
+                  colour: '#8b5cf6',
+                },
+              ].map(card => (
+                <div key={card.label} className="bg-white rounded-xl border border-gray-200 p-4 text-center">
+                  <div className="text-2xl font-black" style={{ color: card.colour, fontFamily: 'Montserrat, sans-serif' }}>{card.value}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{card.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {invoices.length === 0 ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+              <FileText size={40} className="text-gray-300 mx-auto mb-3" />
+              <p className="text-sm font-semibold text-gray-600 mb-1">No invoices sent yet</p>
+              <p className="text-xs text-gray-400 mb-5">Create your first invoice to send a PDF payment link directly to a school or client.</p>
+              <button
+                onClick={() => setShowInvoiceModal(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-black text-white"
+                style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+              >
+                <Plus size={15} />
+                Create First Invoice
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {invoices.map(inv => {
+                const statusCls = inv.status === 'paid'
+                  ? 'bg-green-100 text-green-700'
+                  : inv.status === 'open'
+                  ? 'bg-amber-100 text-amber-700'
+                  : inv.status === 'void' || inv.status === 'uncollectible'
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-gray-100 text-gray-600'
+                return (
+                  <div key={inv.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white flex-shrink-0" style={{ backgroundColor: '#1e52a4' }}>
+                        {(inv.school_name || inv.contact_name || inv.contact_email).charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 flex-wrap">
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-sm text-gray-900">{inv.school_name || inv.contact_name || inv.contact_email}</span>
+                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${statusCls}`}>{inv.status}</span>
+                              <span className="text-sm font-black" style={{ color: '#1e52a4' }}>
+                                £{(inv.total_amount || 0).toLocaleString('en-GB', { minimumFractionDigits: 2 })}
+                              </span>
+                            </div>
+                            {inv.school_name && inv.contact_name && (
+                              <div className="text-xs text-gray-500 mt-0.5">{inv.contact_name}</div>
+                            )}
+                          </div>
+                          {inv.stripe_invoice_url && (
+                            <a
+                              href={inv.stripe_invoice_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex-shrink-0"
+                            >
+                              <ExternalLink size={12} />
+                              View Invoice
+                            </a>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-3 mt-1.5">
+                          <a href={`mailto:${inv.contact_email}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                            <Mail size={11} />{inv.contact_email}
+                          </a>
+                        </div>
+                        {inv.line_items?.length > 0 && (
+                          <div className="mt-2 space-y-0.5">
+                            {inv.line_items.map((li, idx) => (
+                              <div key={idx} className="text-xs text-gray-500">
+                                {li.quantity > 1 ? `${li.quantity}× ` : ''}{li.description} — £{(li.unit_price * li.quantity).toLocaleString('en-GB', { minimumFractionDigits: 2 })}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {inv.notes && (
+                          <div className="text-xs text-gray-500 mt-1.5 italic">"{inv.notes}"</div>
+                        )}
+                        <div className="text-xs text-gray-400 mt-1.5">
+                          Sent {new Date(inv.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {showInvoiceModal && (
+        <CreateInvoiceModal
+          onClose={() => { setShowInvoiceModal(false); loadAll() }}
+          onSent={() => loadAll()}
+        />
       )}
 
     </Layout>
