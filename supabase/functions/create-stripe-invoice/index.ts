@@ -21,10 +21,9 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     })
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    )
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
     const { school_name, contact_name, contact_email, line_items, currency = 'gbp', notes, days_until_due = 14 } = await req.json()
 
@@ -64,14 +63,14 @@ serve(async (req) => {
       })
     }
 
-    // Finalise and send — school receives PDF + payment link by email
+    // Finalise and send
     const finalised = await stripe.invoices.finalizeInvoice(invoice.id)
     const sent = await stripe.invoices.sendInvoice(finalised.id)
 
     const total = (sent.amount_due ?? 0) / 100
 
     // Save to stripe_invoices table
-    await supabase.from('stripe_invoices').insert({
+    const { error: insertError } = await supabase.from('stripe_invoices').insert({
       school_name: school_name || null,
       contact_name: contact_name || null,
       contact_email,
@@ -84,11 +83,16 @@ serve(async (req) => {
       notes: notes || null,
     })
 
+    if (insertError) {
+      console.error('Supabase insert error:', insertError)
+    }
+
     return new Response(JSON.stringify({
       success: true,
       invoice_id: sent.id,
       invoice_url: sent.hosted_invoice_url,
       total,
+      save_error: insertError?.message || null,
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
   } catch (err) {
