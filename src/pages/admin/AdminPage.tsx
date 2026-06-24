@@ -208,6 +208,7 @@ export function AdminPage() {
   const [resourceOrders, setResourceOrders] = useState<ResourceOrderRow[]>([])
   const [invoices, setInvoices] = useState<StripeInvoiceRow[]>([])
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
+  const [invoiceWorking, setInvoiceWorking] = useState<string | null>(null)
   const [courseDates, setCourseDates] = useState<CourseDateRow[]>([])
   const [newDate, setNewDate] = useState<{ courseTitle: string; eventDate: string; location: string; capacity: string; notes: string; status: string }>({ courseTitle: '', eventDate: '', location: '', capacity: '', notes: '', status: 'open' })
   const [addingDate, setAddingDate] = useState(false)
@@ -374,6 +375,18 @@ export function AdminPage() {
     setWorking(true)
     await supabase.from('resource_orders').update({ status }).eq('id', id)
     setWorking(false)
+    loadAll()
+  }
+
+  async function handleInvoiceAction(action: 'void' | 'resend' | 'delete', inv: StripeInvoiceRow) {
+    if (action === 'void' && !confirm('Void this invoice in Stripe? The school will no longer be able to pay it.')) return
+    if (action === 'delete' && !confirm('Remove this invoice from your records? This does not affect Stripe.')) return
+    setInvoiceWorking(inv.id)
+    const { error } = await supabase.functions.invoke('manage-stripe-invoice', {
+      body: { action, record_id: inv.id, stripe_invoice_id: inv.stripe_invoice_id },
+    })
+    if (error) alert(`Failed: ${error.message}`)
+    setInvoiceWorking(null)
     loadAll()
   }
 
@@ -1975,17 +1988,44 @@ export function AdminPage() {
                               <div className="text-xs text-gray-500 mt-0.5">{inv.contact_name}</div>
                             )}
                           </div>
-                          {inv.stripe_invoice_url && (
-                            <a
-                              href={inv.stripe_invoice_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex-shrink-0"
+                          <div className="flex gap-2 flex-shrink-0 flex-wrap">
+                            {inv.stripe_invoice_url && (
+                              <a
+                                href={inv.stripe_invoice_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                              >
+                                <ExternalLink size={12} />
+                                View
+                              </a>
+                            )}
+                            {inv.status === 'open' && (
+                              <button
+                                onClick={() => handleInvoiceAction('resend', inv)}
+                                disabled={invoiceWorking === inv.id}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors disabled:opacity-40"
+                              >
+                                Resend
+                              </button>
+                            )}
+                            {inv.status === 'open' && (
+                              <button
+                                onClick={() => handleInvoiceAction('void', inv)}
+                                disabled={invoiceWorking === inv.id}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors disabled:opacity-40"
+                              >
+                                Void
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleInvoiceAction('delete', inv)}
+                              disabled={invoiceWorking === inv.id}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-red-200 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
                             >
-                              <ExternalLink size={12} />
-                              View Invoice
-                            </a>
-                          )}
+                              Delete
+                            </button>
+                          </div>
                         </div>
                         <div className="flex flex-wrap gap-3 mt-1.5">
                           <a href={`mailto:${inv.contact_email}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
