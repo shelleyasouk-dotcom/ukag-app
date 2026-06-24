@@ -114,6 +114,22 @@ interface CourseDateRow {
   status: 'open' | 'closed' | 'full'
 }
 
+interface GroupBookingRow {
+  id: string
+  created_at: string
+  school_name: string
+  contact_name: string
+  contact_email: string
+  contact_phone: string | null
+  location: string | null
+  courses: Array<{ id: string; title: string; participant_count: number }>
+  needs_servicing: boolean
+  trampoline_count: number | null
+  preferred_dates: string | null
+  notes: string | null
+  status: 'new' | 'invoiced' | 'confirmed' | 'completed' | 'cancelled'
+}
+
 interface StripeInvoiceRow {
   id: string
   created_at: string
@@ -197,7 +213,7 @@ const ROLE_OPTIONS = [
 
 export function AdminPage() {
   const { profile } = useAuth()
-  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources' | 'dates' | 'invoices'>('coaches')
+  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources' | 'dates' | 'invoices' | 'group_bookings'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
@@ -207,8 +223,10 @@ export function AdminPage() {
   const [serviceInquiries, setServiceInquiries] = useState<ServiceInquiryRow[]>([])
   const [resourceOrders, setResourceOrders] = useState<ResourceOrderRow[]>([])
   const [invoices, setInvoices] = useState<StripeInvoiceRow[]>([])
+  const [groupBookings, setGroupBookings] = useState<GroupBookingRow[]>([])
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [invoiceWorking, setInvoiceWorking] = useState<string | null>(null)
+  const [invoicePrefill, setInvoicePrefill] = useState<{ school?: string; email?: string; name?: string } | null>(null)
   const [courseDates, setCourseDates] = useState<CourseDateRow[]>([])
   const [newDate, setNewDate] = useState<{ courseTitle: string; eventDate: string; location: string; capacity: string; notes: string; status: string }>({ courseTitle: '', eventDate: '', location: '', capacity: '', notes: '', status: 'open' })
   const [addingDate, setAddingDate] = useState(false)
@@ -227,7 +245,7 @@ export function AdminPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }, { data: si }, { data: ro }, { data: cd }, { data: inv }] = await Promise.all([
+    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }, { data: si }, { data: ro }, { data: cd }, { data: inv }, { data: gb }] = await Promise.all([
       supabase.from('profiles').select('id, email, full_name, role, organisation_name').order('full_name'),
       supabase.from('course_enrollments').select('*'),
       supabase.from('course_access_requests').select('*').order('requested_at', { ascending: false }),
@@ -238,6 +256,7 @@ export function AdminPage() {
       supabase.from('resource_orders').select('*').order('created_at', { ascending: false }),
       supabase.from('course_dates').select('*').order('event_date', { ascending: true }),
       supabase.from('stripe_invoices').select('*').order('created_at', { ascending: false }),
+      supabase.from('group_bookings').select('*').order('created_at', { ascending: false }),
     ])
     setProfiles(p || [])
     setEnrollments(e || [])
@@ -249,6 +268,7 @@ export function AdminPage() {
     setResourceOrders(ro || [])
     setCourseDates(cd || [])
     setInvoices(inv || [])
+    setGroupBookings(gb || [])
     setLoading(false)
   }
 
@@ -378,6 +398,13 @@ export function AdminPage() {
     loadAll()
   }
 
+  async function changeGroupBookingStatus(id: string, status: GroupBookingRow['status']) {
+    setWorking(true)
+    await supabase.from('group_bookings').update({ status }).eq('id', id)
+    setWorking(false)
+    loadAll()
+  }
+
   async function handleInvoiceAction(action: 'void' | 'resend' | 'delete', inv: StripeInvoiceRow) {
     if (action === 'void' && !confirm('Void this invoice in Stripe? The school will no longer be able to pay it.')) return
     if (action === 'delete' && !confirm('Remove this invoice from your records? This does not affect Stripe.')) return
@@ -464,6 +491,7 @@ export function AdminPage() {
 
               <div className="text-xs font-black uppercase tracking-widest text-gray-400 px-3 pt-4 pb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>Sales</div>
               {([
+                { key: 'group_bookings', label: 'Group Bookings', badge: groupBookings.filter(g => g.status === 'new').length, badgeColour: '#ef462c' },
                 { key: 'interest', label: 'Course Interest', badge: newInterestCount, badgeColour: '#1e52a4' },
                 { key: 'bookings', label: 'Bookings', badge: pendingBookingsCount, badgeColour: '#ef462c' },
                 { key: 'events', label: 'Events', badge: eventRegs.length, badgeColour: '#1e52a4' },
@@ -1904,6 +1932,122 @@ export function AdminPage() {
         </div>
       )}
 
+      {/* Group Bookings tab */}
+      {!loading && tab === 'group_bookings' && (
+        <div className="space-y-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Group Bookings</h2>
+              <p className="text-xs text-gray-500 mt-0.5">School and organisation booking requests from the group booking form.</p>
+            </div>
+            <a href="/group-booking" target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold border border-gray-200 text-gray-600 hover:bg-gray-50">
+              <ExternalLink size={13} /> View form
+            </a>
+          </div>
+
+          {groupBookings.length === 0 ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-sm text-gray-400">
+              No group booking requests yet.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {groupBookings.map(gb => {
+                const statusCls: Record<string, string> = {
+                  new: 'bg-blue-100 text-blue-700',
+                  invoiced: 'bg-amber-100 text-amber-700',
+                  confirmed: 'bg-green-100 text-green-700',
+                  completed: 'bg-purple-100 text-purple-700',
+                  cancelled: 'bg-red-100 text-red-700',
+                }
+                const totalParticipants = gb.courses?.filter(c => c.id !== 'servicing').reduce((s, c) => s + c.participant_count, 0) || 0
+                return (
+                  <div key={gb.id} className="bg-white rounded-xl border border-gray-200 p-5">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>{gb.school_name}</span>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${statusCls[gb.status] || 'bg-gray-100 text-gray-600'}`}>{gb.status}</span>
+                        </div>
+                        <div className="text-sm text-gray-600">{gb.contact_name}{gb.location ? ` — ${gb.location}` : ''}</div>
+                        <div className="flex flex-wrap gap-3 mt-1.5">
+                          <a href={`mailto:${gb.contact_email}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                            <Mail size={11} />{gb.contact_email}
+                          </a>
+                          {gb.contact_phone && (
+                            <a href={`tel:${gb.contact_phone}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                              <Phone size={11} />{gb.contact_phone}
+                            </a>
+                          )}
+                        </div>
+
+                        {/* Courses requested */}
+                        <div className="mt-3 space-y-1">
+                          {gb.courses?.map(c => (
+                            <div key={c.id} className="flex items-center gap-2 text-xs text-gray-700">
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                              <span>{c.title}</span>
+                              {c.id !== 'servicing' && (
+                                <span className="font-semibold text-gray-500">{c.participant_count} participants</span>
+                              )}
+                            </div>
+                          ))}
+                          {gb.needs_servicing && gb.trampoline_count && (
+                            <div className="flex items-center gap-2 text-xs text-gray-700">
+                              <span className="w-1.5 h-1.5 rounded-full bg-teal-400 flex-shrink-0" />
+                              <span>Trampoline Servicing — {gb.trampoline_count} trampolines</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {totalParticipants > 0 && (
+                          <div className="mt-2 text-xs font-semibold text-gray-500">{totalParticipants} total participants</div>
+                        )}
+
+                        {gb.preferred_dates && (
+                          <div className="mt-2 text-xs text-gray-500">📅 {gb.preferred_dates}</div>
+                        )}
+                        {gb.notes && (
+                          <div className="mt-1 text-xs text-gray-500 italic">"{gb.notes}"</div>
+                        )}
+                        <div className="text-xs text-gray-400 mt-2">
+                          {new Date(gb.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2 flex-shrink-0">
+                        <select
+                          value={gb.status}
+                          onChange={e => changeGroupBookingStatus(gb.id, e.target.value as GroupBookingRow['status'])}
+                          disabled={working}
+                          className="px-2 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none"
+                        >
+                          <option value="new">New</option>
+                          <option value="invoiced">Invoiced</option>
+                          <option value="confirmed">Confirmed</option>
+                          <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                        <button
+                          onClick={() => {
+                            setInvoicePrefill({ school: gb.school_name, email: gb.contact_email, name: gb.contact_name })
+                            setShowInvoiceModal(true)
+                          }}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
+                          style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+                        >
+                          <FileText size={12} /> Create Invoice
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Invoices tab */}
       {!loading && tab === 'invoices' && (
         <div className="space-y-5">
@@ -2059,8 +2203,11 @@ export function AdminPage() {
 
       {showInvoiceModal && (
         <CreateInvoiceModal
-          onClose={() => { setShowInvoiceModal(false); loadAll() }}
+          onClose={() => { setShowInvoiceModal(false); setInvoicePrefill(null); loadAll() }}
           onSent={() => loadAll()}
+          prefillSchool={invoicePrefill?.school || ''}
+          prefillEmail={invoicePrefill?.email || ''}
+          prefillName={invoicePrefill?.name || ''}
         />
       )}
 
