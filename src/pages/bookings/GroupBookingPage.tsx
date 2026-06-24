@@ -98,7 +98,7 @@ export function GroupBookingPage() {
     })
 
     if (dbErr) {
-      setError('Something went wrong — please try again or email us directly.')
+      setError(`Error: ${dbErr.message}`)
       setSubmitting(false)
       return
     }
