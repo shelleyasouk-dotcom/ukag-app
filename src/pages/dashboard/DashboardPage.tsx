@@ -4,7 +4,7 @@ import { Layout } from '../../components/layout/Layout'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import type { Profile } from '../../types'
-import { GraduationCap, BookOpen, FolderOpen, Award, Wrench, ChevronRight, Clock, Globe, Users, Building2, ClipboardCheck, BarChart3, Mail, Shield, Settings, Star, ArrowUpFromLine } from 'lucide-react'
+import { GraduationCap, BookOpen, FolderOpen, Award, Wrench, ChevronRight, Clock, Globe, Users, Building2, ClipboardCheck, Mail, Shield, Settings, Star, ArrowUpFromLine, FileText } from 'lucide-react'
 import { ACADEMIES } from '../../data/academies'
 import { COURSE_REGISTRY } from '../../data/courses'
 import { TrackerOrderModal } from '../../components/shop/TrackerOrderModal'
@@ -864,18 +864,25 @@ function AssessorDashboard({ profile }: { profile: Profile }) {
 function MaintenanceDashboard({ profile }: { profile: Profile }) {
   const QUICK_ACTIONS = [
     {
-      label: 'Equipment Services',
-      desc: 'Inspection, maintenance and repair services',
-      to: '/services',
-      colour: '#0d9488',
-      Icon: Wrench,
+      label: 'New Visit Report',
+      desc: 'Log a school servicing visit',
+      to: '/maintenance/report/new',
+      colour: '#1e52a4',
+      Icon: ClipboardCheck,
     },
     {
-      label: 'Resources',
-      desc: 'Checklists, service records and documentation',
-      to: '/resources',
-      colour: '#f4cc2c',
-      Icon: FolderOpen,
+      label: 'My Reports',
+      desc: 'View all your submitted reports',
+      to: '/maintenance/reports',
+      colour: '#0d9488',
+      Icon: FileText,
+    },
+    {
+      label: 'Technician Course',
+      desc: 'UKAG Equipment Servicing Technician',
+      to: '/courses/maintenance-technician',
+      colour: '#475569',
+      Icon: Award,
     },
     {
       label: 'My Profile',
@@ -926,15 +933,24 @@ function MaintenanceDashboard({ profile }: { profile: Profile }) {
             <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Equipment Inspections</h2>
           </div>
           <p className="text-sm text-gray-600 leading-relaxed mb-3">
-            Access inspection checklists, service records and maintenance documentation through the Resources section.
+            Log a new school visit or view your previously submitted service reports.
           </p>
-          <Link
-            to="/resources"
-            className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white"
-            style={{ backgroundColor: '#0d9488', fontFamily: 'Montserrat, sans-serif' }}
-          >
-            View Resources
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              to="/maintenance/report/new"
+              className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white"
+              style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+            >
+              New Report
+            </Link>
+            <Link
+              to="/maintenance/reports"
+              className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white"
+              style={{ backgroundColor: '#0d9488', fontFamily: 'Montserrat, sans-serif' }}
+            >
+              My Reports
+            </Link>
+          </div>
         </div>
 
         {/* Services */}
@@ -958,23 +974,24 @@ function MaintenanceDashboard({ profile }: { profile: Profile }) {
             </Link>
           </div>
 
-          {/* Service records placeholder */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          {/* Training course */}
+          <div className="bg-gradient-to-br from-slate-700 to-slate-900 rounded-xl p-5 text-white">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#6b728018' }}>
-                <BarChart3 size={18} style={{ color: '#6b7280' }} />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/20">
+                <Award size={18} className="text-amber-300" />
               </div>
-              <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>My Service Records</h2>
+              <h2 className="font-black" style={{ fontFamily: 'Montserrat, sans-serif' }}>Technician Training</h2>
             </div>
-            <p className="text-sm text-gray-500 leading-relaxed mb-2">
-              Service record management coming soon.
+            <p className="text-sm text-white/80 leading-relaxed mb-3">
+              Complete the UKAG Equipment Servicing Technician course (10 modules) to earn your certification.
             </p>
-            <p className="text-xs text-gray-400">
-              For urgent equipment queries, contact{' '}
-              <a href="mailto:admin@ukacademiesofgymnastics.com" className="text-blue-600 hover:underline">
-                admin@ukacademiesofgymnastics.com
-              </a>
-            </p>
+            <Link
+              to="/courses/maintenance-technician"
+              className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg bg-amber-400 text-slate-900"
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
+              Go to Course
+            </Link>
           </div>
         </div>
       </div>
