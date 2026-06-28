@@ -130,6 +130,24 @@ interface GroupBookingRow {
   status: 'new' | 'invoiced' | 'confirmed' | 'completed' | 'cancelled'
 }
 
+interface AdminServiceReport {
+  id: string
+  created_at: string
+  technician_id: string | null
+  technician_name: string
+  school_name: string
+  school_address: string | null
+  contact_name: string | null
+  contact_email: string | null
+  visit_date: string
+  visit_type: 'A' | 'B' | 'C'
+  equipment: Array<{ category: string; label: string; condition: string; issues: string; action: string; removed: boolean }>
+  overall_notes: string | null
+  recommendations: string | null
+  status: 'draft' | 'submitted'
+  submitted_at: string | null
+}
+
 interface StripeInvoiceRow {
   id: string
   created_at: string
@@ -213,7 +231,7 @@ const ROLE_OPTIONS = [
 
 export function AdminPage() {
   const { profile } = useAuth()
-  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources' | 'dates' | 'invoices' | 'group_bookings'>('coaches')
+  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources' | 'dates' | 'invoices' | 'group_bookings' | 'service_reports'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
@@ -224,6 +242,8 @@ export function AdminPage() {
   const [resourceOrders, setResourceOrders] = useState<ResourceOrderRow[]>([])
   const [invoices, setInvoices] = useState<StripeInvoiceRow[]>([])
   const [groupBookings, setGroupBookings] = useState<GroupBookingRow[]>([])
+  const [serviceReports, setServiceReports] = useState<AdminServiceReport[]>([])
+  const [expandedServiceReport, setExpandedServiceReport] = useState<string | null>(null)
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [invoiceWorking, setInvoiceWorking] = useState<string | null>(null)
   const [invoicePrefill, setInvoicePrefill] = useState<{ school?: string; email?: string; name?: string } | null>(null)
@@ -245,7 +265,7 @@ export function AdminPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }, { data: si }, { data: ro }, { data: cd }, { data: inv }, { data: gb }] = await Promise.all([
+    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }, { data: si }, { data: ro }, { data: cd }, { data: inv }, { data: gb }, { data: sr }] = await Promise.all([
       supabase.from('profiles').select('id, email, full_name, role, organisation_name').order('full_name'),
       supabase.from('course_enrollments').select('*'),
       supabase.from('course_access_requests').select('*').order('requested_at', { ascending: false }),
@@ -257,6 +277,7 @@ export function AdminPage() {
       supabase.from('course_dates').select('*').order('event_date', { ascending: true }),
       supabase.from('stripe_invoices').select('*').order('created_at', { ascending: false }),
       supabase.from('group_bookings').select('*').order('created_at', { ascending: false }),
+      supabase.from('service_reports').select('*').order('visit_date', { ascending: false }),
     ])
     setProfiles(p || [])
     setEnrollments(e || [])
@@ -269,6 +290,7 @@ export function AdminPage() {
     setCourseDates(cd || [])
     setInvoices(inv || [])
     setGroupBookings(gb || [])
+    setServiceReports(sr || [])
     setLoading(false)
   }
 
@@ -515,6 +537,7 @@ export function AdminPage() {
                 { key: 'services', label: 'Services', badge: serviceInquiries.filter(s => s.status === 'new').length, badgeColour: '#0d9488' },
                 { key: 'resources', label: 'Trackers', badge: pendingResourceOrdersCount, badgeColour: '#8b5cf6' },
                 { key: 'dates', label: 'Course Dates' },
+                { key: 'service_reports', label: 'Service Reports', badge: serviceReports.filter(r => r.status === 'submitted').length, badgeColour: '#475569' },
               ] as const).map(item => (
                 <button key={item.key} onClick={() => setTab(item.key)}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors text-left ${tab === item.key ? 'text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
@@ -2197,6 +2220,106 @@ export function AdminPage() {
                 )
               })}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Service Reports tab */}
+      {!loading && tab === 'service_reports' && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-sm text-gray-500">{serviceReports.length} report{serviceReports.length !== 1 ? 's' : ''} — {serviceReports.filter(r => r.status === 'submitted').length} submitted</p>
+          </div>
+          {serviceReports.length === 0 ? (
+            <div className="text-center py-12 text-gray-400 text-sm">No service reports yet.</div>
+          ) : (
+            serviceReports.map(report => {
+              const isExpanded = expandedServiceReport === report.id
+              const removedItems = report.equipment.filter(i => i.condition === 'removed' || i.removed)
+              const CONDITION_BADGE: Record<string, string> = {
+                good: 'bg-green-100 text-green-700',
+                fair: 'bg-amber-100 text-amber-700',
+                poor: 'bg-orange-100 text-orange-700',
+                removed: 'bg-red-100 text-red-700',
+              }
+              return (
+                <div key={report.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                  <button
+                    onClick={() => setExpandedServiceReport(isExpanded ? null : report.id)}
+                    className="w-full text-left px-5 py-4 flex items-start gap-3 hover:bg-gray-50"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="font-bold text-gray-900 text-sm">{report.school_name}</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${report.status === 'submitted' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {report.status === 'submitted' ? 'Submitted' : 'Draft'}
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Type {report.visit_type}</span>
+                        {removedItems.length > 0 && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">{removedItems.length} removed</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {new Date(report.visit_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {' · '}{report.technician_name}
+                        {' · '}{report.equipment.length} items
+                      </div>
+                    </div>
+                    {isExpanded ? <ChevronUp size={16} className="text-gray-400 shrink-0 mt-1" /> : <ChevronDown size={16} className="text-gray-400 shrink-0 mt-1" />}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="border-t border-gray-100 px-5 py-4 space-y-4">
+                      {report.school_address && <p className="text-xs text-gray-500">{report.school_address}</p>}
+                      {report.contact_name && <p className="text-xs text-gray-500">Contact: {report.contact_name}{report.contact_email ? ` — ${report.contact_email}` : ''}</p>}
+
+                      {report.equipment.length > 0 && (
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>Equipment</p>
+                          <div className="space-y-2">
+                            {report.equipment.map((item, i) => (
+                              <div key={i} className="flex items-start gap-3 bg-gray-50 rounded-xl px-3 py-2.5">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-semibold text-gray-800">{item.label || item.category}</p>
+                                  {item.issues && <p className="text-xs text-gray-500 mt-0.5">Issues: {item.issues}</p>}
+                                  {item.action && <p className="text-xs text-gray-500 mt-0.5">Action: {item.action}</p>}
+                                </div>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${CONDITION_BADGE[item.condition] || 'bg-gray-100 text-gray-600'}`}>
+                                  {item.condition === 'removed' ? 'Remove from Use' : item.condition.charAt(0).toUpperCase() + item.condition.slice(1)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {report.overall_notes && (
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>Notes</p>
+                          <p className="text-sm text-gray-700">{report.overall_notes}</p>
+                        </div>
+                      )}
+
+                      {report.recommendations && (
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>Recommendations</p>
+                          <p className="text-sm text-gray-700">{report.recommendations}</p>
+                        </div>
+                      )}
+
+                      {removedItems.length > 0 && (
+                        <div className="bg-red-50 border border-red-100 rounded-xl px-3 py-2.5">
+                          <p className="text-xs font-bold text-red-700 mb-1">Remove from Use ({removedItems.length})</p>
+                          {removedItems.map((item, i) => (
+                            <p key={i} className="text-xs text-red-600">• {item.label || item.category}</p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })
           )}
         </div>
       )}
