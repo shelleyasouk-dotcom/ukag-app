@@ -9,4 +9,5 @@ export const COURSE_REGISTRY = [
   { id: 'equality_v1', title: 'Equality & Inclusion in Gymnastics & Trampolining' },
   { id: 'trampoline_teacher_v1', title: 'UKAG Trampolining Teacher Certificate (Level 1 & 2)' },
   { id: 'tutor_assessor_v1', title: 'UKAG Tutor & Assessor Programme' },
+  { id: 'maintenance_technician_v1', title: 'UKAG Equipment Servicing Technician' },
 ] as const
