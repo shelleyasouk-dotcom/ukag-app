@@ -245,6 +245,7 @@ function ServiceInquiryModal({ serviceType, onClose }: { serviceType: string; on
 }
 
 export function ServicesPage() {
+  const { profile } = useAuth()
   const [inquiryService, setInquiryService] = useState<string | null>(null)
 
   return (
@@ -257,6 +258,20 @@ export function ServicesPage() {
           UKAG provides professional maintenance, inspection, and servicing for school gymnastics and trampolining equipment. All visits are carried out by trained technicians and produce written reports suitable for school compliance records.
         </p>
       </div>
+
+      {/* Maintenance portal link — shown to maintenance staff and admins */}
+      {(profile?.role === 'maintenance' || profile?.role === 'admin') && (
+        <div className="bg-slate-900 text-white rounded-xl p-5 mb-6 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest text-white/50 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>Technician Access</p>
+            <p className="font-black text-lg" style={{ fontFamily: 'Montserrat, sans-serif' }}>Maintenance Portal</p>
+            <p className="text-sm text-white/60 mt-0.5">Reports, defect register, course & ID card</p>
+          </div>
+          <a href="/maintenance" className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-900 bg-amber-400 hover:bg-amber-300 transition-colors" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            Open Portal →
+          </a>
+        </div>
+      )}
 
       {/* Pricing overview */}
       <div className="bg-teal-50 border border-teal-200 rounded-xl p-5 mb-8">

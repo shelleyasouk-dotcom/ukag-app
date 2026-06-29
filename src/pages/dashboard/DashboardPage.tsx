@@ -864,11 +864,11 @@ function AssessorDashboard({ profile }: { profile: Profile }) {
 function MaintenanceDashboard({ profile }: { profile: Profile }) {
   const QUICK_ACTIONS = [
     {
-      label: 'New Visit Report',
-      desc: 'Log a school servicing visit',
-      to: '/maintenance/report/new',
+      label: 'Maintenance Portal',
+      desc: 'Reports, defects & certifications',
+      to: '/maintenance',
       colour: '#1e52a4',
-      Icon: ClipboardCheck,
+      Icon: Wrench,
     },
     {
       label: 'My Reports',

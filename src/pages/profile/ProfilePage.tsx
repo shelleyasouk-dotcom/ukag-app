@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Layout } from '../../components/layout/Layout'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { COURSE_REGISTRY } from '../../data/courses'
 import { ACADEMIES } from '../../data/academies'
-import { Pencil, Check, X, Award, User, Calendar, Clock } from 'lucide-react'
+import { Pencil, Check, X, Award, User, Calendar, Clock, Camera } from 'lucide-react'
+import { IdCardDownload } from '../../components/profile/IdCardDownload'
+import { CertificateDownload } from '../../components/courses/CertificateDownload'
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',
@@ -39,6 +41,7 @@ interface BookingRow {
 
 export function ProfilePage() {
   const { profile, refreshProfile } = useAuth()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [editing, setEditing] = useState(false)
   const [fullName, setFullName] = useState('')
@@ -53,6 +56,8 @@ export function ProfilePage() {
   const [certsLoading, setCertsLoading] = useState(true)
   const [bookings, setBookings] = useState<BookingRow[]>([])
   const [bookingsLoading, setBookingsLoading] = useState(true)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
 
   useEffect(() => {
     if (!profile) return
@@ -64,6 +69,15 @@ export function ProfilePage() {
 
   useEffect(() => {
     if (!profile) return
+    // Load avatar
+    const { data: urlData } = supabase.storage.from('profile-photos').getPublicUrl(profile.id)
+    if (urlData?.publicUrl) {
+      // Only set if file actually exists (check with a head request)
+      fetch(urlData.publicUrl, { method: 'HEAD' }).then(r => {
+        if (r.ok) setAvatarUrl(urlData.publicUrl + '?t=' + Date.now())
+      }).catch(() => {})
+    }
+
     supabase
       .from('course_certificates')
       .select('id, course_id, completed_at')
@@ -140,6 +154,20 @@ export function ProfilePage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !profile) return
+    setUploadingPhoto(true)
+    const { error } = await supabase.storage
+      .from('profile-photos')
+      .upload(profile.id, file, { upsert: true, contentType: file.type })
+    if (!error) {
+      const { data: urlData } = supabase.storage.from('profile-photos').getPublicUrl(profile.id)
+      setAvatarUrl(urlData.publicUrl + '?t=' + Date.now())
+    }
+    setUploadingPhoto(false)
   }
 
   const memberId = profile ? `UKAG-${profile.id.slice(0, 8).toUpperCase()}` : '—'
@@ -376,9 +404,9 @@ export function ProfilePage() {
             ) : certificates.length === 0 ? (
               <p className="text-sm text-gray-400 italic">No certificates earned yet — complete a course to earn your first one.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {certificates.map(cert => (
-                  <div key={cert.id} className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
+                  <div key={cert.id} className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0">
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: '#1e52a4' }}>
                       <Award size={18} className="text-white" />
                     </div>
@@ -388,7 +416,12 @@ export function ProfilePage() {
                         Awarded {new Date(cert.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                       </p>
                     </div>
-                    <span className="text-[10px] font-mono text-gray-300">#{cert.id.slice(0, 8).toUpperCase()}</span>
+                    <CertificateDownload
+                      participantName={profile?.full_name || 'Participant'}
+                      courseTitle={courseName(cert.course_id)}
+                      completedAt={cert.completed_at}
+                      certificateId={cert.id}
+                    />
                   </div>
                 ))}
               </div>
@@ -424,50 +457,102 @@ export function ProfilePage() {
         </div>
 
         {/* Digital ID card */}
-        <div>
-          <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: '#0f172a' }}>
-            <div className="text-xs font-semibold uppercase tracking-widest opacity-50 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-              Digital ID
-            </div>
-            <div className="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center mb-4">
-              <User size={28} className="text-gray-400" />
-            </div>
-            <div className="mb-4">
-              <div className="text-xl font-black leading-tight mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                {profile?.full_name ?? 'UKAG Coach'}
+        <div className="space-y-4">
+          <div className="rounded-2xl overflow-hidden text-white" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' }}>
+            {/* Tri-colour top stripe */}
+            <div className="h-1.5" style={{ background: 'linear-gradient(to right, #1e52a4 33%, #f4cc2c 33% 66%, #ef462c 66%)' }} />
+
+            <div className="p-6">
+              <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-5" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                {profile?.role === 'maintenance' ? 'Technician ID' : 'Staff ID'} · UK Academies of Gymnastics
               </div>
-              <div className="text-sm text-gray-400">{profile?.email ?? ''}</div>
-              {profile?.phone && (
-                <div className="text-sm text-gray-500 mt-0.5">{profile.phone}</div>
-              )}
-            </div>
-            <div
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold text-white mb-4"
-              style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
-            >
-              {profile ? (ROLE_LABELS[profile.role] ?? profile.role) : 'Coach'}
-            </div>
-            <div className="border-t border-gray-700 pt-4 mt-2">
-              <div
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold"
-                style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
-              >
-                UKAG Member
+
+              {/* Photo + upload */}
+              <div className="flex items-start gap-4 mb-5">
+                <div className="relative flex-shrink-0">
+                  <div className="w-20 h-20 rounded-full bg-gray-700 border-2 border-white/20 flex items-center justify-center overflow-hidden">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <User size={32} className="text-gray-400" />
+                    )}
+                  </div>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingPhoto}
+                    className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center border-2 border-slate-900 transition-colors"
+                    style={{ backgroundColor: '#1e52a4' }}
+                    title="Upload photo"
+                  >
+                    {uploadingPhoto ? (
+                      <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Camera size={12} className="text-white" />
+                    )}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handlePhotoUpload}
+                  />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="text-lg font-black leading-tight mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                    {profile?.full_name ?? 'Your Name'}
+                  </div>
+                  <div
+                    className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold text-white mb-2"
+                    style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    {profile ? (ROLE_LABELS[profile.role] ?? profile.role) : 'Member'}
+                  </div>
+                  {profile?.role === 'maintenance' && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <div className={`w-2 h-2 rounded-full ${certificates.length > 0 ? 'bg-green-400' : 'bg-amber-400'}`} />
+                      <span className={`text-xs font-semibold ${certificates.length > 0 ? 'text-green-300' : 'text-amber-300'}`}>
+                        {certificates.length > 0 ? 'Certified Technician' : 'Technician in Training'}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="text-xs font-mono text-gray-500 mt-2">{memberId}</div>
+
+              <div className="border-t border-white/10 pt-4 flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] font-mono text-white/30 tracking-wider">{memberId}</div>
+                  {certificates.length > 0 && (
+                    <div className="text-[11px] text-white/40 mt-1">{certificates.length} CPD {certificates.length === 1 ? 'certificate' : 'certificates'}</div>
+                  )}
+                </div>
+                <div
+                  className="px-2.5 py-1 rounded-full text-[10px] font-bold"
+                  style={{ backgroundColor: '#ef462c', fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  UKAG Member
+                </div>
+              </div>
             </div>
           </div>
 
-          {certificates.length > 0 && (
-            <div className="mt-4 bg-white rounded-xl border border-gray-200 p-4 text-center">
-              <div className="text-2xl font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                {certificates.length}
-              </div>
-              <div className="text-xs text-gray-500 mt-0.5">
-                CPD {certificates.length === 1 ? 'certificate' : 'certificates'} earned
-              </div>
-            </div>
-          )}
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <p className="text-xs text-gray-500 mb-1 font-semibold">Download your ID card</p>
+            <p className="text-xs text-gray-400 mb-2">Show this to schools when carrying out servicing visits.</p>
+            {!avatarUrl && (
+              <p className="text-xs text-amber-600 mb-2">Add a photo above to include it on your ID card.</p>
+            )}
+            <IdCardDownload
+              fullName={profile?.full_name || 'UKAG Member'}
+              role={profile?.role || ''}
+              roleLabel={profile ? (ROLE_LABELS[profile.role] ?? profile.role) : 'Member'}
+              memberId={memberId}
+              certCount={certificates.length}
+              isCertified={certificates.some(c => c.course_id === 'maintenance_technician_v1')}
+              avatarUrl={avatarUrl}
+            />
+          </div>
         </div>
       </div>
     </Layout>
