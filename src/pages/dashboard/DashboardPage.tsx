@@ -4,7 +4,7 @@ import { Layout } from '../../components/layout/Layout'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import type { Profile } from '../../types'
-import { GraduationCap, BookOpen, FolderOpen, Award, Wrench, ChevronRight, Clock, Globe, Users, Building2, ClipboardCheck, Mail, Shield, Settings, Star, ArrowUpFromLine, FileText } from 'lucide-react'
+import { GraduationCap, BookOpen, FolderOpen, Award, Wrench, ChevronRight, Clock, Globe, Users, Building2, ClipboardCheck, Mail, Shield, Settings, Star, ArrowUpFromLine, FileText, AlertTriangle } from 'lucide-react'
 import { ACADEMIES } from '../../data/academies'
 import { COURSE_REGISTRY } from '../../data/courses'
 import { TrackerOrderModal } from '../../components/shop/TrackerOrderModal'
@@ -876,6 +876,13 @@ function MaintenanceDashboard({ profile }: { profile: Profile }) {
       to: '/maintenance/reports',
       colour: '#0d9488',
       Icon: FileText,
+    },
+    {
+      label: 'Defect Register',
+      desc: 'All equipment flagged as unsafe',
+      to: '/maintenance/defects',
+      colour: '#dc2626',
+      Icon: AlertTriangle,
     },
     {
       label: 'Technician Course',

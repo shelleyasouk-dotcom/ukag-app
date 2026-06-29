@@ -48,6 +48,7 @@ import { MaintenanceCoursePage } from './pages/courses/MaintenanceCoursePage'
 import { MaintenanceModulePage } from './pages/courses/MaintenanceModulePage'
 import { ServiceReportPage } from './pages/maintenance/ServiceReportPage'
 import { MyReportsPage } from './pages/maintenance/MyReportsPage'
+import { DefectRegisterPage } from './pages/maintenance/DefectRegisterPage'
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth()
@@ -121,6 +122,7 @@ function AppRoutes() {
       <Route path="/courses/maintenance-technician/:moduleId" element={<ProtectedRoute><MaintenanceModulePage /></ProtectedRoute>} />
       <Route path="/maintenance/reports" element={<ProtectedRoute><MyReportsPage /></ProtectedRoute>} />
       <Route path="/maintenance/report/new" element={<ProtectedRoute><ServiceReportPage /></ProtectedRoute>} />
+      <Route path="/maintenance/defects" element={<ProtectedRoute><DefectRegisterPage /></ProtectedRoute>} />
       <Route path="/courses/:courseId/register" element={<ProtectedRoute><CourseRegistrationPage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
 

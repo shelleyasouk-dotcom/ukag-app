@@ -244,7 +244,7 @@ const ROLE_OPTIONS = [
 
 export function AdminPage() {
   const { profile } = useAuth()
-  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources' | 'dates' | 'invoices' | 'group_bookings' | 'service_reports'>('coaches')
+  const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources' | 'dates' | 'invoices' | 'group_bookings' | 'service_reports' | 'defect_register'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
@@ -571,6 +571,7 @@ export function AdminPage() {
                 { key: 'resources', label: 'Trackers', badge: pendingResourceOrdersCount, badgeColour: '#8b5cf6' },
                 { key: 'dates', label: 'Course Dates' },
                 { key: 'service_reports', label: 'Service Reports', badge: serviceReports.filter(r => r.status === 'submitted').length, badgeColour: '#475569' },
+                { key: 'defect_register', label: 'Defect Register', badge: serviceReports.filter(r => r.status === 'submitted').reduce((n, r) => n + r.equipment.filter(e => e.condition === 'removed').length, 0), badgeColour: '#dc2626' },
               ] as const).map(item => (
                 <button key={item.key} onClick={() => setTab(item.key)}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors text-left ${tab === item.key ? 'text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
@@ -2412,6 +2413,68 @@ export function AdminPage() {
           )}
         </div>
       )}
+
+      {/* Defect Register tab */}
+      {!loading && tab === 'defect_register' && (() => {
+        const defects: Array<{
+          report_id: string; school_name: string; visit_date: string; technician_name: string;
+          visit_type: string; label: string; category: string; issues: string; action: string;
+        }> = []
+        for (const report of serviceReports.filter(r => r.status === 'submitted')) {
+          for (const item of report.equipment) {
+            if (item.condition === 'removed' || item.removed) {
+              defects.push({
+                report_id: report.id,
+                school_name: report.school_name,
+                visit_date: report.visit_date,
+                technician_name: report.technician_name,
+                visit_type: report.visit_type,
+                label: item.label,
+                category: item.category,
+                issues: item.issues,
+                action: item.action,
+              })
+            }
+          }
+        }
+        const CATEGORY_LABELS: Record<string, string> = {
+          trampoline: 'Trampoline', frame: 'Frame / Wall Bars', vault: 'Vaulting Table',
+          springboard: 'Springboard', mat: 'Mat', bench: 'Bench / PE Furniture',
+        }
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Defect Register</h2>
+                <p className="text-xs text-gray-500 mt-0.5">{defects.length} item{defects.length !== 1 ? 's' : ''} flagged Remove from Use across all submitted reports.</p>
+              </div>
+            </div>
+            {defects.length === 0 ? (
+              <div className="text-center py-12 text-gray-400 text-sm">No defects recorded yet.</div>
+            ) : defects.map((d, i) => (
+              <div key={i} className="bg-white rounded-xl border-l-4 border-red-400 border border-gray-200 p-4">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="font-bold text-gray-900 text-sm">{d.label || CATEGORY_LABELS[d.category] || d.category}</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">Remove from Use</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{CATEGORY_LABELS[d.category] || d.category}</span>
+                    </div>
+                    <p className="text-sm text-gray-700 font-semibold">{d.school_name}</p>
+                    {d.issues && <p className="text-xs text-gray-500 mt-1">Issues: {d.issues}</p>}
+                    {d.action && <p className="text-xs text-gray-500">Action: {d.action}</p>}
+                  </div>
+                  <div className="text-right text-xs text-gray-400 shrink-0">
+                    <div className="font-semibold text-gray-600">{new Date(d.visit_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                    <div>Type {d.visit_type}</div>
+                    <div>{d.technician_name}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      })()}
 
       {showInvoiceModal && (
         <CreateInvoiceModal
