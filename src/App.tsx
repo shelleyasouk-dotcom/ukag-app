@@ -43,6 +43,7 @@ import { InternationalPage } from './pages/international/InternationalPage'
 import { UaeServicingPage } from './pages/services/UaeServicingPage'
 import { UaeSchoolsInterestPage } from './pages/events/UaeSchoolsInterestPage'
 import { GroupBookingPage } from './pages/bookings/GroupBookingPage'
+import { ParticipantSignUpPage } from './pages/bookings/ParticipantSignUpPage'
 import { MaintenanceCoursePage } from './pages/courses/MaintenanceCoursePage'
 import { MaintenanceModulePage } from './pages/courses/MaintenanceModulePage'
 import { ServiceReportPage } from './pages/maintenance/ServiceReportPage'
@@ -128,6 +129,7 @@ function AppRoutes() {
       <Route path="/services/uae" element={<UaeServicingPage />} />
       <Route path="/uae-schools" element={<UaeSchoolsInterestPage />} />
       <Route path="/group-booking" element={<GroupBookingPage />} />
+      <Route path="/register/group/:bookingId" element={<ParticipantSignUpPage />} />
       <Route path="/events/:eventId" element={<EventRegistrationPage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -130,6 +130,19 @@ interface GroupBookingRow {
   status: 'new' | 'invoiced' | 'confirmed' | 'completed' | 'cancelled'
 }
 
+interface GroupParticipant {
+  id: string
+  created_at: string
+  full_name: string
+  email: string
+  phone: string | null
+  job_title: string | null
+  dietary_requirements: string | null
+  additional_needs: string | null
+  course_id: string | null
+  status: string
+}
+
 interface AdminServiceReport {
   id: string
   created_at: string
@@ -244,6 +257,9 @@ export function AdminPage() {
   const [groupBookings, setGroupBookings] = useState<GroupBookingRow[]>([])
   const [serviceReports, setServiceReports] = useState<AdminServiceReport[]>([])
   const [expandedServiceReport, setExpandedServiceReport] = useState<string | null>(null)
+  const [participants, setParticipants] = useState<Record<string, GroupParticipant[]>>({})
+  const [expandedGroupBooking, setExpandedGroupBooking] = useState<string | null>(null)
+  const [copiedGroupLink, setCopiedGroupLink] = useState<string | null>(null)
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [invoiceWorking, setInvoiceWorking] = useState<string | null>(null)
   const [invoicePrefill, setInvoicePrefill] = useState<{ school?: string; email?: string; name?: string } | null>(null)
@@ -418,6 +434,23 @@ export function AdminPage() {
     await supabase.from('resource_orders').update({ status }).eq('id', id)
     setWorking(false)
     loadAll()
+  }
+
+  async function loadParticipants(bookingId: string) {
+    if (participants[bookingId]) return
+    const { data } = await supabase
+      .from('group_booking_participants')
+      .select('*')
+      .eq('group_booking_id', bookingId)
+      .order('created_at', { ascending: true })
+    setParticipants(prev => ({ ...prev, [bookingId]: data || [] }))
+  }
+
+  function copyGroupLink(bookingId: string) {
+    const url = `${window.location.origin}/register/group/${bookingId}`
+    navigator.clipboard.writeText(url)
+    setCopiedGroupLink(bookingId)
+    setTimeout(() => setCopiedGroupLink(null), 2000)
   }
 
   async function changeGroupBookingStatus(id: string, status: GroupBookingRow['status']) {
@@ -2061,8 +2094,64 @@ export function AdminPage() {
                         >
                           <FileText size={12} /> Create Invoice
                         </button>
+                        <button
+                          onClick={() => copyGroupLink(gb.id)}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-200 text-gray-600 hover:bg-gray-50"
+                        >
+                          <Copy size={12} />
+                          {copiedGroupLink === gb.id ? 'Copied!' : 'Copy Sign-up Link'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            const next = expandedGroupBooking === gb.id ? null : gb.id
+                            setExpandedGroupBooking(next)
+                            if (next) loadParticipants(next)
+                          }}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-200 text-gray-600 hover:bg-gray-50"
+                        >
+                          {expandedGroupBooking === gb.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                          Participants
+                        </button>
                       </div>
                     </div>
+
+                    {expandedGroupBooking === gb.id && (
+                      <div className="border-t border-gray-100 mt-4 pt-4">
+                        {participants[gb.id] === undefined ? (
+                          <p className="text-xs text-gray-400">Loading…</p>
+                        ) : participants[gb.id].length === 0 ? (
+                          <div>
+                            <p className="text-xs text-gray-400 mb-2">No participants have signed up yet.</p>
+                            <p className="text-xs text-gray-400">Share the sign-up link with the school so participants can register.</p>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                              Registered Participants ({participants[gb.id].length})
+                            </p>
+                            <div className="space-y-2">
+                              {participants[gb.id].map(p => (
+                                <div key={p.id} className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{p.full_name}</p>
+                                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                                      <a href={`mailto:${p.email}`} className="text-xs text-blue-600 hover:underline">{p.email}</a>
+                                      {p.job_title && <span className="text-xs text-gray-400">{p.job_title}</span>}
+                                    </div>
+                                    {(p.dietary_requirements || p.additional_needs) && (
+                                      <p className="text-xs text-amber-600 mt-0.5">
+                                        {[p.dietary_requirements, p.additional_needs].filter(Boolean).join(' · ')}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700 shrink-0">{p.status}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )
               })}
