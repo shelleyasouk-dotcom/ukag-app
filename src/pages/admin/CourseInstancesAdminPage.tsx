@@ -147,6 +147,13 @@ export function CourseInstancesAdminPage() {
         </div>
         <div className="flex gap-2 flex-shrink-0">
           <Link
+            to="/admin/seed-gym-l1"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-bold text-gray-700 border border-gray-200 hover:bg-gray-50"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            Quick Create L1 Gym
+          </Link>
+          <Link
             to="/admin/course-guide"
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-bold text-gray-700 border border-gray-200 hover:bg-gray-50"
             style={{ fontFamily: 'Montserrat, sans-serif' }}
