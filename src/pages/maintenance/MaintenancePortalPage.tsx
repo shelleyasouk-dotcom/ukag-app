@@ -8,6 +8,7 @@ import {
   Plus,
   List,
   BookOpen,
+  FileText,
   ChevronDown,
   ChevronUp,
   Wrench,
@@ -387,6 +388,13 @@ export function MaintenancePortalPage() {
               label="Technician Course"
               description="Access training &amp; certification resources"
               colour="#475569"
+            />
+            <QuickActionCard
+              to="/maintenance/operations"
+              icon={<FileText size={20} />}
+              label="Operations Manual"
+              description="Procedures, standards &amp; reference guide"
+              colour="#7c3aed"
             />
           </div>
         </div>
