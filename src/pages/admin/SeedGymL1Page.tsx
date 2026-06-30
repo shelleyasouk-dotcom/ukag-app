@@ -751,7 +751,8 @@ export function SeedGymL1Page() {
       .single()
 
     if (instErr || !inst) {
-      setError('Failed to create course instance. Please try again.')
+      console.error('course_instances insert error:', instErr)
+      setError(`Failed to create course instance: ${instErr?.message || 'unknown error'}`)
       setCreating(false)
       return
     }
@@ -806,7 +807,8 @@ export function SeedGymL1Page() {
     const { error: weeksErr } = await supabase.from('course_instance_weeks').insert(weeks)
 
     if (weeksErr) {
-      setError('Course created but weeks failed to save. Open the course and check the Weeks tab.')
+      console.error('course_instance_weeks insert error:', weeksErr)
+      setError(`Course created but weeks failed to save: ${weeksErr.message}. Open the course and check the Weeks tab.`)
       setCreating(false)
       setDone(inst.id)
       return
