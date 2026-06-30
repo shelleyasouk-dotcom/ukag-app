@@ -56,6 +56,7 @@ import { CohortCourseDetailPage } from './pages/coaching/CohortCourseDetailPage'
 import { CohortWeekPage } from './pages/coaching/CohortWeekPage'
 import { CourseInstancesAdminPage } from './pages/admin/CourseInstancesAdminPage'
 import { CourseInstanceDetailAdminPage } from './pages/admin/CourseInstanceDetailAdminPage'
+import { CourseAuthorGuidePage } from './pages/admin/CourseAuthorGuidePage'
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth()
@@ -141,6 +142,7 @@ function AppRoutes() {
       {/* Cohort courses — admin management */}
       <Route path="/admin/course-instances" element={<ProtectedRoute><AdminRoute><CourseInstancesAdminPage /></AdminRoute></ProtectedRoute>} />
       <Route path="/admin/course-instances/:instanceId" element={<ProtectedRoute><AdminRoute><CourseInstanceDetailAdminPage /></AdminRoute></ProtectedRoute>} />
+      <Route path="/admin/course-guide" element={<ProtectedRoute><AdminRoute><CourseAuthorGuidePage /></AdminRoute></ProtectedRoute>} />
       <Route path="/courses/:courseId/register" element={<ProtectedRoute><CourseRegistrationPage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
 
