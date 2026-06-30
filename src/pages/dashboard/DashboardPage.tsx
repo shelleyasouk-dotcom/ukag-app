@@ -4,7 +4,7 @@ import { Layout } from '../../components/layout/Layout'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import type { Profile } from '../../types'
-import { GraduationCap, BookOpen, FolderOpen, Award, Wrench, ChevronRight, Clock, Globe, Users, Building2, ClipboardCheck, Mail, Shield, Settings, Star, ArrowUpFromLine, FileText, AlertTriangle } from 'lucide-react'
+import { GraduationCap, BookOpen, FolderOpen, Award, Wrench, ChevronRight, Clock, Globe, Users, Building2, ClipboardCheck, Mail, Shield, Settings, Star, ArrowUpFromLine, FileText, AlertTriangle, PlayCircle } from 'lucide-react'
 import { ACADEMIES } from '../../data/academies'
 import { COURSE_REGISTRY } from '../../data/courses'
 import { TrackerOrderModal } from '../../components/shop/TrackerOrderModal'
@@ -338,6 +338,13 @@ function AdminDashboard({ profile }: { profile: Profile }) {
       to: '/profile',
       colour: '#8b5cf6',
       Icon: Award,
+    },
+    {
+      label: 'Live Courses',
+      desc: 'Manage cohort courses, weeks and assessments',
+      to: '/admin/course-instances',
+      colour: '#0d9488',
+      Icon: PlayCircle,
     },
   ]
 

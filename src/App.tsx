@@ -51,6 +51,11 @@ import { MyReportsPage } from './pages/maintenance/MyReportsPage'
 import { DefectRegisterPage } from './pages/maintenance/DefectRegisterPage'
 import { MaintenancePortalPage } from './pages/maintenance/MaintenancePortalPage'
 import { OperationsManualPage } from './pages/maintenance/OperationsManualPage'
+import { MyCohortCoursesPage } from './pages/coaching/MyCohortCoursesPage'
+import { CohortCourseDetailPage } from './pages/coaching/CohortCourseDetailPage'
+import { CohortWeekPage } from './pages/coaching/CohortWeekPage'
+import { CourseInstancesAdminPage } from './pages/admin/CourseInstancesAdminPage'
+import { CourseInstanceDetailAdminPage } from './pages/admin/CourseInstanceDetailAdminPage'
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth()
@@ -127,6 +132,15 @@ function AppRoutes() {
       <Route path="/maintenance/defects" element={<ProtectedRoute><DefectRegisterPage /></ProtectedRoute>} />
       <Route path="/maintenance" element={<ProtectedRoute><MaintenancePortalPage /></ProtectedRoute>} />
       <Route path="/maintenance/operations" element={<ProtectedRoute><OperationsManualPage /></ProtectedRoute>} />
+
+      {/* Cohort courses — candidate */}
+      <Route path="/courses/cohort" element={<ProtectedRoute><MyCohortCoursesPage /></ProtectedRoute>} />
+      <Route path="/courses/cohort/:instanceId" element={<ProtectedRoute><CohortCourseDetailPage /></ProtectedRoute>} />
+      <Route path="/courses/cohort/:instanceId/week/:weekNumber" element={<ProtectedRoute><CohortWeekPage /></ProtectedRoute>} />
+
+      {/* Cohort courses — admin management */}
+      <Route path="/admin/course-instances" element={<ProtectedRoute><AdminRoute><CourseInstancesAdminPage /></AdminRoute></ProtectedRoute>} />
+      <Route path="/admin/course-instances/:instanceId" element={<ProtectedRoute><AdminRoute><CourseInstanceDetailAdminPage /></AdminRoute></ProtectedRoute>} />
       <Route path="/courses/:courseId/register" element={<ProtectedRoute><CourseRegistrationPage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
 
