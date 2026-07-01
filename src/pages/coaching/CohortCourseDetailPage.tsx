@@ -66,7 +66,7 @@ export function CohortCourseDetailPage() {
           .eq('instance_id', instanceId)
           .order('week_number'),
         supabase
-          .from('course_enrollments')
+          .from('cohort_enrollments')
           .select('id')
           .eq('instance_id', instanceId)
           .eq('candidate_id', profile!.id)

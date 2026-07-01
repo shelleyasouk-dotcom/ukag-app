@@ -93,7 +93,7 @@ export function CohortWeekPage() {
           .eq('week_number', weekNum)
           .single(),
         supabase
-          .from('course_enrollments')
+          .from('cohort_enrollments')
           .select('id')
           .eq('instance_id', instanceId)
           .eq('candidate_id', profile!.id)

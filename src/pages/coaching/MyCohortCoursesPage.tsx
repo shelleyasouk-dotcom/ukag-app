@@ -35,7 +35,7 @@ export function MyCohortCoursesPage() {
     if (!profile) return
     async function load() {
       const { data: enrData } = await supabase
-        .from('course_enrollments')
+        .from('cohort_enrollments')
         .select('id, instance_id, status, course_instances(id, title, description, start_date, weeks_total, status)')
         .eq('candidate_id', profile!.id)
         .neq('status', 'withdrawn')

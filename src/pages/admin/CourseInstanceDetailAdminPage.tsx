@@ -560,7 +560,7 @@ export function CourseInstanceDetailAdminPage() {
         .eq('instance_id', instanceId!)
         .order('week_number'),
       supabase
-        .from('course_enrollments')
+        .from('cohort_enrollments')
         .select('id, candidate_id, status')
         .eq('instance_id', instanceId!)
         .neq('status', 'withdrawn'),
@@ -673,7 +673,7 @@ export function CourseInstanceDetailAdminPage() {
     }
 
     const { data: enr, error } = await supabase
-      .from('course_enrollments')
+      .from('cohort_enrollments')
       .insert({
         instance_id: instanceId,
         candidate_id: found.id,
@@ -706,7 +706,7 @@ export function CourseInstanceDetailAdminPage() {
   async function removeCandidate(enrollmentId: string) {
     if (!confirm('Remove this candidate from the course?')) return
     await supabase
-      .from('course_enrollments')
+      .from('cohort_enrollments')
       .update({ status: 'withdrawn' })
       .eq('id', enrollmentId)
     setCandidates(prev => prev.filter(c => c.enrollment_id !== enrollmentId))
