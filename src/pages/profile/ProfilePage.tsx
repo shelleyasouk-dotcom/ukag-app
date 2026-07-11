@@ -4,7 +4,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { COURSE_REGISTRY } from '../../data/courses'
 import { ACADEMIES } from '../../data/academies'
-import { Pencil, Check, X, Award, User, Calendar, Clock, Camera } from 'lucide-react'
+import { Pencil, Check, X, Award, User, Calendar, Clock, Camera, PlayCircle, ChevronRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { IdCardDownload } from '../../components/profile/IdCardDownload'
 import { CertificateDownload } from '../../components/courses/CertificateDownload'
 
@@ -20,6 +21,18 @@ const ROLE_LABELS: Record<string, string> = {
   organisation: 'Organisation',
   assessor: 'Tutor / Assessor',
   maintenance: 'Maintenance',
+}
+
+interface CohortEnrollment {
+  id: string
+  instance_id: string
+  status: string
+  course_instances: {
+    id: string
+    title: string
+    weeks_total: number
+    status: string
+  }
 }
 
 interface CertRow {
@@ -56,6 +69,8 @@ export function ProfilePage() {
   const [certsLoading, setCertsLoading] = useState(true)
   const [bookings, setBookings] = useState<BookingRow[]>([])
   const [bookingsLoading, setBookingsLoading] = useState(true)
+  const [cohortEnrollments, setCohortEnrollments] = useState<CohortEnrollment[]>([])
+  const [cohortProgress, setCohortProgress] = useState<{ enrollment_id: string; completed_at: string | null }[]>([])
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
 
@@ -95,6 +110,24 @@ export function ProfilePage() {
       .then(({ data }) => {
         setBookings(data ?? [])
         setBookingsLoading(false)
+      })
+
+    supabase
+      .from('cohort_enrollments')
+      .select('id, instance_id, status, course_instances(id, title, weeks_total, status)')
+      .eq('candidate_id', profile.id)
+      .neq('status', 'withdrawn')
+      .then(async ({ data: enrData }) => {
+        const enrolls = (enrData as any as CohortEnrollment[]) ?? []
+        setCohortEnrollments(enrolls)
+        if (enrolls.length > 0) {
+          const { data: progData } = await supabase
+            .from('candidate_week_progress')
+            .select('enrollment_id, completed_at')
+            .in('enrollment_id', enrolls.map(e => e.id))
+            .not('completed_at', 'is', null)
+          setCohortProgress(progData ?? [])
+        }
       })
   }, [profile])
 
@@ -316,6 +349,68 @@ export function ProfilePage() {
               </div>
             </div>
           </div>
+
+          {/* My Live Courses */}
+          {cohortEnrollments.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  My Live Courses
+                </h2>
+                <Link
+                  to="/courses/cohort"
+                  className="text-xs font-bold text-blue-600 hover:underline"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  View all
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {cohortEnrollments.map(enr => {
+                  const ci = enr.course_instances
+                  const weeksCompleted = cohortProgress.filter(p => p.enrollment_id === enr.id).length
+                  const pct = ci ? Math.round((weeksCompleted / ci.weeks_total) * 100) : 0
+                  const isComplete = weeksCompleted > 0 && weeksCompleted === ci?.weeks_total
+                  const notStarted = weeksCompleted === 0
+
+                  return (
+                    <div key={enr.id} className="flex items-center gap-4 p-3 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all">
+                      <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: '#1e52a418' }}
+                      >
+                        <PlayCircle size={18} style={{ color: '#1e52a4' }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900 leading-tight truncate" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                          {ci?.title}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                            <div
+                              className="h-1.5 rounded-full transition-all"
+                              style={{ width: `${pct}%`, backgroundColor: isComplete ? '#16a34a' : '#1e52a4' }}
+                            />
+                          </div>
+                          <span className="text-xs text-gray-400 flex-shrink-0">
+                            {weeksCompleted}/{ci?.weeks_total} weeks
+                          </span>
+                        </div>
+                      </div>
+                      <Link
+                        to={`/courses/cohort/${enr.instance_id}`}
+                        className="flex-shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-90"
+                        style={{ backgroundColor: isComplete ? '#16a34a' : '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+                      >
+                        {isComplete ? 'Review' : notStarted ? 'Start Now' : 'Continue'}
+                        <ChevronRight size={12} />
+                      </Link>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Upcoming Course Bookings */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">

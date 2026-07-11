@@ -65,6 +65,28 @@ function QuickActionCard({ label, desc, to, colour, Icon }: QuickAction) {
 
 function CoachingDashboard({ profile }: { profile: Profile }) {
   const [trackerModalProduct, setTrackerModalProduct] = useState<TrackerProduct | null>(null)
+  const [newEnrollments, setNewEnrollments] = useState<{ id: string; instance_id: string; title: string }[]>([])
+
+  useEffect(() => {
+    supabase
+      .from('cohort_enrollments')
+      .select('id, instance_id, course_instances(title)')
+      .eq('candidate_id', profile.id)
+      .neq('status', 'withdrawn')
+      .then(async ({ data: enrData }) => {
+        if (!enrData || enrData.length === 0) return
+        const ids = enrData.map((e: any) => e.id)
+        const { data: progData } = await supabase
+          .from('candidate_week_progress')
+          .select('enrollment_id')
+          .in('enrollment_id', ids)
+        const startedIds = new Set((progData ?? []).map((p: any) => p.enrollment_id))
+        const unstarted = (enrData as any[])
+          .filter(e => !startedIds.has(e.id))
+          .map(e => ({ id: e.id, instance_id: e.instance_id, title: e.course_instances?.title ?? 'Course' }))
+        setNewEnrollments(unstarted)
+      })
+  }, [profile.id])
 
   const QUICK_ACTIONS: QuickAction[] = [
     {
@@ -119,6 +141,34 @@ function CoachingDashboard({ profile }: { profile: Profile }) {
         </h1>
         <p className="text-gray-500 text-sm">Here's everything you need to manage your coaching journey.</p>
       </div>
+
+      {newEnrollments.length > 0 && (
+        <div className="mb-6 space-y-2">
+          {newEnrollments.map(enr => (
+            <div
+              key={enr.id}
+              className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl border border-blue-200 bg-blue-50"
+            >
+              <div className="flex items-center gap-3">
+                <PlayCircle size={18} style={{ color: '#1e52a4' }} className="flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                    You've been enrolled on a new course
+                  </p>
+                  <p className="text-xs text-gray-500">{enr.title}</p>
+                </div>
+              </div>
+              <Link
+                to={`/courses/cohort/${enr.instance_id}`}
+                className="flex-shrink-0 px-4 py-2 rounded-lg text-xs font-bold text-white"
+                style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Start Now →
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {QUICK_ACTIONS.map(action => (
