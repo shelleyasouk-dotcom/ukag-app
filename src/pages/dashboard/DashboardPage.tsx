@@ -360,6 +360,16 @@ function CoachingDashboard({ profile }: { profile: Profile }) {
 // ─── Admin Dashboard ──────────────────────────────────────────────────────────
 
 function AdminDashboard({ profile }: { profile: Profile }) {
+  const [pendingRequests, setPendingRequests] = useState(0)
+
+  useEffect(() => {
+    supabase
+      .from('enrollment_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending')
+      .then(({ count }) => setPendingRequests(count ?? 0))
+  }, [])
+
   const QUICK_ACTIONS: QuickAction[] = [
     {
       label: 'Admin Panel',
@@ -406,6 +416,24 @@ function AdminDashboard({ profile }: { profile: Profile }) {
         </h1>
         <p className="text-gray-500 text-sm">Admin portal — manage coaches, registrations and events.</p>
       </div>
+
+      {pendingRequests > 0 && (
+        <Link
+          to="/admin/enrollment-requests"
+          className="flex items-center gap-4 p-4 rounded-xl border border-amber-200 bg-amber-50 mb-5 hover:bg-amber-100 transition-colors"
+        >
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-amber-100">
+            <Star size={18} className="text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              {pendingRequests} enrolment {pendingRequests === 1 ? 'request' : 'requests'} waiting for review
+            </p>
+            <p className="text-xs text-gray-500">Approve or decline course place requests from coaches</p>
+          </div>
+          <ChevronRight size={16} className="text-amber-600 flex-shrink-0" />
+        </Link>
+      )}
 
       <Link
         to="/admin"

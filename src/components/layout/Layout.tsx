@@ -14,6 +14,8 @@ import {
   ChevronRight,
   ShieldCheck,
   PlayCircle,
+  Search,
+  Inbox,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import type { ReactNode } from 'react'
@@ -170,6 +172,20 @@ export function Layout({ children }: { children: ReactNode }) {
           </NavLink>
 
           <NavLink
+            to="/courses/available"
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive ? 'text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              }`
+            }
+            style={({ isActive }) => isActive ? { backgroundColor: '#ef462c' } : {}}
+          >
+            <Search size={18} />
+            Browse Courses
+          </NavLink>
+
+          <NavLink
             to="/courses/cohort"
             onClick={() => setSidebarOpen(false)}
             className={({ isActive }) =>
@@ -198,19 +214,34 @@ export function Layout({ children }: { children: ReactNode }) {
           </NavLink>
 
           {profile?.role === 'admin' && (
-            <NavLink
-              to="/admin"
-              onClick={() => setSidebarOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive ? 'text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                }`
-              }
-              style={({ isActive }) => isActive ? { backgroundColor: '#1e52a4' } : {}}
-            >
-              <ShieldCheck size={18} />
-              Admin
-            </NavLink>
+            <>
+              <NavLink
+                to="/admin/enrollment-requests"
+                onClick={() => setSidebarOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive ? 'text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                  }`
+                }
+                style={({ isActive }) => isActive ? { backgroundColor: '#1e52a4' } : {}}
+              >
+                <Inbox size={18} />
+                Enrolment Requests
+              </NavLink>
+              <NavLink
+                to="/admin"
+                onClick={() => setSidebarOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive ? 'text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                  }`
+                }
+                style={({ isActive }) => isActive ? { backgroundColor: '#1e52a4' } : {}}
+              >
+                <ShieldCheck size={18} />
+                Admin
+              </NavLink>
+            </>
           )}
         </nav>
 
