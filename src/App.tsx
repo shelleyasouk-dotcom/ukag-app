@@ -60,6 +60,8 @@ import { CourseAuthorGuidePage } from './pages/admin/CourseAuthorGuidePage'
 import { SeedGymL1Page } from './pages/admin/SeedGymL1Page'
 import { EnrollmentRequestsAdminPage } from './pages/admin/EnrollmentRequestsAdminPage'
 import { AvailableCoursesPage } from './pages/courses/AvailableCoursesPage'
+import { CertificatePurchasePage } from './pages/certificates/CertificatePurchasePage'
+import { CertificateSuccessPage } from './pages/certificates/CertificateSuccessPage'
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth()
@@ -151,6 +153,10 @@ function AppRoutes() {
       <Route path="/admin/enrollment-requests" element={<ProtectedRoute><AdminRoute><EnrollmentRequestsAdminPage /></AdminRoute></ProtectedRoute>} />
       <Route path="/courses/:courseId/register" element={<ProtectedRoute><CourseRegistrationPage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
+
+      {/* Digital certificates — public, no login required */}
+      <Route path="/certificates" element={<CertificatePurchasePage />} />
+      <Route path="/certificates/success" element={<CertificateSuccessPage />} />
 
       {/* Public pages — no login required */}
       <Route path="/international" element={<InternationalPage />} />
