@@ -36,6 +36,11 @@ import { TrampolineTeacherModulePage } from './pages/courses/TrampolineTeacherMo
 import { TutorAssessorCoursePage } from './pages/courses/TutorAssessorCoursePage'
 import { TutorAssessorModulePage } from './pages/courses/TutorAssessorModulePage'
 import { CourseRegistrationPage } from './pages/courses/CourseRegistrationPage'
+import { JuniorCoachCoursePage } from './pages/courses/JuniorCoachCoursePage'
+import { JuniorCoachModulePage } from './pages/courses/JuniorCoachModulePage'
+import { Level1CoachCoursePage } from './pages/courses/Level1CoachCoursePage'
+import { Level1CoachModulePage } from './pages/courses/Level1CoachModulePage'
+import { CoursesLandingPage } from './pages/courses/CoursesLandingPage'
 import { AdminPage } from './pages/admin/AdminPage'
 import { OrganisationPage } from './pages/organisation/OrganisationPage'
 import { EventRegistrationPage } from './pages/events/EventRegistrationPage'
@@ -112,9 +117,14 @@ function AppRoutes() {
       <Route path="/courses/tutor-assessor" element={<ProtectedRoute><TutorAssessorCoursePage /></ProtectedRoute>} />
       <Route path="/courses/tutor-assessor/:moduleId" element={<ProtectedRoute><TutorAssessorModulePage /></ProtectedRoute>} />
       <Route path="/courses/:courseId/register" element={<ProtectedRoute><CourseRegistrationPage /></ProtectedRoute>} />
+      <Route path="/courses/junior-coach" element={<ProtectedRoute><JuniorCoachCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/junior-coach/:moduleId" element={<ProtectedRoute><JuniorCoachModulePage /></ProtectedRoute>} />
+      <Route path="/courses/level-1-assistant" element={<ProtectedRoute><Level1CoachCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/level-1-assistant/:moduleId" element={<ProtectedRoute><Level1CoachModulePage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
 
       {/* Public pages — no login required */}
+      <Route path="/courses" element={<CoursesLandingPage />} />
       <Route path="/international" element={<InternationalPage />} />
       <Route path="/services/uae" element={<UaeServicingPage />} />
       <Route path="/uae-schools" element={<UaeSchoolsInterestPage />} />

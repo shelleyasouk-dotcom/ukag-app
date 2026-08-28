@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronRight,
   ShieldCheck,
+  PlayCircle,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import type { ReactNode } from 'react'
@@ -166,6 +167,20 @@ export function Layout({ children }: { children: ReactNode }) {
           >
             <Award size={18} />
             My Profile
+          </NavLink>
+
+          <NavLink
+            to="/courses/available"
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive ? 'text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              }`
+            }
+            style={({ isActive }) => isActive ? { backgroundColor: '#ef462c' } : {}}
+          >
+            <PlayCircle size={18} />
+            My Courses
           </NavLink>
 
           <NavLink

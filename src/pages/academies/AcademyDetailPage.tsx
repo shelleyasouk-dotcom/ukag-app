@@ -96,36 +96,36 @@ function CourseCard({ course, colour }: { course: Course; colour: string }) {
       </div>
 
       {/* CTA buttons */}
-      {course.bookingUrl.startsWith('http') ? (
-        <a
-          href={course.bookingUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-auto px-4 py-2.5 rounded-lg text-sm font-bold text-white text-center"
-          style={{ backgroundColor: colour, fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Book Now ↗
-        </a>
-      ) : (
-        <div className="mt-auto flex gap-2">
+      <div className="mt-auto flex flex-col gap-2">
+        {course.onlineUrl && (
+          <Link
+            to={course.onlineUrl}
+            className="px-4 py-2.5 rounded-lg text-sm font-bold text-white text-center"
+            style={{ backgroundColor: colour, fontFamily: 'Montserrat, sans-serif' }}
+          >
+            Start Online Course →
+          </Link>
+        )}
+        {course.bookingUrl.startsWith('http') ? (
+          <a
+            href={course.bookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2.5 rounded-lg text-sm font-bold text-white text-center"
+            style={{ backgroundColor: colour, fontFamily: 'Montserrat, sans-serif' }}
+          >
+            Book Now ↗
+          </a>
+        ) : !course.onlineUrl && (
           <Link
             to={`/courses/${course.id}/register`}
-            className="flex-1 px-4 py-2.5 rounded-lg text-sm font-bold text-white text-center"
+            className="px-4 py-2.5 rounded-lg text-sm font-bold text-white text-center"
             style={{ backgroundColor: colour, fontFamily: 'Montserrat, sans-serif' }}
           >
             Register Interest
           </Link>
-          {course.bookingUrl.startsWith('/') && (
-            <Link
-              to={course.bookingUrl}
-              className="px-4 py-2.5 rounded-lg text-sm font-bold text-center border-2"
-              style={{ borderColor: colour, color: colour, fontFamily: 'Montserrat, sans-serif' }}
-            >
-              Start Course
-            </Link>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
