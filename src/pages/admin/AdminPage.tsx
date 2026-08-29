@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { Layout } from '../../components/layout/Layout'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import { COURSE_REGISTRY } from '../../data/courses'
+import { COURSE_REGISTRY, COURSE_ACADEMIES } from '../../data/courses'
 import { EVENTS } from '../../data/events'
-import { CheckCircle, XCircle, UserPlus, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus } from 'lucide-react'
+import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus, KeyRound, GraduationCap } from 'lucide-react'
 import { CreateInvoiceModal } from '../../components/admin/CreateInvoiceModal'
 
 interface ProfileRow {
@@ -216,8 +216,13 @@ export function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [copiedLink, setCopiedLink] = useState<string | null>(null)
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
-  const [addCourse, setAddCourse] = useState<Record<string, string>>({})
   const [working, setWorking] = useState(false)
+  const [grantAccessUser, setGrantAccessUser] = useState<ProfileRow | null>(null)
+  const [grantSelected, setGrantSelected] = useState<Set<string>>(new Set())
+  const [grantAcademy, setGrantAcademy] = useState(COURSE_ACADEMIES[0])
+  const [grantWorking, setGrantWorking] = useState(false)
+  const [resetWorking, setResetWorking] = useState<string | null>(null)
+  const [resetSent, setResetSent] = useState<string | null>(null)
   const [interestFilter, setInterestFilter] = useState<{ course: string; status: string; search: string }>({ course: '', status: '', search: '' })
   const [expandedInterest, setExpandedInterest] = useState<string | null>(null)
   const [expandedOrg, setExpandedOrg] = useState<string | null>(null)
@@ -265,26 +270,49 @@ export function AdminPage() {
     setTimeout(() => setCopiedLink(null), 2000)
   }
 
-  async function enrolUser(userId: string) {
-    const courseId = addCourse[userId]
-    if (!courseId) return
-    setWorking(true)
-    await supabase.from('course_enrollments').upsert({
-      user_id: userId,
-      course_id: courseId,
-      enrolled_at: new Date().toISOString(),
-      enrolled_by: profile?.id,
-    }, { onConflict: 'user_id,course_id' })
-    setAddCourse(prev => ({ ...prev, [userId]: '' }))
-    setWorking(false)
-    loadAll()
-  }
-
   async function unenrolUser(userId: string, courseId: string) {
     setWorking(true)
     await supabase.from('course_enrollments').delete().eq('user_id', userId).eq('course_id', courseId)
     setWorking(false)
     loadAll()
+  }
+
+  function openGrantAccess(user: ProfileRow, userEnrollments: EnrollmentRow[]) {
+    const already = new Set(userEnrollments.map(e => e.course_id))
+    setGrantSelected(already)
+    setGrantAcademy(COURSE_ACADEMIES[0])
+    setGrantAccessUser(user)
+  }
+
+  async function submitGrantAccess() {
+    if (!grantAccessUser || !profile) return
+    const userId = grantAccessUser.id
+    const currentIds = new Set(enrollments.filter(e => e.user_id === userId).map(e => e.course_id))
+    const toAdd = [...grantSelected].filter(id => !currentIds.has(id))
+    const toRemove = [...currentIds].filter(id => !grantSelected.has(id))
+    if (toAdd.length === 0 && toRemove.length === 0) { setGrantAccessUser(null); return }
+    setGrantWorking(true)
+    await Promise.all([
+      ...toAdd.map(courseId =>
+        supabase.from('course_enrollments').upsert({ user_id: userId, course_id: courseId, enrolled_at: new Date().toISOString(), enrolled_by: profile.id }, { onConflict: 'user_id,course_id' })
+      ),
+      ...toRemove.map(courseId =>
+        supabase.from('course_enrollments').delete().eq('user_id', userId).eq('course_id', courseId)
+      ),
+    ])
+    setGrantWorking(false)
+    setGrantAccessUser(null)
+    loadAll()
+  }
+
+  async function sendPasswordReset(user: ProfileRow) {
+    setResetWorking(user.id)
+    await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    setResetWorking(null)
+    setResetSent(user.id)
+    setTimeout(() => setResetSent(null), 4000)
   }
 
   async function approveRequest(req: RequestRow) {
@@ -510,8 +538,6 @@ export function AdminPage() {
           {profiles.map(p => {
             const userEnrollments = enrollments.filter(e => e.user_id === p.id)
             const isExpanded = expandedUser === p.id
-            const unenrolledCourses = COURSE_REGISTRY.filter(c => !userEnrollments.some(e => e.course_id === c.id))
-
             return (
               <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <button
@@ -552,22 +578,46 @@ export function AdminPage() {
                       </select>
                     </div>
 
+                    {/* Actions */}
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={() => openGrantAccess(p, userEnrollments)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
+                        style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+                      >
+                        <GraduationCap size={13} />
+                        Manage Course Access
+                      </button>
+                      <button
+                        onClick={() => sendPasswordReset(p)}
+                        disabled={resetWorking === p.id}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        style={{ fontFamily: 'Montserrat, sans-serif' }}
+                      >
+                        <KeyRound size={13} />
+                        {resetWorking === p.id ? 'Sending…' : resetSent === p.id ? '✓ Reset sent' : 'Send Password Reset'}
+                      </button>
+                    </div>
+
                     {/* Current enrollments */}
                     <div>
-                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Enrolled Courses</div>
+                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Enrolled Courses ({userEnrollments.length})</div>
                       {userEnrollments.length === 0 ? (
-                        <p className="text-xs text-gray-400">No courses enrolled yet.</p>
+                        <p className="text-xs text-gray-400">No courses enrolled yet. Use "Manage Course Access" to add courses.</p>
                       ) : (
                         <div className="space-y-1.5">
                           {userEnrollments.map(en => {
                             const course = COURSE_REGISTRY.find(c => c.id === en.course_id)
                             return (
                               <div key={en.id} className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-3 py-2">
-                                <span className="text-xs font-medium text-gray-700">{course?.title || en.course_id}</span>
+                                <div>
+                                  <span className="text-xs font-medium text-gray-700">{course?.title || en.course_id}</span>
+                                  {course && <span className="ml-2 text-xs text-gray-400">{course.academy}</span>}
+                                </div>
                                 <button
                                   onClick={() => unenrolUser(p.id, en.course_id)}
                                   disabled={working}
-                                  className="text-red-500 hover:text-red-700 disabled:opacity-40 transition-colors"
+                                  className="text-red-400 hover:text-red-600 disabled:opacity-40 transition-colors"
                                   title="Remove enrolment"
                                 >
                                   <Trash2 size={14} />
@@ -578,34 +628,6 @@ export function AdminPage() {
                         </div>
                       )}
                     </div>
-
-                    {/* Add course */}
-                    {unenrolledCourses.length > 0 && (
-                      <div>
-                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Enrol in a Course</div>
-                        <div className="flex gap-2">
-                          <select
-                            value={addCourse[p.id] || ''}
-                            onChange={e => setAddCourse(prev => ({ ...prev, [p.id]: e.target.value }))}
-                            className="flex-1 px-2 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
-                          >
-                            <option value="">Select course…</option>
-                            {unenrolledCourses.map(c => (
-                              <option key={c.id} value={c.id}>{c.title}</option>
-                            ))}
-                          </select>
-                          <button
-                            onClick={() => enrolUser(p.id)}
-                            disabled={!addCourse[p.id] || working}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white disabled:opacity-40 transition-colors"
-                            style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
-                          >
-                            <UserPlus size={12} />
-                            Enrol
-                          </button>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -2022,6 +2044,83 @@ export function AdminPage() {
           onClose={() => { setShowInvoiceModal(false); loadAll() }}
           onSent={() => loadAll()}
         />
+      )}
+
+      {/* Grant Course Access Modal */}
+      {grantAccessUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div>
+                <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Manage Course Access</h2>
+                <p className="text-xs text-gray-500 mt-0.5">{grantAccessUser.full_name || grantAccessUser.email}</p>
+              </div>
+              <button onClick={() => setGrantAccessUser(null)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+
+            {/* Academy tabs */}
+            <div className="flex gap-1 px-4 pt-4 overflow-x-auto flex-shrink-0">
+              {COURSE_ACADEMIES.map(acad => (
+                <button
+                  key={acad}
+                  onClick={() => setGrantAcademy(acad)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
+                    grantAcademy === acad ? 'text-white' : 'text-gray-500 bg-gray-100 hover:bg-gray-200'
+                  }`}
+                  style={grantAcademy === acad ? { backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' } : { fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  {acad}
+                </button>
+              ))}
+            </div>
+
+            {/* Course checkboxes */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
+              {COURSE_REGISTRY.filter(c => c.academy === grantAcademy).map(course => {
+                const checked = grantSelected.has(course.id)
+                return (
+                  <label key={course.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${checked ? 'border-[#1e52a4] bg-[#1e52a4]/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => {
+                        setGrantSelected(prev => {
+                          const next = new Set(prev)
+                          if (next.has(course.id)) next.delete(course.id)
+                          else next.add(course.id)
+                          return next
+                        })
+                      }}
+                      className="w-4 h-4 accent-[#1e52a4]"
+                    />
+                    <span className="text-sm font-medium text-gray-800">{course.title}</span>
+                  </label>
+                )
+              })}
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-3">
+              <p className="text-xs text-gray-500">{grantSelected.size} course{grantSelected.size !== 1 ? 's' : ''} selected across all academies</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setGrantAccessUser(null)}
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submitGrantAccess}
+                  disabled={grantWorking}
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-white disabled:opacity-60"
+                  style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  {grantWorking ? 'Saving…' : 'Save Access'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
         </div> {/* end main content */}

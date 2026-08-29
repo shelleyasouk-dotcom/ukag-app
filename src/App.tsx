@@ -5,6 +5,8 @@ import { useAuth } from './contexts/AuthContext'
 import { LoginPage } from './pages/auth/LoginPage'
 import { SignUpPage } from './pages/auth/SignUpPage'
 import { AdminLoginPage } from './pages/auth/AdminLoginPage'
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { HomePage } from './pages/home/HomePage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { AcademiesPage } from './pages/academies/AcademiesPage'
@@ -82,6 +84,8 @@ function AppRoutes() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/admin/login" element={<AdminLoginPage />} />
 
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

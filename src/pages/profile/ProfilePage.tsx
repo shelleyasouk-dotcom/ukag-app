@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { Layout } from '../../components/layout/Layout'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { COURSE_REGISTRY } from '../../data/courses'
 import { ACADEMIES } from '../../data/academies'
-import { Pencil, Check, X, Award, User, Calendar, Clock } from 'lucide-react'
+import { Pencil, Check, X, Award, User, Calendar, Clock, PlayCircle, ChevronRight, BookOpen } from 'lucide-react'
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',
@@ -53,6 +54,8 @@ export function ProfilePage() {
   const [certsLoading, setCertsLoading] = useState(true)
   const [bookings, setBookings] = useState<BookingRow[]>([])
   const [bookingsLoading, setBookingsLoading] = useState(true)
+  const [onlineEnrollments, setOnlineEnrollments] = useState<{ course_id: string; enrolled_at: string }[]>([])
+  const [courseProgress, setCourseProgress] = useState<{ course_id: string; module_id: string }[]>([])
 
   useEffect(() => {
     if (!profile) return
@@ -82,6 +85,16 @@ export function ProfilePage() {
         setBookings(data ?? [])
         setBookingsLoading(false)
       })
+    supabase
+      .from('course_enrollments')
+      .select('course_id, enrolled_at')
+      .eq('user_id', profile.id)
+      .then(({ data }) => setOnlineEnrollments(data ?? []))
+    supabase
+      .from('course_progress')
+      .select('course_id, module_id')
+      .eq('user_id', profile.id)
+      .then(({ data }) => setCourseProgress(data ?? []))
   }, [profile])
 
   function startEdit() {
@@ -367,6 +380,51 @@ export function ProfilePage() {
               </div>
             )}
           </div>
+
+          {/* My Online Courses */}
+          {onlineEnrollments.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>My Online Courses</h2>
+                <Link to="/courses/available" className="text-xs font-semibold text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                  Browse more <ChevronRight size={12} />
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {onlineEnrollments.map(en => {
+                  const courseEntry = COURSE_REGISTRY.find(c => c.id === en.course_id)
+                  const cert = certificates.find(c => c.course_id === en.course_id)
+                  const progressCount = courseProgress.filter(p => p.course_id === en.course_id).length
+                  if (!courseEntry) return null
+                  const started = progressCount > 0
+                  const completed = !!cert
+                  return (
+                    <div key={en.course_id} className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${completed ? 'bg-green-100' : started ? 'bg-[#1e52a4]/10' : 'bg-gray-100'}`}>
+                        {completed ? <Award size={18} className="text-green-600" /> : <BookOpen size={18} className={started ? 'text-[#1e52a4]' : 'text-gray-400'} />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900 leading-tight truncate">{courseEntry.title}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {completed ? `Completed ${new Date(cert!.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : started ? `${progressCount} module${progressCount !== 1 ? 's' : ''} complete` : 'Not started'}
+                        </p>
+                      </div>
+                      {!completed && (
+                        <Link
+                          to={courseEntry.courseUrl}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white flex-shrink-0"
+                          style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+                        >
+                          <PlayCircle size={12} />
+                          {started ? 'Continue' : 'Start'}
+                        </Link>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* CPD Certificates */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">

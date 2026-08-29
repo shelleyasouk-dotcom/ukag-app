@@ -114,6 +114,9 @@ export function LoginPage() {
               <Link to="/signup" className="font-semibold text-gray-700 hover:text-gray-900">Create one</Link>
             </p>
             <p className="text-center text-xs text-gray-400 mt-2">
+              <Link to="/forgot-password" className="hover:text-gray-600 transition-colors">Forgot your password?</Link>
+            </p>
+            <p className="text-center text-xs text-gray-400 mt-2">
               <Link to="/admin/login" className="hover:text-gray-600 transition-colors">Admin Portal →</Link>
             </p>
           </div>
