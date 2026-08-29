@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase'
 import { COURSE_REGISTRY } from '../../data/courses'
 import { ACADEMIES } from '../../data/academies'
 import { Pencil, Check, X, Award, User, Calendar, Clock, PlayCircle, ChevronRight, BookOpen } from 'lucide-react'
+import { CertificateDownload } from '../../components/courses/CertificateDownload'
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',
@@ -409,7 +410,14 @@ export function ProfilePage() {
                           {completed ? `Completed ${new Date(cert!.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : started ? `${progressCount} module${progressCount !== 1 ? 's' : ''} complete` : 'Not started'}
                         </p>
                       </div>
-                      {!completed && (
+                      {completed && cert && profile ? (
+                        <CertificateDownload
+                          participantName={profile.full_name ?? profile.email ?? ''}
+                          courseTitle={courseEntry.title}
+                          completedAt={cert.completed_at}
+                          certificateId={cert.id}
+                        />
+                      ) : (
                         <Link
                           to={courseEntry.courseUrl}
                           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white flex-shrink-0"
@@ -446,7 +454,14 @@ export function ProfilePage() {
                         Awarded {new Date(cert.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                       </p>
                     </div>
-                    <span className="text-[10px] font-mono text-gray-300">#{cert.id.slice(0, 8).toUpperCase()}</span>
+                    {profile && (
+                      <CertificateDownload
+                        participantName={profile.full_name ?? profile.email ?? ''}
+                        courseTitle={courseName(cert.course_id)}
+                        completedAt={cert.completed_at}
+                        certificateId={cert.id}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
