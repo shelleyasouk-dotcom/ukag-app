@@ -177,37 +177,6 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="py-10 border-b border-gray-100" style={{ backgroundColor: '#fffbeb' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest"
-              style={{ backgroundColor: '#f4cc2c', color: '#0f172a', fontFamily: 'Montserrat, sans-serif' }}
-            >
-              August 2026
-            </div>
-            <div className="flex-1">
-              <div className="font-black text-gray-900 text-sm mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                New Course Dates Coming Soon
-              </div>
-              <div className="text-sm text-gray-600">
-                <span className="font-semibold">Level 2 Lead Gymnastics Coach Certificate</span>
-                <span className="mx-2 text-gray-300">·</span>
-                <span className="font-semibold">Combined Level 1 &amp; 2 Trampolining Coaching Certificate</span>
-                <span className="ml-2 text-gray-500">— suitable for recreational and school coaches and teachers</span>
-              </div>
-            </div>
-            <a
-              href="mailto:info@ukacademiesofgymnastics.com"
-              className="flex-shrink-0 text-xs font-bold px-4 py-2 rounded-lg"
-              style={{ backgroundColor: '#1e52a4', color: '#ffffff', fontFamily: 'Montserrat, sans-serif' }}
-            >
-              Register Interest
-            </a>
-          </div>
-        </div>
-      </section>
-
       <section className="bg-white py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">

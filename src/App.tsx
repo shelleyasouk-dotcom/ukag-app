@@ -5,6 +5,8 @@ import { useAuth } from './contexts/AuthContext'
 import { LoginPage } from './pages/auth/LoginPage'
 import { SignUpPage } from './pages/auth/SignUpPage'
 import { AdminLoginPage } from './pages/auth/AdminLoginPage'
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { HomePage } from './pages/home/HomePage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { AcademiesPage } from './pages/academies/AcademiesPage'
@@ -36,6 +38,11 @@ import { TrampolineTeacherModulePage } from './pages/courses/TrampolineTeacherMo
 import { TutorAssessorCoursePage } from './pages/courses/TutorAssessorCoursePage'
 import { TutorAssessorModulePage } from './pages/courses/TutorAssessorModulePage'
 import { CourseRegistrationPage } from './pages/courses/CourseRegistrationPage'
+import { JuniorCoachCoursePage } from './pages/courses/JuniorCoachCoursePage'
+import { JuniorCoachModulePage } from './pages/courses/JuniorCoachModulePage'
+import { Level1CoachCoursePage } from './pages/courses/Level1CoachCoursePage'
+import { Level1CoachModulePage } from './pages/courses/Level1CoachModulePage'
+import { CoursesLandingPage } from './pages/courses/CoursesLandingPage'
 import { AdminPage } from './pages/admin/AdminPage'
 import { OrganisationPage } from './pages/organisation/OrganisationPage'
 import { EventRegistrationPage } from './pages/events/EventRegistrationPage'
@@ -97,6 +104,8 @@ function AppRoutes() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/admin/login" element={<AdminLoginPage />} />
 
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
@@ -152,6 +161,10 @@ function AppRoutes() {
       <Route path="/admin/seed-gym-l1" element={<ProtectedRoute><AdminRoute><SeedGymL1Page /></AdminRoute></ProtectedRoute>} />
       <Route path="/admin/enrollment-requests" element={<ProtectedRoute><AdminRoute><EnrollmentRequestsAdminPage /></AdminRoute></ProtectedRoute>} />
       <Route path="/courses/:courseId/register" element={<ProtectedRoute><CourseRegistrationPage /></ProtectedRoute>} />
+      <Route path="/courses/junior-coach" element={<ProtectedRoute><JuniorCoachCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/junior-coach/:moduleId" element={<ProtectedRoute><JuniorCoachModulePage /></ProtectedRoute>} />
+      <Route path="/courses/level-1-assistant" element={<ProtectedRoute><Level1CoachCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/level-1-assistant/:moduleId" element={<ProtectedRoute><Level1CoachModulePage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
 
       {/* Digital certificates — public, no login required */}
@@ -159,6 +172,7 @@ function AppRoutes() {
       <Route path="/certificates/success" element={<CertificateSuccessPage />} />
 
       {/* Public pages — no login required */}
+      <Route path="/courses" element={<CoursesLandingPage />} />
       <Route path="/international" element={<InternationalPage />} />
       <Route path="/services/uae" element={<UaeServicingPage />} />
       <Route path="/uae-schools" element={<UaeSchoolsInterestPage />} />

@@ -21,6 +21,7 @@ export interface Course {
   assessment: string
   certification: string
   bookingUrl: string
+  onlineUrl?: string
   dates?: CourseDateBlock[]
   interestForm?: boolean
   interestLabel?: string
@@ -69,6 +70,7 @@ export const ACADEMIES: Academy[] = [
         assessment: 'Knowledge Check + Practical Observation + Coach Workbook',
         certification: 'UKAG Junior Coach Award',
         bookingUrl: '#',
+        onlineUrl: '/courses/junior-coach',
       },
       {
         id: 'level-1-assistant',
@@ -91,6 +93,7 @@ export const ACADEMIES: Academy[] = [
         assessment: 'Online Learning + Practical Assessment + Lead Coach Observation',
         certification: 'UKAG Level 1 Assistant Coach',
         bookingUrl: '#',
+        onlineUrl: '/courses/level-1-assistant',
       },
       {
         id: 'level-2-lead-gymnastics',
@@ -114,24 +117,6 @@ export const ACADEMIES: Academy[] = [
         certification: 'UKAG Level 2 Lead Coach (Gymnastics)',
         bookingUrl: '#',
         bookingForm: true,
-        dates: [
-          {
-            label: 'Online Learning Sessions',
-            note: 'Live online modules via video call',
-            sessions: [
-              { date: 'Monday 3 August 2026', time: '18:30–20:30' },
-              { date: 'Thursday 6 August 2026', time: '18:30–20:30' },
-            ],
-          },
-          {
-            label: 'Practical Assessment Days',
-            note: 'South location — venue to be confirmed',
-            sessions: [
-              { date: 'Monday 10 August 2026', time: '09:30–14:30' },
-              { date: 'Tuesday 11 August 2026', time: '09:30–14:30' },
-            ],
-          },
-        ],
       },
       {
         id: 'level-1-trampoline',

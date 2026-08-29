@@ -4,7 +4,7 @@ import { Layout } from '../../components/layout/Layout'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import type { Profile } from '../../types'
-import { GraduationCap, BookOpen, FolderOpen, Award, Wrench, ChevronRight, Clock, Globe, Users, Building2, ClipboardCheck, Mail, Shield, Settings, Star, ArrowUpFromLine, FileText, AlertTriangle, PlayCircle } from 'lucide-react'
+import { GraduationCap, BookOpen, FolderOpen, Award, Wrench, ChevronRight, Globe, Users, Building2, ClipboardCheck, Mail, Shield, Settings, Star, ArrowUpFromLine, FileText, AlertTriangle, PlayCircle } from 'lucide-react'
 import { ACADEMIES } from '../../data/academies'
 import { COURSE_REGISTRY } from '../../data/courses'
 import { TrackerOrderModal } from '../../components/shop/TrackerOrderModal'
@@ -243,38 +243,6 @@ function CoachingDashboard({ profile }: { profile: Profile }) {
         />
       )}
 
-      {/* UAE International Training banner */}
-      <div className="border border-[#f4cc2c] bg-[#fffbeb] rounded-xl p-5 mb-8">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#0e749018' }}>
-            <Globe size={20} style={{ color: '#0e7490' }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-black uppercase tracking-wide" style={{ color: '#92400e', fontFamily: 'Montserrat, sans-serif' }}>International — August 2026</span>
-            </div>
-            <p className="text-sm font-semibold text-gray-900 mb-0.5">UAE Trampolining Teacher Training</p>
-            <p className="text-xs text-gray-600 mb-3">Combined Level 1 + Level 2 Award (24–26 Aug) · Refresher Day (Thu 27 Aug) · UAE</p>
-            <div className="flex gap-2 flex-wrap">
-              <Link
-                to="/events/uae-august-2026"
-                className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white"
-                style={{ backgroundColor: '#0e7490', fontFamily: 'Montserrat, sans-serif' }}
-              >
-                Book Your Place
-              </Link>
-              <Link
-                to="/international"
-                className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white"
-                style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
-              >
-                About the Programme
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="grid lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <h2 className="font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Career Pathway</h2>
@@ -312,28 +280,10 @@ function CoachingDashboard({ profile }: { profile: Profile }) {
 
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Upcoming Courses</h2>
+            <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Featured Courses</h2>
             <Link to="/academies/coach" className="text-xs text-gray-500 hover:text-gray-700">View all</Link>
           </div>
           <div className="space-y-3">
-            <div className="border border-[#f4cc2c] bg-[#fffbeb] rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock size={12} style={{ color: '#92400e' }} />
-                <span className="text-xs font-black uppercase tracking-wide" style={{ color: '#92400e', fontFamily: 'Montserrat, sans-serif' }}>August 2026 — Coming Soon</span>
-              </div>
-              <div className="space-y-1 mb-2">
-                <div className="text-sm font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Level 2 Lead Gymnastics Coach Certificate</div>
-                <div className="text-sm font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Combined Level 1 &amp; 2 Trampolining Coaching Certificate</div>
-              </div>
-              <p className="text-xs text-gray-500 mb-3">Suitable for recreational and school coaches and teachers.</p>
-              <a
-                href="mailto:info@ukacademiesofgymnastics.com"
-                className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg"
-                style={{ backgroundColor: '#1e52a4', color: '#ffffff', fontFamily: 'Montserrat, sans-serif' }}
-              >
-                Register Interest
-              </a>
-            </div>
             {FEATURED_COURSES.map(course => (
               <div key={course.id} className="border border-gray-100 rounded-lg p-4">
                 <div className="flex items-start justify-between gap-2 mb-1">
@@ -530,42 +480,6 @@ function TeacherDashboard({ profile }: { profile: Profile }) {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6 mb-8">
-        {/* International Training card */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#0e749018' }}>
-              <Globe size={18} style={{ color: '#0e7490' }} />
-            </div>
-            <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>International Training</h2>
-          </div>
-          <div className="border border-[#f4cc2c] bg-[#fffbeb] rounded-lg p-4 mb-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Clock size={12} style={{ color: '#92400e' }} />
-              <span className="text-xs font-black uppercase tracking-wide" style={{ color: '#92400e', fontFamily: 'Montserrat, sans-serif' }}>August 2026 — UAE Trip</span>
-            </div>
-            <p className="text-sm text-gray-800 font-semibold mb-1">Week commencing 24 August</p>
-            <p className="text-xs text-gray-600 mb-3">
-              Register your interest for the Trampolining Teacher Certificate Level 1 &amp; 2.
-            </p>
-            <div className="flex gap-2 flex-wrap">
-              <Link
-                to="/events/uae-august-2026"
-                className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white"
-                style={{ backgroundColor: '#0e7490', fontFamily: 'Montserrat, sans-serif' }}
-              >
-                Register Interest
-              </Link>
-              <Link
-                to="/international"
-                className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white"
-                style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
-              >
-                Learn More
-              </Link>
-            </div>
-          </div>
-        </div>
-
         {/* Course Registrations */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <h2 className="font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Your Course Registrations</h2>

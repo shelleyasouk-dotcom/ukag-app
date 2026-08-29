@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { Layout } from '../../components/layout/Layout'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import { COURSE_REGISTRY } from '../../data/courses'
+import { COURSE_REGISTRY, COURSE_ACADEMIES } from '../../data/courses'
 import { EVENTS } from '../../data/events'
-import { CheckCircle, XCircle, UserPlus, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus } from 'lucide-react'
+import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus, KeyRound, GraduationCap, Pencil, Check, X, Award } from 'lucide-react'
 import { CreateInvoiceModal } from '../../components/admin/CreateInvoiceModal'
+import { CertificateDownload } from '../../components/courses/CertificateDownload'
 
 interface ProfileRow {
   id: string
@@ -20,6 +21,19 @@ interface EnrollmentRow {
   user_id: string
   course_id: string
   enrolled_at: string
+}
+
+interface ProgressRow {
+  user_id: string
+  course_id: string
+  module_id: string
+}
+
+interface CertificateRow {
+  id: string
+  user_id: string
+  course_id: string
+  completed_at: string
 }
 
 interface RequestRow {
@@ -271,8 +285,19 @@ export function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [copiedLink, setCopiedLink] = useState<string | null>(null)
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
-  const [addCourse, setAddCourse] = useState<Record<string, string>>({})
+  const [allProgress, setAllProgress] = useState<ProgressRow[]>([])
+  const [allCertificates, setAllCertificates] = useState<CertificateRow[]>([])
   const [working, setWorking] = useState(false)
+  const [editingUser, setEditingUser] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editOrg, setEditOrg] = useState('')
+  const [editSaving, setEditSaving] = useState(false)
+  const [grantAccessUser, setGrantAccessUser] = useState<ProfileRow | null>(null)
+  const [grantSelected, setGrantSelected] = useState<Set<string>>(new Set())
+  const [grantAcademy, setGrantAcademy] = useState(COURSE_ACADEMIES[0])
+  const [grantWorking, setGrantWorking] = useState(false)
+  const [resetWorking, setResetWorking] = useState<string | null>(null)
+  const [resetSent, setResetSent] = useState<string | null>(null)
   const [interestFilter, setInterestFilter] = useState<{ course: string; status: string; search: string }>({ course: '', status: '', search: '' })
   const [expandedInterest, setExpandedInterest] = useState<string | null>(null)
   const [expandedOrg, setExpandedOrg] = useState<string | null>(null)
@@ -281,7 +306,7 @@ export function AdminPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }, { data: si }, { data: ro }, { data: cd }, { data: inv }, { data: gb }, { data: sr }] = await Promise.all([
+    const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }, { data: si }, { data: ro }, { data: cd }, { data: inv }, { data: gb }, { data: sr }, { data: prog }, { data: certs }] = await Promise.all([
       supabase.from('profiles').select('id, email, full_name, role, organisation_name').order('full_name'),
       supabase.from('course_enrollments').select('*'),
       supabase.from('course_access_requests').select('*').order('requested_at', { ascending: false }),
@@ -294,6 +319,8 @@ export function AdminPage() {
       supabase.from('stripe_invoices').select('*').order('created_at', { ascending: false }),
       supabase.from('group_bookings').select('*').order('created_at', { ascending: false }),
       supabase.from('service_reports').select('*').order('visit_date', { ascending: false }),
+      supabase.from('course_progress').select('user_id, course_id, module_id'),
+      supabase.from('course_certificates').select('id, user_id, course_id, completed_at').order('completed_at', { ascending: false }),
     ])
     setProfiles(p || [])
     setEnrollments(e || [])
@@ -307,6 +334,8 @@ export function AdminPage() {
     setInvoices(inv || [])
     setGroupBookings(gb || [])
     setServiceReports(sr || [])
+    setAllProgress(prog || [])
+    setAllCertificates(certs || [])
     setLoading(false)
   }
 
@@ -324,26 +353,49 @@ export function AdminPage() {
     setTimeout(() => setCopiedLink(null), 2000)
   }
 
-  async function enrolUser(userId: string) {
-    const courseId = addCourse[userId]
-    if (!courseId) return
-    setWorking(true)
-    await supabase.from('course_enrollments').upsert({
-      user_id: userId,
-      course_id: courseId,
-      enrolled_at: new Date().toISOString(),
-      enrolled_by: profile?.id,
-    }, { onConflict: 'user_id,course_id' })
-    setAddCourse(prev => ({ ...prev, [userId]: '' }))
-    setWorking(false)
-    loadAll()
-  }
-
   async function unenrolUser(userId: string, courseId: string) {
     setWorking(true)
     await supabase.from('course_enrollments').delete().eq('user_id', userId).eq('course_id', courseId)
     setWorking(false)
     loadAll()
+  }
+
+  function openGrantAccess(user: ProfileRow, userEnrollments: EnrollmentRow[]) {
+    const already = new Set(userEnrollments.map(e => e.course_id))
+    setGrantSelected(already)
+    setGrantAcademy(COURSE_ACADEMIES[0])
+    setGrantAccessUser(user)
+  }
+
+  async function submitGrantAccess() {
+    if (!grantAccessUser || !profile) return
+    const userId = grantAccessUser.id
+    const currentIds = new Set(enrollments.filter(e => e.user_id === userId).map(e => e.course_id))
+    const toAdd = [...grantSelected].filter(id => !currentIds.has(id))
+    const toRemove = [...currentIds].filter(id => !grantSelected.has(id))
+    if (toAdd.length === 0 && toRemove.length === 0) { setGrantAccessUser(null); return }
+    setGrantWorking(true)
+    await Promise.all([
+      ...toAdd.map(courseId =>
+        supabase.from('course_enrollments').upsert({ user_id: userId, course_id: courseId, enrolled_at: new Date().toISOString(), enrolled_by: profile.id }, { onConflict: 'user_id,course_id' })
+      ),
+      ...toRemove.map(courseId =>
+        supabase.from('course_enrollments').delete().eq('user_id', userId).eq('course_id', courseId)
+      ),
+    ])
+    setGrantWorking(false)
+    setGrantAccessUser(null)
+    loadAll()
+  }
+
+  async function sendPasswordReset(user: ProfileRow) {
+    setResetWorking(user.id)
+    await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    setResetWorking(null)
+    setResetSent(user.id)
+    setTimeout(() => setResetSent(null), 4000)
   }
 
   async function approveRequest(req: RequestRow) {
@@ -367,6 +419,23 @@ export function AdminPage() {
     setWorking(true)
     await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
     setWorking(false)
+    loadAll()
+  }
+
+  function startEditProfile(p: ProfileRow) {
+    setEditName(p.full_name || '')
+    setEditOrg(p.organisation_name || '')
+    setEditingUser(p.id)
+  }
+
+  async function saveProfileEdit(userId: string) {
+    setEditSaving(true)
+    await supabase.from('profiles').update({
+      full_name: editName,
+      organisation_name: editOrg || null,
+    }).eq('id', userId)
+    setEditSaving(false)
+    setEditingUser(null)
     loadAll()
   }
 
@@ -608,8 +677,6 @@ export function AdminPage() {
           {profiles.map(p => {
             const userEnrollments = enrollments.filter(e => e.user_id === p.id)
             const isExpanded = expandedUser === p.id
-            const unenrolledCourses = COURSE_REGISTRY.filter(c => !userEnrollments.some(e => e.course_id === c.id))
-
             return (
               <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <button
@@ -633,79 +700,148 @@ export function AdminPage() {
                   {isExpanded ? <ChevronUp size={16} className="text-gray-400 flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />}
                 </button>
 
-                {isExpanded && (
-                  <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-4">
-                    {/* Role */}
-                    <div>
-                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Role</div>
-                      <select
-                        value={p.role}
-                        onChange={e => changeRole(p.id, e.target.value)}
-                        disabled={working}
-                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-50"
-                      >
-                        {ROLE_OPTIONS.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Current enrollments */}
-                    <div>
-                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Enrolled Courses</div>
-                      {userEnrollments.length === 0 ? (
-                        <p className="text-xs text-gray-400">No courses enrolled yet.</p>
-                      ) : (
-                        <div className="space-y-1.5">
-                          {userEnrollments.map(en => {
-                            const course = COURSE_REGISTRY.find(c => c.id === en.course_id)
-                            return (
-                              <div key={en.id} className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-3 py-2">
-                                <span className="text-xs font-medium text-gray-700">{course?.title || en.course_id}</span>
-                                <button
-                                  onClick={() => unenrolUser(p.id, en.course_id)}
-                                  disabled={working}
-                                  className="text-red-500 hover:text-red-700 disabled:opacity-40 transition-colors"
-                                  title="Remove enrolment"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Add course */}
-                    {unenrolledCourses.length > 0 && (
+                {isExpanded && (() => {
+                  const userProgress = allProgress.filter(pr => pr.user_id === p.id)
+                  const userCerts = allCertificates.filter(c => c.user_id === p.id)
+                  const isEditing = editingUser === p.id
+                  return (
+                    <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-5">
+                      {/* Profile editing */}
                       <div>
-                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Enrol in a Course</div>
-                        <div className="flex gap-2">
-                          <select
-                            value={addCourse[p.id] || ''}
-                            onChange={e => setAddCourse(prev => ({ ...prev, [p.id]: e.target.value }))}
-                            className="flex-1 px-2 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
-                          >
-                            <option value="">Select course…</option>
-                            {unenrolledCourses.map(c => (
-                              <option key={c.id} value={c.id}>{c.title}</option>
-                            ))}
-                          </select>
-                          <button
-                            onClick={() => enrolUser(p.id)}
-                            disabled={!addCourse[p.id] || working}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white disabled:opacity-40 transition-colors"
-                            style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
-                          >
-                            <UserPlus size={12} />
-                            Enrol
-                          </button>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="text-xs font-bold text-gray-500 uppercase tracking-wide">Profile Details</div>
+                          {!isEditing ? (
+                            <button onClick={() => startEditProfile(p)} className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs text-gray-500 hover:text-gray-700 bg-white border border-gray-200">
+                              <Pencil size={11} /> Edit
+                            </button>
+                          ) : (
+                            <div className="flex gap-1.5">
+                              <button onClick={() => setEditingUser(null)} className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs text-gray-500 bg-white border border-gray-200">
+                                <X size={11} /> Cancel
+                              </button>
+                              <button onClick={() => saveProfileEdit(p.id)} disabled={editSaving} className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs text-white disabled:opacity-60" style={{ backgroundColor: '#1e52a4' }}>
+                                <Check size={11} /> {editSaving ? 'Saving…' : 'Save'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+                          <div className="flex items-center gap-3 px-3 py-2">
+                            <span className="text-xs text-gray-400 w-24 shrink-0">Full name</span>
+                            {isEditing ? (
+                              <input value={editName} onChange={e => setEditName(e.target.value)} className="flex-1 text-xs border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" />
+                            ) : (
+                              <span className="text-xs font-semibold text-gray-800">{p.full_name || '—'}</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 px-3 py-2">
+                            <span className="text-xs text-gray-400 w-24 shrink-0">Email</span>
+                            <span className="text-xs text-gray-700">{p.email}</span>
+                          </div>
+                          {(p.organisation_name || isEditing) && (
+                            <div className="flex items-center gap-3 px-3 py-2">
+                              <span className="text-xs text-gray-400 w-24 shrink-0">Organisation</span>
+                              {isEditing ? (
+                                <input value={editOrg} onChange={e => setEditOrg(e.target.value)} placeholder="Organisation name" className="flex-1 text-xs border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent placeholder:text-gray-300" />
+                              ) : (
+                                <span className="text-xs text-gray-700">{p.organisation_name}</span>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-3 px-3 py-2">
+                            <span className="text-xs text-gray-400 w-24 shrink-0">Role</span>
+                            <select value={p.role} onChange={e => changeRole(p.id, e.target.value)} disabled={working}
+                              className="text-xs border border-gray-200 rounded px-1.5 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-300 disabled:opacity-50">
+                              {ROLE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                            </select>
+                          </div>
                         </div>
                       </div>
-                    )}
-                  </div>
-                )}
+
+                      {/* Quick actions */}
+                      <div className="flex gap-2 flex-wrap">
+                        <button onClick={() => openGrantAccess(p, userEnrollments)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
+                          style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}>
+                          <GraduationCap size={13} /> Manage Course Access
+                        </button>
+                        <button onClick={() => sendPasswordReset(p)} disabled={resetWorking === p.id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                          <KeyRound size={13} />
+                          {resetWorking === p.id ? 'Sending…' : resetSent === p.id ? '✓ Reset sent' : 'Send Password Reset'}
+                        </button>
+                      </div>
+
+                      {/* Course progress & certificates */}
+                      <div>
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+                          Courses ({userEnrollments.length})
+                        </div>
+                        {userEnrollments.length === 0 ? (
+                          <p className="text-xs text-gray-400">No courses enrolled yet.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {userEnrollments.map(en => {
+                              const course = COURSE_REGISTRY.find(c => c.id === en.course_id)
+                              const cert = userCerts.find(c => c.course_id === en.course_id)
+                              const completedModules = userProgress.filter(pr => pr.course_id === en.course_id).length
+                              const total = course?.moduleCount ?? 0
+                              const pct = total > 0 ? Math.round((completedModules / total) * 100) : 0
+                              return (
+                                <div key={en.id} className="bg-white rounded-lg border border-gray-200 px-3 py-2.5">
+                                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                                    <div className="min-w-0">
+                                      <div className="text-xs font-semibold text-gray-800 leading-tight">{course?.title || en.course_id}</div>
+                                      {course && <div className="text-[10px] text-gray-400 mt-0.5">{course.academy}</div>}
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      {cert ? (
+                                        <>
+                                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">
+                                            <Award size={9} /> Completed
+                                          </span>
+                                          <CertificateDownload
+                                            participantName={p.full_name || p.email}
+                                            courseTitle={course?.title || en.course_id}
+                                            completedAt={cert.completed_at}
+                                            certificateId={cert.id}
+                                          />
+                                        </>
+                                      ) : completedModules > 0 ? (
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">In progress</span>
+                                      ) : (
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500">Not started</span>
+                                      )}
+                                      <button onClick={() => unenrolUser(p.id, en.course_id)} disabled={working}
+                                        className="text-red-400 hover:text-red-600 disabled:opacity-40 transition-colors ml-1" title="Remove enrolment">
+                                        <Trash2 size={13} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                  {total > 0 && (
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                        <div className="h-full rounded-full transition-all"
+                                          style={{ width: `${pct}%`, backgroundColor: cert ? '#16a34a' : '#1e52a4' }} />
+                                      </div>
+                                      <span className="text-[10px] text-gray-400 shrink-0">{completedModules}/{total} modules</span>
+                                    </div>
+                                  )}
+                                  {cert && (
+                                    <div className="text-[10px] text-gray-400 mt-1">
+                                      Completed {new Date(cert.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
             )
           })}
@@ -2484,6 +2620,83 @@ export function AdminPage() {
           prefillEmail={invoicePrefill?.email || ''}
           prefillName={invoicePrefill?.name || ''}
         />
+      )}
+
+      {/* Grant Course Access Modal */}
+      {grantAccessUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div>
+                <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Manage Course Access</h2>
+                <p className="text-xs text-gray-500 mt-0.5">{grantAccessUser.full_name || grantAccessUser.email}</p>
+              </div>
+              <button onClick={() => setGrantAccessUser(null)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+
+            {/* Academy tabs */}
+            <div className="flex gap-1 px-4 pt-4 overflow-x-auto flex-shrink-0">
+              {COURSE_ACADEMIES.map(acad => (
+                <button
+                  key={acad}
+                  onClick={() => setGrantAcademy(acad)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
+                    grantAcademy === acad ? 'text-white' : 'text-gray-500 bg-gray-100 hover:bg-gray-200'
+                  }`}
+                  style={grantAcademy === acad ? { backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' } : { fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  {acad}
+                </button>
+              ))}
+            </div>
+
+            {/* Course checkboxes */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
+              {COURSE_REGISTRY.filter(c => c.academy === grantAcademy).map(course => {
+                const checked = grantSelected.has(course.id)
+                return (
+                  <label key={course.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${checked ? 'border-[#1e52a4] bg-[#1e52a4]/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => {
+                        setGrantSelected(prev => {
+                          const next = new Set(prev)
+                          if (next.has(course.id)) next.delete(course.id)
+                          else next.add(course.id)
+                          return next
+                        })
+                      }}
+                      className="w-4 h-4 accent-[#1e52a4]"
+                    />
+                    <span className="text-sm font-medium text-gray-800">{course.title}</span>
+                  </label>
+                )
+              })}
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-3">
+              <p className="text-xs text-gray-500">{grantSelected.size} course{grantSelected.size !== 1 ? 's' : ''} selected across all academies</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setGrantAccessUser(null)}
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submitGrantAccess}
+                  disabled={grantWorking}
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-white disabled:opacity-60"
+                  style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  {grantWorking ? 'Saving…' : 'Save Access'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
         </div> {/* end main content */}
