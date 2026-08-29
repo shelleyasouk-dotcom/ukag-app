@@ -385,6 +385,18 @@ export function AdminPage() {
         supabase.from('course_enrollments').delete().eq('user_id', userId).eq('course_id', courseId)
       ),
     ])
+    // Email coach about newly granted courses
+    if (toAdd.length > 0) {
+      const addedTitles = toAdd.map(id => COURSE_REGISTRY.find(c => c.id === id)?.title ?? id)
+      supabase.functions.invoke('send-coach-email', {
+        body: {
+          type: 'access_granted',
+          name: grantAccessUser.full_name || grantAccessUser.email,
+          email: grantAccessUser.email,
+          courses: addedTitles,
+        },
+      }).catch(() => {})
+    }
     setGrantWorking(false)
     setGrantAccessUser(null)
     loadAll()

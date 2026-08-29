@@ -44,6 +44,15 @@ export function EnrollmentGate({ courseId, courseTitle, children }: Props) {
     } else {
       setSubmitted(true)
       refresh()
+      // Email coach confirmation + admin notification — non-blocking
+      supabase.functions.invoke('send-coach-email', {
+        body: {
+          type: 'access_requested',
+          name: profile.full_name || profile.email,
+          email: profile.email,
+          courseTitle,
+        },
+      }).catch(() => {})
     }
     setSubmitting(false)
   }

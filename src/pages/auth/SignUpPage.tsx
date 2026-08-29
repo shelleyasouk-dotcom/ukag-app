@@ -40,6 +40,10 @@ export function SignUpPage() {
         role,
         organisation_name: organisationName || null,
       })
+      // Fire welcome email — non-blocking, ignore errors
+      supabase.functions.invoke('send-coach-email', {
+        body: { type: 'welcome', name: fullName || firstName, email },
+      }).catch(() => {})
     }
 
     navigate('/dashboard')
