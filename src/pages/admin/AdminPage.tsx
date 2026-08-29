@@ -288,6 +288,8 @@ export function AdminPage() {
   const [allProgress, setAllProgress] = useState<ProgressRow[]>([])
   const [allCertificates, setAllCertificates] = useState<CertificateRow[]>([])
   const [working, setWorking] = useState(false)
+  const [roleError, setRoleError] = useState<string | null>(null)
+  const [roleSuccess, setRoleSuccess] = useState<string | null>(null)
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editOrg, setEditOrg] = useState('')
@@ -416,9 +418,17 @@ export function AdminPage() {
   }
 
   async function changeRole(userId: string, newRole: string) {
+    setRoleError(null)
+    setRoleSuccess(null)
     setWorking(true)
-    await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
+    const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
     setWorking(false)
+    if (error) {
+      setRoleError(`Could not update role: ${error.message}. You may need to add an RLS policy in Supabase allowing admins to update all profiles.`)
+    } else {
+      setRoleSuccess(userId)
+      setTimeout(() => setRoleSuccess(null), 2500)
+    }
     loadAll()
   }
 
@@ -782,12 +792,18 @@ export function AdminPage() {
                               )}
                             </div>
                           )}
-                          <div className="flex items-center gap-3 px-3 py-2">
-                            <span className="text-xs text-gray-400 w-24 shrink-0">Role</span>
-                            <select value={p.role} onChange={e => changeRole(p.id, e.target.value)} disabled={working}
-                              className="text-xs border border-gray-200 rounded px-1.5 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-300 disabled:opacity-50">
-                              {ROLE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                            </select>
+                          <div className="px-3 py-2 space-y-1.5">
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs text-gray-400 w-24 shrink-0">Role</span>
+                              <select value={p.role} onChange={e => changeRole(p.id, e.target.value)} disabled={working}
+                                className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-50">
+                                {ROLE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                              </select>
+                              {roleSuccess === p.id && <span className="text-[10px] text-green-600 font-bold shrink-0">✓ Saved</span>}
+                            </div>
+                            {roleError && expandedUser === p.id && (
+                              <p className="text-[10px] text-red-600 bg-red-50 rounded px-2 py-1 leading-snug">{roleError}</p>
+                            )}
                           </div>
                         </div>
                       </div>
