@@ -584,10 +584,44 @@ export function AdminPage() {
 
   return (
     <Layout>
-      <div className="flex gap-6 min-h-screen">
+      <div className="flex flex-col lg:flex-row gap-6 min-h-screen">
 
-        {/* Sidebar */}
-        <aside className="w-52 flex-shrink-0">
+        {/* Mobile nav — dropdown shown below lg */}
+        <div className="lg:hidden">
+          <h1 className="text-lg font-black text-gray-900 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Admin Panel</h1>
+          <select
+            value={tab}
+            onChange={e => setTab(e.target.value as typeof tab)}
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            <optgroup label="People">
+              <option value="coaches">Coaches</option>
+              <option value="requests">Access Requests{pendingCount > 0 ? ` (${pendingCount})` : ''}</option>
+              <option value="organisations">Organisations</option>
+            </optgroup>
+            <optgroup label="Sales">
+              <option value="group_bookings">Group Bookings</option>
+              <option value="interest">Course Interest</option>
+              <option value="bookings">Bookings</option>
+              <option value="events">Events</option>
+              <option value="invoices">Invoices</option>
+            </optgroup>
+            <optgroup label="Operations">
+              <option value="services">Services</option>
+              <option value="resources">Trackers</option>
+              <option value="dates">Course Dates</option>
+              <option value="service_reports">Service Reports</option>
+              <option value="defect_register">Defect Register</option>
+            </optgroup>
+            <optgroup label="Reports">
+              <option value="analytics">Analytics</option>
+            </optgroup>
+          </select>
+        </div>
+
+        {/* Sidebar — desktop only */}
+        <aside className="hidden lg:block w-52 flex-shrink-0">
           <div className="sticky top-6">
             <div className="mb-5">
               <h1 className="text-lg font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Admin Panel</h1>
