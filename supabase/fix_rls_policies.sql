@@ -72,3 +72,22 @@ create policy "certs_insert_own" on course_certificates
 drop policy if exists "profiles_update" on profiles;
 create policy "profiles_update" on profiles
   for update using (auth.uid() = id or current_user_role() = 'admin');
+
+-- ── profiles role check constraint ──────────────────────────
+-- The old constraint only allowed 'admin', 'coach', 'club_manager'.
+-- Drop it and replace with all roles the app uses.
+alter table profiles drop constraint if exists profiles_role_check;
+alter table profiles add constraint profiles_role_check check (role in (
+  'admin',
+  'coach',
+  'junior_coach',
+  'assistant_coach',
+  'lead_coach',
+  'area_lead',
+  'assessor',
+  'teacher',
+  'trampoline_teacher',
+  'organisation',
+  'maintenance',
+  'club_manager'
+));
