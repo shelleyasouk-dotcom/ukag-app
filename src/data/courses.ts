@@ -19,6 +19,7 @@ export const COURSE_REGISTRY: CourseEntry[] = [
   { id: 'send_v1',                title: 'SEND Awareness in Gymnastics & Trampolining',                 academy: 'Coach Development',    courseUrl: '/courses/send',                  moduleCount: 5 },
   { id: 'equality_v1',            title: 'Equality & Inclusion in Gymnastics & Trampolining',           academy: 'Coach Development',    courseUrl: '/courses/equality',              moduleCount: 5 },
   { id: 'trampoline_teacher_v1',  title: 'UKAG Trampolining Teacher Certificate (Level 1 & 2)',         academy: 'Coach Development',    courseUrl: '/courses/trampoline-teacher',    moduleCount: 8 },
+  { id: 'anaphylaxis_v1',        title: 'Anaphylaxis Awareness & Emergency Response',                   academy: 'Safety Academy',       courseUrl: '/courses/anaphylaxis',           moduleCount: 6 },
 ]
 
 export const COURSE_ACADEMIES = [...new Set(COURSE_REGISTRY.map(c => c.academy))]

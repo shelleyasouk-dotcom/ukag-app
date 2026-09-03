@@ -22,6 +22,8 @@ import { AreaLeadCoursePage } from './pages/courses/AreaLeadCoursePage'
 import { AreaLeadModulePage } from './pages/courses/AreaLeadModulePage'
 import { SafeguardingCoursePage } from './pages/courses/SafeguardingCoursePage'
 import { SafeguardingModulePage } from './pages/courses/SafeguardingModulePage'
+import { AnaphylaxisCoursePage } from './pages/courses/AnaphylaxisCoursePage'
+import { AnaphylaxisModulePage } from './pages/courses/AnaphylaxisModulePage'
 import { ServicesPage } from './pages/services/ServicesPage'
 import { FirstAidBasicCoursePage } from './pages/courses/FirstAidBasicCoursePage'
 import { FirstAidBasicModulePage } from './pages/courses/FirstAidBasicModulePage'
@@ -125,6 +127,8 @@ function AppRoutes() {
       <Route path="/courses/area-lead/:moduleId" element={<ProtectedRoute><AreaLeadModulePage /></ProtectedRoute>} />
       <Route path="/courses/safeguarding" element={<ProtectedRoute><SafeguardingCoursePage /></ProtectedRoute>} />
       <Route path="/courses/safeguarding/:moduleId" element={<ProtectedRoute><SafeguardingModulePage /></ProtectedRoute>} />
+      <Route path="/courses/anaphylaxis" element={<ProtectedRoute><AnaphylaxisCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/anaphylaxis/:moduleId" element={<ProtectedRoute><AnaphylaxisModulePage /></ProtectedRoute>} />
       <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
       <Route path="/courses/first-aid-basic" element={<ProtectedRoute><FirstAidBasicCoursePage /></ProtectedRoute>} />
       <Route path="/courses/first-aid-basic/:moduleId" element={<ProtectedRoute><FirstAidBasicModulePage /></ProtectedRoute>} />
