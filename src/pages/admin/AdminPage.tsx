@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { COURSE_REGISTRY, COURSE_ACADEMIES } from '../../data/courses'
 import { EVENTS } from '../../data/events'
-import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus, KeyRound, GraduationCap, Pencil, Check, X, Award } from 'lucide-react'
+import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus, KeyRound, GraduationCap, Pencil, Check, X, Award, Bell, BellOff } from 'lucide-react'
 import { CreateInvoiceModal } from '../../components/admin/CreateInvoiceModal'
 import { CertificateDownload } from '../../components/courses/CertificateDownload'
 
@@ -256,6 +256,68 @@ const ROLE_OPTIONS = [
   { value: 'admin', label: 'Admin' },
 ]
 
+interface CompletionNotif {
+  cert: CertificateRow
+  userName: string
+  courseTitle: string
+}
+
+function NotificationDropdown({ completions, lastSeen, onClose }: { completions: CompletionNotif[]; lastSeen: string; onClose: () => void }) {
+  return (
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 z-30" onClick={onClose} />
+      <div className="absolute right-0 top-8 z-40 w-80 bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <p className="font-black text-gray-900 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>Course Completions</p>
+            <p className="text-xs text-gray-400 mt-0.5">Most recent first</p>
+          </div>
+          <Award size={16} className="text-amber-500" />
+        </div>
+        {completions.length === 0 ? (
+          <div className="px-4 py-8 text-center">
+            <BellOff size={24} className="text-gray-300 mx-auto mb-2" />
+            <p className="text-sm text-gray-400">No completions yet</p>
+          </div>
+        ) : (
+          <div className="max-h-96 overflow-y-auto divide-y divide-gray-50">
+            {completions.map(({ cert, userName, courseTitle }) => {
+              const isNew = cert.completed_at > lastSeen
+              const dateStr = new Date(cert.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+              const timeStr = new Date(cert.completed_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+              return (
+                <div key={cert.id} className={`px-4 py-3 ${isNew ? 'bg-blue-50' : ''}`}>
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Award size={14} className="text-amber-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-sm font-bold text-gray-900 truncate" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                          {userName}
+                        </span>
+                        {isNew && (
+                          <span className="text-[10px] font-black bg-blue-600 text-white px-1.5 py-0.5 rounded-full" style={{ fontFamily: 'Montserrat, sans-serif' }}>NEW</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 mt-0.5 leading-tight">Completed <span className="font-semibold text-gray-800">{courseTitle}</span></p>
+                      <p className="text-[10px] text-gray-400 mt-1">{dateStr} at {timeStr}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+        <div className="px-4 py-2 border-t border-gray-100 bg-gray-50">
+          <p className="text-[10px] text-gray-400 text-center">Showing up to 30 most recent completions</p>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export function AdminPage() {
   const { profile } = useAuth()
   const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources' | 'dates' | 'invoices' | 'group_bookings' | 'service_reports' | 'defect_register'>('coaches')
@@ -303,6 +365,17 @@ export function AdminPage() {
   const [interestFilter, setInterestFilter] = useState<{ course: string; status: string; search: string }>({ course: '', status: '', search: '' })
   const [expandedInterest, setExpandedInterest] = useState<string | null>(null)
   const [expandedOrg, setExpandedOrg] = useState<string | null>(null)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [lastSeenNotifs, setLastSeenNotifs] = useState<string>(() => {
+    try { return localStorage.getItem('admin_notifs_last_seen') || new Date(0).toISOString() } catch { return new Date(0).toISOString() }
+  })
+
+  function openNotifications() {
+    const now = new Date().toISOString()
+    setNotifOpen(v => !v)
+    setLastSeenNotifs(now)
+    try { localStorage.setItem('admin_notifs_last_seen', now) } catch { /* ignore */ }
+  }
 
   useEffect(() => { loadAll() }, [])
 
@@ -604,13 +677,40 @@ export function AdminPage() {
     ...eventRegs.slice(0, 5).map(e => ({ type: 'event' as const, name: e.name, detail: e.event_title, subdetail: e.school_name || null, date: e.created_at, status: e.status })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 15)
 
+  // Course completion notifications
+  const recentCompletions = allCertificates.slice(0, 30).map(cert => {
+    const user = profiles.find(p => p.id === cert.user_id)
+    const course = COURSE_REGISTRY.find(c => c.id === cert.course_id)
+    return { cert, userName: user?.full_name || user?.email || 'Unknown', courseTitle: course?.title || cert.course_id }
+  })
+  const unseenCount = recentCompletions.filter(c => c.cert.completed_at > lastSeenNotifs).length
+
   return (
     <Layout>
       <div className="flex flex-col lg:flex-row gap-6 min-h-screen">
 
         {/* Mobile nav — dropdown shown below lg */}
         <div className="lg:hidden">
-          <h1 className="text-lg font-black text-gray-900 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Admin Panel</h1>
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-lg font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Admin Panel</h1>
+            <div className="relative">
+              <button
+                onClick={openNotifications}
+                className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Course completion notifications"
+              >
+                <Bell size={20} className="text-gray-600" />
+                {unseenCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                    {unseenCount > 9 ? '9+' : unseenCount}
+                  </span>
+                )}
+              </button>
+              {notifOpen && (
+                <NotificationDropdown completions={recentCompletions} lastSeen={lastSeenNotifs} onClose={() => setNotifOpen(false)} />
+              )}
+            </div>
+          </div>
           <select
             value={tab}
             onChange={e => setTab(e.target.value as typeof tab)}
@@ -645,8 +745,25 @@ export function AdminPage() {
         {/* Sidebar — desktop only */}
         <aside className="hidden lg:block w-52 flex-shrink-0">
           <div className="sticky top-6">
-            <div className="mb-5">
+            <div className="mb-5 flex items-center justify-between gap-2">
               <h1 className="text-lg font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Admin Panel</h1>
+              <div className="relative">
+                <button
+                  onClick={openNotifications}
+                  className="relative p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                  title="Course completion notifications"
+                >
+                  <Bell size={18} className="text-gray-600" />
+                  {unseenCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                      {unseenCount > 9 ? '9+' : unseenCount}
+                    </span>
+                  )}
+                </button>
+                {notifOpen && (
+                  <NotificationDropdown completions={recentCompletions} lastSeen={lastSeenNotifs} onClose={() => setNotifOpen(false)} />
+                )}
+              </div>
             </div>
 
             <nav className="space-y-0.5">
