@@ -47,12 +47,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function fetchProfile(userId: string) {
     try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-      setProfile(data)
+      const [{ data }, { data: { user: authUser } }] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userId).single(),
+        supabase.auth.getUser(),
+      ])
+
+      if (data && !data.full_name && authUser?.user_metadata?.full_name) {
+        const meta = authUser.user_metadata
+        const patch: Record<string, string | null> = { full_name: meta.full_name }
+        if (!data.role && meta.role) patch.role = meta.role
+        if (!data.organisation_name && meta.organisation_name) patch.organisation_name = meta.organisation_name
+        await supabase.from('profiles').update(patch).eq('id', userId)
+        setProfile({ ...data, ...patch })
+      } else {
+        setProfile(data)
+      }
     } finally {
       setLoading(false)
     }

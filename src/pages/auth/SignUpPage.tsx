@@ -25,7 +25,13 @@ export function SignUpPage() {
 
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()
 
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName, role, organisation_name: organisationName || null },
+      },
+    })
     if (signUpError) {
       setError(signUpError.message)
       setLoading(false)
