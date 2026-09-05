@@ -636,6 +636,24 @@ export function AdminPage() {
     loadAll()
   }
 
+  async function bulkEnrollAnaphylaxis() {
+    const courseId = 'anaphylaxis_v1'
+    const alreadyEnrolled = new Set(enrollments.filter(e => e.course_id === courseId).map(e => e.user_id))
+    const toEnroll = profiles.filter(p => p.role !== 'admin' && !alreadyEnrolled.has(p.id))
+    if (toEnroll.length === 0) {
+      alert('Everyone is already enrolled in the Anaphylaxis course.')
+      return
+    }
+    if (!confirm(`Enrol ${toEnroll.length} coach${toEnroll.length === 1 ? '' : 'es'} in the Anaphylaxis Awareness & Emergency Response course?`)) return
+    setWorking(true)
+    await supabase.from('course_enrollments').insert(
+      toEnroll.map(p => ({ user_id: p.id, course_id: courseId, enrolled_at: new Date().toISOString() }))
+    )
+    setWorking(false)
+    await loadAll()
+    alert(`Done — ${toEnroll.length} coach${toEnroll.length === 1 ? '' : 'es'} enrolled.`)
+  }
+
   async function changeBookingStatus(bookingId: string, status: BookingRow['status']) {
     setWorking(true)
     await supabase.from('course_bookings').update({ status }).eq('id', bookingId)
@@ -847,6 +865,22 @@ export function AdminPage() {
       {/* Coaches tab */}
       {!loading && tab === 'coaches' && (
         <div className="space-y-3">
+          {/* Bulk action banner */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex-1">
+              <p className="text-sm font-bold text-amber-800" style={{ fontFamily: 'Montserrat, sans-serif' }}>⚖️ Benedict's Law — Mandatory Anaphylaxis Training</p>
+              <p className="text-xs text-amber-700 mt-0.5">Enrol all coaches in the Anaphylaxis Awareness course to meet the September 2026 requirement.</p>
+            </div>
+            <button
+              onClick={bulkEnrollAnaphylaxis}
+              disabled={working}
+              className="flex-shrink-0 px-4 py-2 rounded-lg text-xs font-black text-white disabled:opacity-60 transition-colors"
+              style={{ backgroundColor: '#0d9488', fontFamily: 'Montserrat, sans-serif' }}
+            >
+              {working ? 'Enrolling…' : 'Enrol Everyone →'}
+            </button>
+          </div>
+
           {profiles.map(p => {
             const userEnrollments = enrollments.filter(e => e.user_id === p.id)
             const isExpanded = expandedUser === p.id
