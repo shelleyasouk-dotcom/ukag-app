@@ -5,7 +5,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { COURSE_REGISTRY } from '../../data/courses'
 import { ACADEMIES } from '../../data/academies'
-import { Pencil, Check, X, Award, User, Calendar, Clock, Camera, PlayCircle, ChevronRight, BookOpen } from 'lucide-react'
+import { Pencil, Check, X, Award, User, Calendar, Clock, Camera, PlayCircle, ChevronRight, BookOpen, Wand2, FileText as FileTextIcon } from 'lucide-react'
+import { SHOP_PRODUCTS } from '../../data/shop'
 import { IdCardDownload } from '../../components/profile/IdCardDownload'
 import { CertificateDownload } from '../../components/courses/CertificateDownload'
 
@@ -75,6 +76,7 @@ export function ProfilePage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [onlineEnrollments, setOnlineEnrollments] = useState<{ course_id: string; enrolled_at: string }[]>([])
   const [courseProgress, setCourseProgress] = useState<{ course_id: string; module_id: string }[]>([])
+  const [docPurchases, setDocPurchases] = useState<{ id: string; product_id: string; purchased_at: string; personalisation: Record<string, string> | null }[]>([])
 
   useEffect(() => {
     if (!profile) return
@@ -141,6 +143,13 @@ export function ProfilePage() {
       .select('course_id, module_id')
       .eq('user_id', profile.id)
       .then(({ data }) => setCourseProgress(data ?? []))
+    supabase
+      .from('document_purchases')
+      .select('id, product_id, purchased_at, personalisation')
+      .eq('user_id', profile.id)
+      .eq('status', 'paid')
+      .order('purchased_at', { ascending: false })
+      .then(({ data }) => setDocPurchases(data ?? []))
   }, [profile])
 
   function startEdit() {
@@ -548,6 +557,45 @@ export function ProfilePage() {
                           {started ? 'Continue' : 'Start'}
                         </Link>
                       )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* My Documents */}
+          {docPurchases.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>My Documents</h2>
+                <Link to="/resources" className="text-xs text-blue-600 hover:text-blue-800 font-semibold">Browse more →</Link>
+              </div>
+              <div className="space-y-3">
+                {docPurchases.map(dp => {
+                  const prod = SHOP_PRODUCTS.find(p => p.id === dp.product_id)
+                  const title = prod?.title ?? dp.product_id
+                  const hasPersonalised = !!dp.personalisation?.clubName
+                  return (
+                    <div key={dp.id} className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: '#0f172a' }}>
+                        <FileTextIcon size={18} className="text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900 leading-tight truncate">{title}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          Purchased {new Date(dp.purchased_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          {hasPersonalised && <span className="ml-2 text-green-600 font-semibold">· Personalised</span>}
+                        </p>
+                      </div>
+                      <Link
+                        to={`/documents/personalise/${dp.id}`}
+                        className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-90"
+                        style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+                      >
+                        <Wand2 size={12} />
+                        {hasPersonalised ? 'Re-personalise' : 'Personalise'}
+                      </Link>
                     </div>
                   )
                 })}

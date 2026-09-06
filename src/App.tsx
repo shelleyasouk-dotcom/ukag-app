@@ -71,6 +71,8 @@ import { EnrollmentRequestsAdminPage } from './pages/admin/EnrollmentRequestsAdm
 import { AvailableCoursesPage } from './pages/courses/AvailableCoursesPage'
 import { CertificatePurchasePage } from './pages/certificates/CertificatePurchasePage'
 import { CertificateSuccessPage } from './pages/certificates/CertificateSuccessPage'
+import { PersonaliseDocumentPage } from './pages/documents/PersonaliseDocumentPage'
+import { DocumentSuccessPage } from './pages/documents/DocumentSuccessPage'
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth()
@@ -174,6 +176,8 @@ function AppRoutes() {
       {/* Digital certificates — public, no login required */}
       <Route path="/certificates" element={<CertificatePurchasePage />} />
       <Route path="/certificates/success" element={<CertificateSuccessPage />} />
+      <Route path="/documents/success" element={<DocumentSuccessPage />} />
+      <Route path="/documents/personalise/:purchaseId" element={<ProtectedRoute><PersonaliseDocumentPage /></ProtectedRoute>} />
 
       {/* Public pages — no login required */}
       <Route path="/courses" element={<CoursesLandingPage />} />
