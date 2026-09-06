@@ -8,6 +8,8 @@ import {
   FileEdit,
   Mail,
   Briefcase,
+  BookOpen,
+  Download,
   Info,
 } from 'lucide-react'
 import type { ReactElement } from 'react'
@@ -19,6 +21,7 @@ const ICON_MAP: Record<string, ReactElement> = {
   FileEdit: <FileEdit size={20} />,
   Mail: <Mail size={20} />,
   Briefcase: <Briefcase size={20} />,
+  BookOpen: <BookOpen size={20} />,
 }
 
 const TYPE_COLOURS: Record<ResourceItem['type'], string> = {
@@ -73,9 +76,21 @@ export function ResourcesPage() {
                     </span>
                   </div>
                   <p className="text-xs text-gray-600 leading-relaxed flex-1">{item.description}</p>
-                  <button className="mt-auto px-3 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-center">
-                    Request Document
-                  </button>
+                  {item.downloadUrl ? (
+                    <a
+                      href={item.downloadUrl}
+                      download
+                      className="mt-auto px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center justify-center gap-1.5 transition-colors"
+                      style={{ backgroundColor: category.colour, fontFamily: 'Montserrat, sans-serif' }}
+                    >
+                      <Download size={12} />
+                      Download
+                    </a>
+                  ) : (
+                    <button className="mt-auto px-3 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-center">
+                      Request Document
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

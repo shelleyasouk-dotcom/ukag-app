@@ -3,6 +3,7 @@ export interface ResourceItem {
   description: string
   type: 'PDF' | 'Word' | 'Excel' | 'Template'
   category: string
+  downloadUrl?: string
 }
 
 export interface ResourceCategory {
@@ -13,6 +14,34 @@ export interface ResourceCategory {
 }
 
 export const RESOURCE_CATEGORIES: ResourceCategory[] = [
+  {
+    name: 'UKAG Compliance Documents',
+    colour: '#0f172a',
+    icon: 'BookOpen',
+    items: [
+      {
+        title: 'Coach Work Handbook v1.0',
+        description: 'Complete coach reference covering session management, safeguarding, anaphylaxis (Benedict\'s Law Sept 2026), behaviour, and the coach declaration. September 2026 edition.',
+        type: 'Word',
+        category: 'UKAG Compliance Documents',
+        downloadUrl: '/docs/UKAG_Coach_Work_Handbook_v1_0.docx',
+      },
+      {
+        title: 'Schools Compliance Pack 2026',
+        description: 'External-facing compliance pack for partner schools, MATs and insurers. Includes all KCSIE 2026 updates, Benedict\'s Law mandatory training requirements, and a staff evidence template.',
+        type: 'Word',
+        category: 'UKAG Compliance Documents',
+        downloadUrl: '/docs/UKAG_Schools_Compliance_Pack_2026.docx',
+      },
+      {
+        title: 'Master Operations Manual 2026/27',
+        description: 'Internal operations manual covering 20 parts: school onboarding, coach cover, DBS/compliance tracking, safeguarding, incident reporting, term checklists, and more.',
+        type: 'Word',
+        category: 'UKAG Compliance Documents',
+        downloadUrl: '/docs/UKAG_Master_Operations_Manual_2026_27.docx',
+      },
+    ],
+  },
   {
     name: 'Policies',
     colour: '#ef462c',
