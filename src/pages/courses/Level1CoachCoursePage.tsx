@@ -23,7 +23,7 @@ export function Level1CoachCoursePage() {
   useEffect(() => {
     if (!profile) return
     async function load() {
-      const [{ data: progress }, { data: cert }, { data: assessment }] = await Promise.all([
+      const [{ data: progress }, { data: cert }] = await Promise.all([
         supabase.from('course_progress')
           .select('module_id')
           .eq('user_id', profile!.id)
@@ -33,21 +33,33 @@ export function Level1CoachCoursePage() {
           .eq('user_id', profile!.id)
           .eq('course_id', course.id)
           .maybeSingle(),
-        supabase.from('practical_assessments')
+      ])
+
+      let assessment: { id: string } | null = null
+      try {
+        const { data } = await supabase
+          .from('practical_assessments')
           .select('id')
           .eq('user_id', profile!.id)
           .eq('course_id', 'level1_assistant_v1')
-          .maybeSingle(),
-      ])
+          .maybeSingle()
+        assessment = data
+      } catch {
+        // practical tables not yet created — ignore
+      }
       setCompletedModules(new Set((progress ?? []).map((p: { module_id: string }) => p.module_id)))
       setCertificate(cert)
 
-      if (assessment) {
-        const { count } = await supabase
-          .from('practical_signoffs')
-          .select('id', { count: 'exact', head: true })
-          .eq('assessment_id', assessment.id)
-        setPracticalCount(count ?? 0)
+      try {
+        if (assessment) {
+          const { count } = await supabase
+            .from('practical_signoffs')
+            .select('id', { count: 'exact', head: true })
+            .eq('assessment_id', assessment.id)
+          setPracticalCount(count ?? 0)
+        }
+      } catch {
+        // practical tables not yet created — ignore
       }
       setLoading(false)
     }
