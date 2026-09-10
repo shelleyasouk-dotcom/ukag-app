@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ArrowLeft, CheckCircle, ClipboardList, Award, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -43,8 +43,6 @@ type ModalState =
 
 export function PracticalPortfolioPage() {
   const { profile } = useAuth()
-  const navigate = useNavigate()
-
   const [assessment, setAssessment] = useState<Assessment | null>(null)
   const [signoffs, setSignoffs] = useState<Map<string, Signoff>>(new Map())
   const [loading, setLoading] = useState(true)
