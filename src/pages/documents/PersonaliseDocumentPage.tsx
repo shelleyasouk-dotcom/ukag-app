@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Layout } from '../../components/layout/Layout'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
-import { PERSONALISATION_FIELDS, SHOP_PRODUCTS, type PersonalisationData } from '../../data/shop'
+import { PERSONALISATION_FIELDS, type PersonalisationData } from '../../data/shop'
 import { Download, ArrowLeft, Wand2, Info } from 'lucide-react'
 
 interface PurchaseRow {
@@ -47,7 +47,6 @@ export function PersonaliseDocumentPage() {
       })
   }, [purchaseId, session])
 
-  const product = purchase ? SHOP_PRODUCTS.find(p => p.id === purchase.product_id) : null
   const title = purchase ? (PRODUCT_TITLES[purchase.product_id] ?? purchase.product_id) : ''
 
   async function generate() {

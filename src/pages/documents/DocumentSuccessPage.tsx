@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { CheckCircle } from 'lucide-react'
 
 export function DocumentSuccessPage() {
-  const [params] = useSearchParams()
   const [dots, setDots] = useState('.')
 
   useEffect(() => {
