@@ -16,6 +16,7 @@ import {
   PlayCircle,
   Search,
   Inbox,
+  Users,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import type { ReactNode } from 'react'
@@ -197,6 +198,20 @@ export function Layout({ children }: { children: ReactNode }) {
           >
             <PlayCircle size={18} />
             My Live Courses
+          </NavLink>
+
+          <NavLink
+            to="/gymnasts"
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive ? 'text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              }`
+            }
+            style={({ isActive }) => isActive ? { backgroundColor: '#ef462c' } : {}}
+          >
+            <Users size={18} />
+            My Gymnasts
           </NavLink>
 
           <NavLink

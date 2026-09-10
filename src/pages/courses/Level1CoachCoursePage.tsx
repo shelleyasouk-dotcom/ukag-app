@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { CheckCircle, Lock, Clock, ChevronRight, Award, ArrowLeft, ClipboardList } from 'lucide-react'
+import { CheckCircle, Lock, Clock, ChevronRight, Award, ArrowLeft, ClipboardList, Download, BookOpen } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
@@ -94,6 +94,38 @@ export function Level1CoachCoursePage() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Quick-reference downloads */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <a
+          href="/docs/UKAG_Coach_Field_Guide.pdf"
+          download
+          className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-3 hover:shadow-md transition-all group"
+        >
+          <div className="w-9 h-9 rounded-lg bg-[#0d9488]/10 flex items-center justify-center flex-shrink-0">
+            <BookOpen size={18} className="text-[#0d9488]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-black text-gray-900 leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>Coach Field Guide</p>
+            <p className="text-xs text-gray-400 mt-0.5">Skills &amp; cues, Levels 1–6</p>
+          </div>
+          <Download size={14} className="text-gray-300 group-hover:text-[#0d9488] flex-shrink-0 transition-colors" />
+        </a>
+        <a
+          href="/docs/UKAG_Gymnastics_Award_Tracker.pdf"
+          download
+          className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-3 hover:shadow-md transition-all group"
+        >
+          <div className="w-9 h-9 rounded-lg bg-[#1e52a4]/10 flex items-center justify-center flex-shrink-0">
+            <ClipboardList size={18} className="text-[#1e52a4]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-black text-gray-900 leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>Award Tracker</p>
+            <p className="text-xs text-gray-400 mt-0.5">Gymnast progress booklet</p>
+          </div>
+          <Download size={14} className="text-gray-300 group-hover:text-[#1e52a4] flex-shrink-0 transition-colors" />
+        </a>
       </div>
 
       <EnrollmentGate courseId={course.id} courseTitle={course.title}>
