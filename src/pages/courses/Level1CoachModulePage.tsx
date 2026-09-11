@@ -54,22 +54,6 @@ export function Level1CoachModulePage() {
         passed_at: new Date().toISOString(),
       }, { onConflict: 'user_id,course_id,module_id' })
 
-      if (isLastModule) {
-        const { data: existing } = await supabase
-          .from('course_certificates')
-          .select('id')
-          .eq('user_id', profile.id)
-          .eq('course_id', LEVEL1_COACH_COURSE.id)
-          .maybeSingle()
-
-        if (!existing) {
-          await supabase.from('course_certificates').insert({
-            user_id: profile.id,
-            course_id: LEVEL1_COACH_COURSE.id,
-            completed_at: new Date().toISOString(),
-          })
-        }
-      }
       setSaving(false)
     }
 
@@ -174,13 +158,22 @@ export function Level1CoachModulePage() {
             <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center mb-6">
               <CheckCircle size={40} className="text-green-500 mx-auto mb-3" />
               <h2 className="font-black text-green-800 text-lg mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                {isLastModule ? 'Course Complete!' : 'Module Complete!'}
+                {isLastModule ? 'All Modules Complete!' : 'Module Complete!'}
               </h2>
               <p className="text-sm text-green-700">
                 You scored {score}/{mod.quiz.length} — {saving ? 'saving progress…' : 'progress saved.'}
               </p>
               {isLastModule && (
-                <p className="text-xs text-green-600 mt-1">Your certificate has been awarded and saved to your profile.</p>
+                <>
+                  <p className="text-xs text-green-600 mt-1 mb-3">Now complete your practical assessment to receive your certificate.</p>
+                  <Link
+                    to="/courses/level-1-assistant/practical"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white bg-[#1e52a4]"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    Proceed to Practical Assessment →
+                  </Link>
+                </>
               )}
             </div>
           )}
@@ -288,6 +281,15 @@ export function Level1CoachModulePage() {
             onClick={resetForNextModule}
           >
             {nextModule.title}
+            <ArrowRight size={14} />
+          </Link>
+        ) : !nextModule && quizState === 'passed' ? (
+          <Link
+            to="/courses/level-1-assistant/practical"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white bg-[#1e52a4]"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            Practical Assessment
             <ArrowRight size={14} />
           </Link>
         ) : nextModule && quizState !== 'passed' ? (

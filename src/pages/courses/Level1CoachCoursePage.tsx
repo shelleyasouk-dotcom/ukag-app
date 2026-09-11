@@ -1,18 +1,20 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { CheckCircle, Lock, Clock, ChevronRight, Award, ArrowLeft } from 'lucide-react'
+import { CheckCircle, Lock, Clock, ChevronRight, Award, ArrowLeft, ClipboardList, Download, BookOpen } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
 import { LEVEL1_COACH_COURSE } from '../../data/level1CoachCourse'
 import { EnrollmentGate } from '../../components/courses/EnrollmentGate'
 import { CertificateDownload } from '../../components/courses/CertificateDownload'
+import { TOTAL_SIGNOFFS } from '../../data/level1Portfolio'
 
 export function Level1CoachCoursePage() {
   const { profile } = useAuth()
   const navigate = useNavigate()
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set())
   const [certificate, setCertificate] = useState<{ id: string; completed_at: string } | null>(null)
+  const [practicalCount, setPracticalCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   const course = LEVEL1_COACH_COURSE
@@ -32,8 +34,33 @@ export function Level1CoachCoursePage() {
           .eq('course_id', course.id)
           .maybeSingle(),
       ])
+
+      let assessment: { id: string } | null = null
+      try {
+        const { data } = await supabase
+          .from('practical_assessments')
+          .select('id')
+          .eq('user_id', profile!.id)
+          .eq('course_id', 'level1_assistant_v1')
+          .maybeSingle()
+        assessment = data
+      } catch {
+        // practical tables not yet created — ignore
+      }
       setCompletedModules(new Set((progress ?? []).map((p: { module_id: string }) => p.module_id)))
       setCertificate(cert)
+
+      try {
+        if (assessment) {
+          const { count } = await supabase
+            .from('practical_signoffs')
+            .select('id', { count: 'exact', head: true })
+            .eq('assessment_id', assessment.id)
+          setPracticalCount(count ?? 0)
+        }
+      } catch {
+        // practical tables not yet created — ignore
+      }
       setLoading(false)
     }
     load()
@@ -81,6 +108,38 @@ export function Level1CoachCoursePage() {
         )}
       </div>
 
+      {/* Quick-reference downloads */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <a
+          href="/docs/UKAG_Coach_Field_Guide.pdf"
+          download
+          className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-3 hover:shadow-md transition-all group"
+        >
+          <div className="w-9 h-9 rounded-lg bg-[#0d9488]/10 flex items-center justify-center flex-shrink-0">
+            <BookOpen size={18} className="text-[#0d9488]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-black text-gray-900 leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>Coach Field Guide</p>
+            <p className="text-xs text-gray-400 mt-0.5">Skills &amp; cues, Levels 1–6</p>
+          </div>
+          <Download size={14} className="text-gray-300 group-hover:text-[#0d9488] flex-shrink-0 transition-colors" />
+        </a>
+        <a
+          href="/docs/UKAG_Gymnastics_Award_Tracker.pdf"
+          download
+          className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-3 hover:shadow-md transition-all group"
+        >
+          <div className="w-9 h-9 rounded-lg bg-[#1e52a4]/10 flex items-center justify-center flex-shrink-0">
+            <ClipboardList size={18} className="text-[#1e52a4]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-black text-gray-900 leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>Award Tracker</p>
+            <p className="text-xs text-gray-400 mt-0.5">Gymnast progress booklet</p>
+          </div>
+          <Download size={14} className="text-gray-300 group-hover:text-[#1e52a4] flex-shrink-0 transition-colors" />
+        </a>
+      </div>
+
       <EnrollmentGate courseId={course.id} courseTitle={course.title}>
         {certificate && profile && (
           <div className="mb-6">
@@ -92,6 +151,12 @@ export function Level1CoachCoursePage() {
             />
           </div>
         )}
+
+        {/* Stage labels */}
+        <div className="flex items-center gap-2 mb-2">
+          <span className="w-6 h-6 rounded-full bg-[#ef462c] text-white text-xs font-black flex items-center justify-center" style={{ fontFamily: 'Montserrat, sans-serif' }}>1</span>
+          <span className="text-sm font-black text-gray-700" style={{ fontFamily: 'Montserrat, sans-serif' }}>Online Modules</span>
+        </div>
 
         <div className="space-y-3">
           {course.modules.map((mod, i) => {
@@ -135,13 +200,39 @@ export function Level1CoachCoursePage() {
           })}
         </div>
 
-        {allDone && !certificate && (
-          <div className="mt-6 bg-green-50 border border-green-200 rounded-xl p-5 text-center">
-            <CheckCircle size={32} className="text-green-500 mx-auto mb-3" />
-            <h3 className="font-black text-gray-900 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>All modules complete!</h3>
-            <p className="text-sm text-gray-600">Your certificate is being generated and will appear here shortly.</p>
+        {/* Stage 2 — Practical Assessment */}
+        <div className="flex items-center gap-2 mt-6 mb-2">
+          <span className={`w-6 h-6 rounded-full text-xs font-black flex items-center justify-center ${allDone ? 'bg-[#1e52a4] text-white' : 'bg-gray-200 text-gray-400'}`} style={{ fontFamily: 'Montserrat, sans-serif' }}>2</span>
+          <span className={`text-sm font-black ${allDone ? 'text-gray-700' : 'text-gray-400'}`} style={{ fontFamily: 'Montserrat, sans-serif' }}>Practical Assessment</span>
+        </div>
+
+        <div
+          className={`rounded-xl border p-4 flex items-center gap-4 transition-all ${
+            allDone ? 'border-gray-200 bg-white hover:shadow-md cursor-pointer' : 'border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed'
+          }`}
+          onClick={() => allDone && navigate('/courses/level-1-assistant/practical')}
+        >
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${practicalCount >= TOTAL_SIGNOFFS ? 'bg-green-100' : allDone ? 'bg-[#1e52a4]/10' : 'bg-gray-100'}`}>
+            {practicalCount >= TOTAL_SIGNOFFS
+              ? <CheckCircle size={20} className="text-green-600" />
+              : allDone
+              ? <ClipboardList size={20} className="text-[#1e52a4]" />
+              : <Lock size={18} className="text-gray-400" />
+            }
           </div>
-        )}
+          <div className="flex-1 min-w-0">
+            <div className="font-black text-gray-900 text-sm leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>Practical Portfolio Sign-Off</div>
+            <div className="text-xs text-gray-500 mt-0.5">
+              {practicalCount >= TOTAL_SIGNOFFS
+                ? 'All sign-offs complete'
+                : allDone
+                ? `${practicalCount} of ${TOTAL_SIGNOFFS} sign-offs complete`
+                : 'Complete all online modules first'
+              }
+            </div>
+          </div>
+          {allDone && <ChevronRight size={16} className="text-gray-400 flex-shrink-0" />}
+        </div>
       </EnrollmentGate>
     </Layout>
   )

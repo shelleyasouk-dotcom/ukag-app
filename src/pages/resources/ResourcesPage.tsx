@@ -76,7 +76,7 @@ export function ResourcesPage() {
       <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
         <Tag size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
         <p className="text-sm text-blue-800 leading-relaxed">
-          All UKAG documents are <strong>template documents</strong> you personalise for your own club after purchase — fill in your club name, DSL details, and contact information to generate your own branded copy.
+          Coaching reference documents are <strong>free to download</strong>. Compliance and policy documents are <strong>template documents</strong> you personalise for your own club after purchase — fill in your club name, DSL details, and contact information to generate your own branded copy.
           Renewals receive <strong>20% off</strong> each year.
         </p>
       </div>

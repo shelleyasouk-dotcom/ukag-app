@@ -18,6 +18,27 @@ export interface ResourceCategory {
 
 export const RESOURCE_CATEGORIES: ResourceCategory[] = [
   {
+    name: 'Coaching Reference',
+    colour: '#0d9488',
+    icon: 'BookOpen',
+    items: [
+      {
+        title: 'UKAG Coach Field Guide',
+        description: 'Skills, coaching cues and progressions for Levels 1–6 across Beam, Bars, Floor and Rebound. Built for quick reference pitch-side on tablet or phone.',
+        type: 'PDF',
+        category: 'Coaching Reference',
+        downloadUrl: '/docs/UKAG_Coach_Field_Guide.pdf',
+      },
+      {
+        title: 'UKAG Gymnastics Award Tracker',
+        description: 'Personal award tracker for gymnasts aged 4–14, Levels 1–6. Includes skill checklists for all apparatus, floor routine sequences, and coach sign-off pages for each level.',
+        type: 'PDF',
+        category: 'Coaching Reference',
+        downloadUrl: '/docs/UKAG_Gymnastics_Award_Tracker.pdf',
+      },
+    ],
+  },
+  {
     name: 'UKAG Compliance Documents',
     colour: '#0f172a',
     icon: 'BookOpen',
