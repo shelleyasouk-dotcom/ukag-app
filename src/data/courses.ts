@@ -9,6 +9,7 @@ export interface CourseEntry {
 export const COURSE_REGISTRY: CourseEntry[] = [
   { id: 'junior_coach_v1',        title: 'Junior Coach Award',                                          academy: 'Coach Academy',        courseUrl: '/courses/junior-coach',          moduleCount: 8 },
   { id: 'level1_assistant_v1',    title: 'Level 1 Assistant Coach Award',                               academy: 'Coach Academy',        courseUrl: '/courses/level-1-assistant',     moduleCount: 8 },
+  { id: 'level2_lead_v1',         title: 'Level 2 Lead Coach Award (Gymnastics)',                        academy: 'Coach Academy',        courseUrl: '/courses/level-2-lead',          moduleCount: 10 },
   { id: 'leadership_v1',          title: 'Lead Coach Leadership Programme',                              academy: 'Leadership Academy',   courseUrl: '/courses/leadership',            moduleCount: 6 },
   { id: 'area_lead_v1',           title: 'Area Lead Development Programme',                             academy: 'Leadership Academy',   courseUrl: '/courses/area-lead',             moduleCount: 6 },
   { id: 'tutor_assessor_v1',      title: 'UKAG Tutor & Assessor Programme',                             academy: 'Leadership Academy',   courseUrl: '/courses/tutor-assessor',        moduleCount: 6 },
