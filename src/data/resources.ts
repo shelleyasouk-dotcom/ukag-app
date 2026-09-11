@@ -36,6 +36,13 @@ export const RESOURCE_CATEGORIES: ResourceCategory[] = [
         category: 'Coaching Reference',
         downloadUrl: '/docs/UKAG_Gymnastics_Award_Tracker.pdf',
       },
+      {
+        title: 'UKAG Coaching Guide',
+        description: 'Skills, coaching cues and progressions for Levels 1–6 across Beam, Bars, Floor and Rebound. Includes safety rules, key terms, and apparatus-specific skill lists. Built for pitch-side use on tablet or phone.',
+        type: 'PDF',
+        category: 'Coaching Reference',
+        downloadUrl: '/docs/UKAG_Coaching_Guide.pdf',
+      },
     ],
   },
   {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { CheckCircle, Lock, Clock, ChevronRight, Award, ArrowLeft } from 'lucide-react'
+import { CheckCircle, Lock, Clock, ChevronRight, Award, ArrowLeft, ClipboardCheck, Users } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
@@ -14,6 +14,7 @@ export function TutorAssessorCoursePage() {
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set())
   const [certificate, setCertificate] = useState<{ id: string; completed_at: string } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [candidateCount, setCandidateCount] = useState(0)
 
   const course = TUTOR_ASSESSOR_COURSE
   const total = course.modules.length
@@ -34,10 +35,22 @@ export function TutorAssessorCoursePage() {
       ])
       setCompletedModules(new Set((progress ?? []).map((p: { module_id: string }) => p.module_id)))
       setCertificate(cert)
+
+      // Load candidate count
+      try {
+        const { count } = await supabase
+          .from('assessor_candidates')
+          .select('id', { count: 'exact', head: true })
+          .eq('assessor_id', profile!.id)
+        setCandidateCount(count ?? 0)
+      } catch {
+        // table not yet created — ignore
+      }
+
       setLoading(false)
     }
     load()
-  }, [profile])
+  }, [profile, course.id])
 
   const doneCount = completedModules.size
   const allDone = doneCount === total
@@ -103,45 +116,94 @@ export function TutorAssessorCoursePage() {
         ) : null}
 
         <EnrollmentGate courseId={TUTOR_ASSESSOR_COURSE.id} courseTitle={TUTOR_ASSESSOR_COURSE.title}>
+
+          {/* Stage 1 label */}
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-6 h-6 rounded-full bg-[#4c1d95] text-white text-xs font-black flex items-center justify-center" style={{ fontFamily: 'Montserrat, sans-serif' }}>1</span>
+            <span className="text-sm font-black text-gray-700" style={{ fontFamily: 'Montserrat, sans-serif' }}>Online Modules</span>
+          </div>
+
           {/* Module list */}
           <div className="space-y-3">
-        {loading ? (
-          <p className="text-center text-gray-400 py-8 text-sm">Loading…</p>
-        ) : (
-          course.modules.map((mod, index) => {
-            const done = completedModules.has(mod.id)
-            const unlocked = index === 0 || completedModules.has(course.modules[index - 1].id)
-            return (
-              <button
-                key={mod.id}
-                onClick={() => unlocked && navigate(`/courses/tutor-assessor/${mod.id}`)}
-                disabled={!unlocked}
-                className={`w-full text-left bg-white border rounded-2xl p-4 flex items-center gap-3 shadow-sm transition-opacity ${
-                  unlocked ? 'hover:shadow-md' : 'opacity-50'
-                } ${done ? 'border-green-200' : 'border-gray-100'}`}
-              >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-gradient-to-br ${mod.gradient}`}>
-                  {done ? <CheckCircle size={22} className="text-white" /> : <span>{mod.emoji}</span>}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">Module {mod.number}</span>
-                    {done && <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Complete</span>}
-                  </div>
-                  <p className="font-black text-gray-800 text-sm leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>{mod.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
-                    <Clock size={10} /> {mod.duration}
-                  </p>
-                </div>
-                {unlocked
-                  ? <ChevronRight size={16} className="text-gray-300 shrink-0" />
-                  : <Lock size={14} className="text-gray-300 shrink-0" />
-                }
-              </button>
-            )
-          })
-        )}
+            {loading ? (
+              <p className="text-center text-gray-400 py-8 text-sm">Loading…</p>
+            ) : (
+              course.modules.map((mod, index) => {
+                const done = completedModules.has(mod.id)
+                const unlocked = index === 0 || completedModules.has(course.modules[index - 1].id)
+                return (
+                  <button
+                    key={mod.id}
+                    onClick={() => unlocked && navigate(`/courses/tutor-assessor/${mod.id}`)}
+                    disabled={!unlocked}
+                    className={`w-full text-left bg-white border rounded-2xl p-4 flex items-center gap-3 shadow-sm transition-opacity ${
+                      unlocked ? 'hover:shadow-md' : 'opacity-50'
+                    } ${done ? 'border-green-200' : 'border-gray-100'}`}
+                  >
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-gradient-to-br ${mod.gradient}`}>
+                      {done ? <CheckCircle size={22} className="text-white" /> : <span>{mod.emoji}</span>}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">Module {mod.number}</span>
+                        {done && <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Complete</span>}
+                      </div>
+                      <p className="font-black text-gray-800 text-sm leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>{mod.title}</p>
+                      <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                        <Clock size={10} /> {mod.duration}
+                      </p>
+                    </div>
+                    {unlocked
+                      ? <ChevronRight size={16} className="text-gray-300 shrink-0" />
+                      : <Lock size={14} className="text-gray-300 shrink-0" />
+                    }
+                  </button>
+                )
+              })
+            )}
           </div>
+
+          {/* Stage 2 label */}
+          <div className="flex items-center gap-2 mt-6 mb-2">
+            <span className={`w-6 h-6 rounded-full text-xs font-black flex items-center justify-center ${allDone ? 'bg-[#4c1d95] text-white' : 'bg-gray-200 text-gray-400'}`} style={{ fontFamily: 'Montserrat, sans-serif' }}>2</span>
+            <span className={`text-sm font-black ${allDone ? 'text-gray-700' : 'text-gray-400'}`} style={{ fontFamily: 'Montserrat, sans-serif' }}>Assessor Portal</span>
+          </div>
+
+          <div
+            className={`rounded-xl border p-4 flex items-center gap-4 transition-all ${
+              allDone ? 'border-gray-200 bg-white hover:shadow-md cursor-pointer' : 'border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed'
+            }`}
+            onClick={() => allDone && navigate('/assessor/candidates')}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${candidateCount > 0 ? 'bg-green-100' : allDone ? 'bg-[#4c1d95]/10' : 'bg-gray-100'}`}>
+              {candidateCount > 0
+                ? <CheckCircle size={20} className="text-green-600" />
+                : allDone
+                ? <ClipboardCheck size={20} className="text-[#4c1d95]" />
+                : <Lock size={18} className="text-gray-400" />
+              }
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-black text-gray-900 text-sm leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                Sign Off Candidates' Portfolios
+              </div>
+              <div className="text-xs text-gray-500 mt-0.5">
+                {candidateCount > 0
+                  ? (
+                    <span className="flex items-center gap-1">
+                      <Users size={10} />
+                      {candidateCount} candidate{candidateCount !== 1 ? 's' : ''} assigned
+                    </span>
+                  )
+                  : allDone
+                  ? 'Access the Assessor Portal to sign off practical portfolios'
+                  : 'Complete all online modules first'
+                }
+              </div>
+            </div>
+            {allDone && <ChevronRight size={16} className="text-gray-400 flex-shrink-0" />}
+          </div>
+
         </EnrollmentGate>
 
         <p className="text-xs text-gray-400 text-center pt-2">
