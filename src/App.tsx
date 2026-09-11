@@ -45,6 +45,11 @@ import { JuniorCoachModulePage } from './pages/courses/JuniorCoachModulePage'
 import { Level1CoachCoursePage } from './pages/courses/Level1CoachCoursePage'
 import { Level1CoachModulePage } from './pages/courses/Level1CoachModulePage'
 import { PracticalPortfolioPage } from './pages/courses/PracticalPortfolioPage'
+import { Level2CoachCoursePage } from './pages/courses/Level2CoachCoursePage'
+import { Level2CoachModulePage } from './pages/courses/Level2CoachModulePage'
+import { Level2PracticalPage } from './pages/courses/Level2PracticalPage'
+import { Level2VideoPage } from './pages/courses/Level2VideoPage'
+import { Level2CompletionPage } from './pages/courses/Level2CompletionPage'
 import { AssessorDashboardPage } from './pages/assessor/AssessorDashboardPage'
 import { AssessorCandidatesPage } from './pages/assessor/AssessorCandidatesPage'
 import { MyGymnastsPage } from './pages/gymnasts/MyGymnastsPage'
@@ -176,6 +181,11 @@ function AppRoutes() {
       <Route path="/courses/junior-coach/:moduleId" element={<ProtectedRoute><JuniorCoachModulePage /></ProtectedRoute>} />
       <Route path="/courses/level-1-assistant" element={<ProtectedRoute><Level1CoachCoursePage /></ProtectedRoute>} />
       <Route path="/courses/level-1-assistant/practical" element={<ProtectedRoute><PracticalPortfolioPage /></ProtectedRoute>} />
+      <Route path="/courses/level-2-lead" element={<ProtectedRoute><Level2CoachCoursePage /></ProtectedRoute>} />
+      <Route path="/courses/level-2-lead/practical" element={<ProtectedRoute><Level2PracticalPage /></ProtectedRoute>} />
+      <Route path="/courses/level-2-lead/video" element={<ProtectedRoute><Level2VideoPage /></ProtectedRoute>} />
+      <Route path="/courses/level-2-lead/completion" element={<ProtectedRoute><Level2CompletionPage /></ProtectedRoute>} />
+      <Route path="/courses/level-2-lead/:moduleId" element={<ProtectedRoute><Level2CoachModulePage /></ProtectedRoute>} />
       <Route path="/assessor" element={<ProtectedRoute><AssessorDashboardPage /></ProtectedRoute>} />
       <Route path="/assessor/candidates" element={<ProtectedRoute><AssessorCandidatesPage /></ProtectedRoute>} />
       <Route path="/gymnasts" element={<ProtectedRoute><MyGymnastsPage /></ProtectedRoute>} />
