@@ -362,6 +362,8 @@ export function AdminPage() {
   const [grantWorking, setGrantWorking] = useState(false)
   const [resetWorking, setResetWorking] = useState<string | null>(null)
   const [resetSent, setResetSent] = useState<string | null>(null)
+  const [assessorLinks, setAssessorLinks] = useState<{ assessor_id: string; candidate_id: string; course_id: string }[]>([])
+  const [assessorLinkWorking, setAssessorLinkWorking] = useState(false)
   const [interestFilter, setInterestFilter] = useState<{ course: string; status: string; search: string }>({ course: '', status: '', search: '' })
   const [expandedInterest, setExpandedInterest] = useState<string | null>(null)
   const [expandedOrg, setExpandedOrg] = useState<string | null>(null)
@@ -411,6 +413,10 @@ export function AdminPage() {
     setServiceReports(sr || [])
     setAllProgress(prog || [])
     setAllCertificates(certs || [])
+    try {
+      const { data: links } = await supabase.from('assessor_candidates').select('assessor_id, candidate_id, course_id')
+      setAssessorLinks(links || [])
+    } catch { /* table may not exist yet */ }
     setLoading(false)
   }
 
@@ -433,6 +439,29 @@ export function AdminPage() {
     await supabase.from('course_enrollments').delete().eq('user_id', userId).eq('course_id', courseId)
     setWorking(false)
     loadAll()
+  }
+
+  async function linkAssessor(candidateId: string, assessorId: string, courseId: string) {
+    setAssessorLinkWorking(true)
+    await supabase.from('assessor_candidates').upsert(
+      { assessor_id: assessorId, candidate_id: candidateId, course_id: courseId },
+      { onConflict: 'assessor_id,candidate_id,course_id' }
+    )
+    const { data } = await supabase.from('assessor_candidates').select('assessor_id, candidate_id, course_id')
+    setAssessorLinks(data || [])
+    setAssessorLinkWorking(false)
+  }
+
+  async function unlinkAssessor(candidateId: string, assessorId: string, courseId: string) {
+    setAssessorLinkWorking(true)
+    await supabase.from('assessor_candidates')
+      .delete()
+      .eq('assessor_id', assessorId)
+      .eq('candidate_id', candidateId)
+      .eq('course_id', courseId)
+    const { data } = await supabase.from('assessor_candidates').select('assessor_id, candidate_id, course_id')
+    setAssessorLinks(data || [])
+    setAssessorLinkWorking(false)
   }
 
   function openGrantAccess(user: ProfileRow, userEnrollments: EnrollmentRow[]) {
@@ -985,6 +1014,54 @@ export function AdminPage() {
                           {resetWorking === p.id ? 'Sending…' : resetSent === p.id ? '✓ Reset sent' : 'Send Password Reset'}
                         </button>
                       </div>
+
+                      {/* Assessor links */}
+                      {(() => {
+                        const assessors = profiles.filter(pr => pr.role === 'assessor' || pr.role === 'admin')
+                        const LINK_COURSES = [
+                          { id: 'level1_assistant_v1', label: 'Level 1 Portfolio' },
+                          { id: 'level2_lead_v1', label: 'Level 2 Portfolio' },
+                        ]
+                        const userLinks = assessorLinks.filter(l => l.candidate_id === p.id)
+                        return (
+                          <div>
+                            <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Assessor Links</div>
+                            {userLinks.length === 0 ? (
+                              <p className="text-xs text-gray-400 mb-2">No assessors linked to this coach.</p>
+                            ) : (
+                              <div className="space-y-1 mb-2">
+                                {userLinks.map(link => {
+                                  const asr = profiles.find(pr => pr.id === link.assessor_id)
+                                  const courseName = LINK_COURSES.find(c => c.id === link.course_id)?.label ?? link.course_id
+                                  return (
+                                    <div key={`${link.assessor_id}-${link.course_id}`} className="flex items-center justify-between bg-blue-50 border border-blue-100 rounded-lg px-3 py-1.5">
+                                      <span className="text-xs text-gray-700"><span className="font-semibold">{asr?.full_name || asr?.email || link.assessor_id}</span> <span className="text-gray-400">· {courseName}</span></span>
+                                      <button onClick={() => unlinkAssessor(p.id, link.assessor_id, link.course_id)} disabled={assessorLinkWorking} className="text-[10px] text-red-500 hover:text-red-700 font-bold ml-2 disabled:opacity-40">Remove</button>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {LINK_COURSES.map(course => (
+                                <div key={course.id} className="flex items-center gap-1.5">
+                                  <select
+                                    defaultValue=""
+                                    disabled={assessorLinkWorking}
+                                    onChange={e => { if (e.target.value) { linkAssessor(p.id, e.target.value, course.id); e.target.value = '' } }}
+                                    className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-300 disabled:opacity-50"
+                                  >
+                                    <option value="">+ Assign {course.label} assessor…</option>
+                                    {assessors.filter(a => a.id !== p.id && !assessorLinks.some(l => l.candidate_id === p.id && l.assessor_id === a.id && l.course_id === course.id)).map(a => (
+                                      <option key={a.id} value={a.id}>{a.full_name || a.email}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })()}
 
                       {/* Course progress & certificates */}
                       <div>
