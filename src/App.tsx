@@ -45,6 +45,8 @@ import { JuniorCoachModulePage } from './pages/courses/JuniorCoachModulePage'
 import { Level1CoachCoursePage } from './pages/courses/Level1CoachCoursePage'
 import { Level1CoachModulePage } from './pages/courses/Level1CoachModulePage'
 import { PracticalPortfolioPage } from './pages/courses/PracticalPortfolioPage'
+import { AssessorDashboardPage } from './pages/assessor/AssessorDashboardPage'
+import { AssessorCandidatesPage } from './pages/assessor/AssessorCandidatesPage'
 import { MyGymnastsPage } from './pages/gymnasts/MyGymnastsPage'
 import { GymnastTrackerPage } from './pages/gymnasts/GymnastTrackerPage'
 import { CoursesLandingPage } from './pages/courses/CoursesLandingPage'
@@ -174,6 +176,8 @@ function AppRoutes() {
       <Route path="/courses/junior-coach/:moduleId" element={<ProtectedRoute><JuniorCoachModulePage /></ProtectedRoute>} />
       <Route path="/courses/level-1-assistant" element={<ProtectedRoute><Level1CoachCoursePage /></ProtectedRoute>} />
       <Route path="/courses/level-1-assistant/practical" element={<ProtectedRoute><PracticalPortfolioPage /></ProtectedRoute>} />
+      <Route path="/assessor" element={<ProtectedRoute><AssessorDashboardPage /></ProtectedRoute>} />
+      <Route path="/assessor/candidates" element={<ProtectedRoute><AssessorCandidatesPage /></ProtectedRoute>} />
       <Route path="/gymnasts" element={<ProtectedRoute><MyGymnastsPage /></ProtectedRoute>} />
       <Route path="/gymnasts/:gymnastId" element={<ProtectedRoute><GymnastTrackerPage /></ProtectedRoute>} />
       <Route path="/courses/level-1-assistant/:moduleId" element={<ProtectedRoute><Level1CoachModulePage /></ProtectedRoute>} />
