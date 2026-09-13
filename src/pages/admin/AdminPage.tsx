@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Layout } from '../../components/layout/Layout'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -854,6 +855,13 @@ export function AdminPage() {
                 </button>
               ))}
 
+              <div className="text-xs font-black uppercase tracking-widest text-gray-400 px-3 pt-4 pb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>Authorisations</div>
+              <Link to="/admin/authorisations"
+                className="w-full flex items-center px-3 py-2 rounded-lg text-sm font-semibold transition-colors text-left text-gray-600 hover:bg-gray-100 hover:text-gray-900 block"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Trainee Authorisations
+              </Link>
               <div className="text-xs font-black uppercase tracking-widest text-gray-400 px-3 pt-4 pb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>Operations</div>
               {([
                 { key: 'services', label: 'Services', badge: serviceInquiries.filter(s => s.status === 'new').length, badgeColour: '#0d9488' },
