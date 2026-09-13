@@ -83,6 +83,8 @@ import { CertificatePurchasePage } from './pages/certificates/CertificatePurchas
 import { CertificateSuccessPage } from './pages/certificates/CertificateSuccessPage'
 import { PersonaliseDocumentPage } from './pages/documents/PersonaliseDocumentPage'
 import { DocumentSuccessPage } from './pages/documents/DocumentSuccessPage'
+import { TraineeAuthorisationsPage } from './pages/admin/TraineeAuthorisationsPage'
+import { TraineeCertificatePage } from './pages/admin/TraineeCertificatePage'
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth()
@@ -176,6 +178,8 @@ function AppRoutes() {
       <Route path="/admin/course-guide" element={<ProtectedRoute><AdminRoute><CourseAuthorGuidePage /></AdminRoute></ProtectedRoute>} />
       <Route path="/admin/seed-gym-l1" element={<ProtectedRoute><AdminRoute><SeedGymL1Page /></AdminRoute></ProtectedRoute>} />
       <Route path="/admin/enrollment-requests" element={<ProtectedRoute><AdminRoute><EnrollmentRequestsAdminPage /></AdminRoute></ProtectedRoute>} />
+      <Route path="/admin/authorisations" element={<ProtectedRoute><AdminRoute><TraineeAuthorisationsPage /></AdminRoute></ProtectedRoute>} />
+      <Route path="/admin/authorisations/:id/certificate" element={<ProtectedRoute><TraineeCertificatePage /></ProtectedRoute>} />
       <Route path="/courses/:courseId/register" element={<ProtectedRoute><CourseRegistrationPage /></ProtectedRoute>} />
       <Route path="/courses/junior-coach" element={<ProtectedRoute><JuniorCoachCoursePage /></ProtectedRoute>} />
       <Route path="/courses/junior-coach/:moduleId" element={<ProtectedRoute><JuniorCoachModulePage /></ProtectedRoute>} />
