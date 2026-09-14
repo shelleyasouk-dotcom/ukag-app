@@ -106,6 +106,8 @@ export function TutorAssessorCoursePage() {
               courseTitle={TUTOR_ASSESSOR_COURSE.certificateTitle}
               completedAt={certificate.completed_at}
               certificateId={certificate.id}
+              courseId={course.id}
+              userId={profile?.id}
             />
           </div>
         ) : allDone ? (

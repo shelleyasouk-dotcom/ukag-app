@@ -91,6 +91,8 @@ export function FirstAidAdvancedCoursePage() {
             courseTitle={FIRST_AID_ADVANCED_COURSE.certificateTitle}
             completedAt={certificate.completed_at}
             certificateId={certificate.id}
+            courseId={FIRST_AID_ADVANCED_COURSE.id}
+            userId={profile?.id}
           />
         </div>
       )}

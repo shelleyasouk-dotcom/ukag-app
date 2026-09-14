@@ -245,6 +245,8 @@ export function Level2CompletionPage() {
             courseTitle="UKAG Level 2 Lead Coach Award"
             completedAt={certificate.completed_at}
             certificateId={certificate.id}
+            courseId={COURSE_ID}
+            userId={profile?.id}
           />
         </div>
       )}

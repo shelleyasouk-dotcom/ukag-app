@@ -92,6 +92,8 @@ export function TrampolineTeacherCoursePage() {
               courseTitle="UKAG Trampolining Teacher Certificate Level 1 & 2"
               completedAt={certificate.completed_at}
               certificateId={certificate.id}
+              courseId={course.id}
+              userId={profile?.id}
             />
           </div>
         ) : allDone ? (

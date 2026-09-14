@@ -104,12 +104,23 @@ export function Level2PracticalPage() {
       }
 
       try {
-        const { data: existing } = await supabase
+        let { data: existing } = await supabase
           .from('level2_practical_assessments')
           .select('*')
           .eq('user_id', effectiveUserId)
           .eq('course_id', COURSE_ID)
           .maybeSingle()
+
+        // Auto-create record if candidate hasn't opened their L2 practical yet
+        if (!existing) {
+          const { data: created } = await supabase
+            .from('level2_practical_assessments')
+            .insert({ user_id: effectiveUserId, course_id: COURSE_ID })
+            .select('*')
+            .single()
+          existing = created
+        }
+
         setAssessment(existing)
         if (existing) {
           setLeadCoachName(existing.lead_coach_name ?? '')

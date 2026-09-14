@@ -76,6 +76,7 @@ export function PracticalPortfolioPage() {
 
   // Weekly log state keyed by week key
   const [weeklyEntries, setWeeklyEntries] = useState<Record<string, WeeklyLogEntry>>({})
+  const [expandedWeek, setExpandedWeek] = useState<string | null>(null)
 
   // Final declaration state
   const [finalLeadName, setFinalLeadName] = useState('')
@@ -690,36 +691,71 @@ export function PracticalPortfolioPage() {
           const weekNum = i + 1
           const entry = weeklyEntries[weekKey] ?? { date: '', venue: '', notes: '', assessorName: '' }
 
+          const isExpanded = expandedWeek === weekKey
+          const hasDetail = !!(entry.date || entry.venue || entry.notes)
+
           return (
-            <div key={weekKey} className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <p className="font-black text-gray-900 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                    Week {weekNum} Observation
-                  </p>
-                  {soff?.signed_off_by && (
-                    <p className="text-xs text-green-600 mt-0.5">
-                      ✓ Signed off by {soff.signed_off_by} · {new Date(soff.signed_off_at!).toLocaleDateString('en-GB')}
+            <div key={weekKey} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              {/* Header row — tappable when signed off */}
+              <div
+                className={`flex items-center justify-between p-4 ${soff?.signed_off_by ? 'cursor-pointer active:bg-gray-50' : ''}`}
+                onClick={() => soff?.signed_off_by && setExpandedWeek(isExpanded ? null : weekKey)}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <CheckCircle size={20} className={soff?.signed_off_by ? 'text-green-500 flex-shrink-0' : 'text-gray-200 flex-shrink-0'} />
+                  <div className="min-w-0">
+                    <p className="font-black text-gray-900 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                      Week {weekNum} Observation
                     </p>
-                  )}
+                    {soff?.signed_off_by ? (
+                      <p className="text-xs text-green-600 mt-0.5">
+                        Signed off by {soff.signed_off_by} · {new Date(soff.signed_off_at!).toLocaleDateString('en-GB')}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-400 mt-0.5">Not yet completed</p>
+                    )}
+                  </div>
                 </div>
                 {soff?.signed_off_by ? (
-                  <CheckCircle size={20} className="text-green-500 flex-shrink-0" />
+                  isExpanded ? <ChevronUp size={16} className="text-gray-400 flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />
                 ) : !isAssessorView ? (
                   <button
-                    onClick={() => setModal({ type: 'weekly', weekKey, weekLabel: `Week ${weekNum} Observation` })}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#1e52a4] text-white"
+                    onClick={e => { e.stopPropagation(); setModal({ type: 'weekly', weekKey, weekLabel: `Week ${weekNum} Observation` }) }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#1e52a4] text-white flex-shrink-0"
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                   >
                     Log &amp; Sign
                   </button>
                 ) : null}
               </div>
-              {soff?.signed_off_by && entry.date && (
-                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 mt-1">
-                  {entry.date && <span>Date: {entry.date}</span>}
-                  {entry.venue && <span>Venue: {entry.venue}</span>}
-                  {entry.notes && <p className="col-span-2 italic">"{entry.notes}"</p>}
+
+              {/* Expandable detail panel */}
+              {soff?.signed_off_by && isExpanded && (
+                <div className="border-t border-gray-100 px-4 pb-4 pt-3 bg-gray-50 space-y-2">
+                  {hasDetail ? (
+                    <>
+                      {entry.date && (
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Date of Session</p>
+                          <p className="text-sm text-gray-800">{new Date(entry.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                        </div>
+                      )}
+                      {entry.venue && (
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Venue / School</p>
+                          <p className="text-sm text-gray-800">{entry.venue}</p>
+                        </div>
+                      )}
+                      {entry.notes && (
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Session Notes</p>
+                          <p className="text-sm text-gray-700 italic leading-relaxed">"{entry.notes}"</p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-xs text-gray-400 italic">No session details were recorded for this week.</p>
+                  )}
                 </div>
               )}
             </div>

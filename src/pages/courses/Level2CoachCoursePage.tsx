@@ -217,6 +217,8 @@ export function Level2CoachCoursePage() {
               courseTitle={course.title}
               completedAt={certificate.completed_at}
               certificateId={certificate.id}
+              courseId={course.id}
+              userId={profile?.id}
             />
           </div>
         )}

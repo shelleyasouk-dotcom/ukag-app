@@ -91,6 +91,8 @@ export function BehaviourCoursePage() {
             courseTitle={BEHAVIOUR_COURSE.certificateTitle}
             completedAt={certificate.completed_at}
             certificateId={certificate.id}
+            courseId={BEHAVIOUR_COURSE.id}
+            userId={profile?.id}
           />
         </div>
       )}

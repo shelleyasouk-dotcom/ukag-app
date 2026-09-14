@@ -93,6 +93,8 @@ export function LeadershipCoursePage() {
               courseTitle={LEADERSHIP_COURSE.certificateTitle}
               completedAt={certificate.completed_at}
               certificateId={certificate.id}
+              courseId={course.id}
+              userId={profile?.id}
             />
           </div>
         ) : allDone ? (

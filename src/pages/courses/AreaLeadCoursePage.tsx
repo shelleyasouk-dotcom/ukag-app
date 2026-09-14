@@ -93,6 +93,8 @@ export function AreaLeadCoursePage() {
               courseTitle={AREA_LEAD_COURSE.certificateTitle}
               completedAt={certificate.completed_at}
               certificateId={certificate.id}
+              courseId={course.id}
+              userId={profile?.id}
             />
           </div>
         ) : allDone ? (

@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import html2canvas from 'html2canvas'
-import { Download } from 'lucide-react'
+import { Download, MessageSquare, Star } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
 
 interface Props {
   participantName: string
@@ -8,11 +9,33 @@ interface Props {
   completedAt: string
   certificateId: string
   issuedBy?: string
+  courseId?: string
+  userId?: string
 }
 
-export function CertificateDownload({ participantName, courseTitle, completedAt, certificateId, issuedBy }: Props) {
+export function CertificateDownload({ participantName, courseTitle, completedAt, certificateId, issuedBy, courseId, userId }: Props) {
   const certRef = useRef<HTMLDivElement>(null)
   const [downloading, setDownloading] = useState(false)
+
+  // Feedback state
+  const [feedbackDone, setFeedbackDone] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [rating, setRating] = useState(0)
+  const [hovered, setHovered] = useState(0)
+  const [enjoyed, setEnjoyed] = useState('')
+  const [suggestions, setSuggestions] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (!courseId || !userId) return
+    supabase
+      .from('course_feedback')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('course_id', courseId)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setFeedbackDone(true) })
+  }, [courseId, userId])
 
   const certNumber = `UKAG-${certificateId.slice(0, 8).toUpperCase()}`
   const dateStr = new Date(completedAt).toLocaleDateString('en-GB', {
@@ -47,17 +70,113 @@ export function CertificateDownload({ participantName, courseTitle, completedAt,
     }
   }
 
+  async function submitFeedback() {
+    if (!courseId || !userId || rating === 0) return
+    setSubmitting(true)
+    try {
+      await supabase.from('course_feedback').upsert({
+        user_id: userId,
+        course_id: courseId,
+        rating,
+        enjoyed: enjoyed.trim() || null,
+        suggestions: suggestions.trim() || null,
+      }, { onConflict: 'user_id,course_id' })
+      setFeedbackDone(true)
+      setShowForm(false)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <>
-      <button
-        onClick={download}
-        disabled={downloading}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-60 transition-colors flex-shrink-0"
-        style={{ fontFamily: 'Montserrat, sans-serif' }}
-      >
-        <Download size={12} />
-        {downloading ? 'Generating…' : 'Download Certificate'}
-      </button>
+      <div className="flex flex-col gap-3">
+        {/* Download button row */}
+        <button
+          onClick={download}
+          disabled={downloading}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-60 transition-colors flex-shrink-0"
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          <Download size={12} />
+          {downloading ? 'Generating…' : 'Download Certificate'}
+        </button>
+
+        {/* Feedback prompt — only when courseId + userId provided */}
+        {courseId && userId && (
+          feedbackDone ? (
+            <p className="text-xs text-green-700 font-semibold flex items-center gap-1">
+              <Star size={12} className="fill-amber-400 text-amber-400" />
+              Thank you for your feedback!
+            </p>
+          ) : showForm ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-1">
+              <p className="text-xs font-black text-gray-800 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                How was this course?
+              </p>
+
+              {/* Star rating */}
+              <div className="flex gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map(n => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setRating(n)}
+                    onMouseEnter={() => setHovered(n)}
+                    onMouseLeave={() => setHovered(0)}
+                    className="text-2xl leading-none transition-transform hover:scale-110"
+                  >
+                    {n <= (hovered || rating) ? '★' : '☆'}
+                  </button>
+                ))}
+              </div>
+
+              <label className="block text-xs font-semibold text-gray-700 mb-1">What did you enjoy most?</label>
+              <textarea
+                value={enjoyed}
+                onChange={e => setEnjoyed(e.target.value)}
+                rows={3}
+                className="w-full text-xs border border-blue-200 rounded-lg px-3 py-2 mb-3 resize-none focus:outline-none focus:border-blue-400 bg-white"
+                placeholder="What worked well for you…"
+              />
+
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Any suggestions for improvement?</label>
+              <textarea
+                value={suggestions}
+                onChange={e => setSuggestions(e.target.value)}
+                rows={3}
+                className="w-full text-xs border border-blue-200 rounded-lg px-3 py-2 mb-3 resize-none focus:outline-none focus:border-blue-400 bg-white"
+                placeholder="Anything you'd change or add…"
+              />
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={submitFeedback}
+                  disabled={rating === 0 || submitting}
+                  className="px-4 py-1.5 rounded-lg text-xs font-bold text-white disabled:opacity-40 transition-colors"
+                  style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  {submitting ? 'Sending…' : 'Submit Feedback'}
+                </button>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowForm(true)}
+              className="inline-flex items-center gap-1.5 text-xs text-[#1e52a4] font-semibold hover:underline"
+            >
+              <MessageSquare size={12} />
+              Leave course feedback
+            </button>
+          )
+        )}
+      </div>
 
       {/* Off-screen certificate for html2canvas capture */}
       <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -1, pointerEvents: 'none' }}>
