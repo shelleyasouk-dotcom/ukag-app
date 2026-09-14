@@ -1012,7 +1012,7 @@ export function DashboardPage() {
   if (!profile) return null
 
   if (profile.role === 'organisation') return <OrganisationDashboard profile={profile} />
-  if (profile.role === 'assessor') return <AssessorDashboard profile={profile} />
+  if (profile.role === 'assessor' || profile.role === 'area_lead') return <AssessorDashboard profile={profile} />
   if (profile.role === 'maintenance') return <MaintenanceDashboard profile={profile} />
   if (profile.role === 'teacher' || profile.role === 'trampoline_teacher') return <TeacherDashboard profile={profile} />
   if (profile.role === 'admin') return <AdminDashboard profile={profile} />

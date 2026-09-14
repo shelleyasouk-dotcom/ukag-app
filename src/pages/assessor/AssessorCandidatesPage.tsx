@@ -110,6 +110,7 @@ function CandidateList({ candidates, navigate }: { candidates: CandidateRow[]; n
 
 export function AssessorCandidatesPage() {
   const { profile } = useAuth()
+  const isAreaLead = profile?.role === 'area_lead'
   const navigate = useNavigate()
   const [candidates, setCandidates] = useState<CandidateRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -245,7 +246,7 @@ export function AssessorCandidatesPage() {
       <div className="mb-2">
         <Link to="/assessor" className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 mb-4">
           <ArrowLeft size={14} />
-          Back to Assessor Portal
+          {isAreaLead ? 'Back to Area Lead Portal' : 'Back to Assessor Portal'}
         </Link>
       </div>
 
@@ -254,11 +255,13 @@ export function AssessorCandidatesPage() {
         <div className="flex items-start gap-3">
           <Users size={28} className="text-[#f4cc2c] flex-shrink-0 mt-1" />
           <div>
-            <p className="text-xs font-extrabold uppercase tracking-widest text-[#f4cc2c] mb-1">Assessor Portal</p>
+            <p className="text-xs font-extrabold uppercase tracking-widest text-[#f4cc2c] mb-1">{isAreaLead ? 'Area Lead Portal' : 'Assessor Portal'}</p>
             <h1 className="text-xl font-black leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-              My Candidates
+              {isAreaLead ? 'My Coaches' : 'My Candidates'}
             </h1>
-            <p className="text-white/70 text-sm mt-1">Open a candidate's portfolio to review and sign off competencies</p>
+            <p className="text-white/70 text-sm mt-1">
+              {isAreaLead ? 'Open a coach\'s portfolio to review progress and sign off the area lead declaration' : 'Open a candidate\'s portfolio to review and sign off competencies'}
+            </p>
           </div>
         </div>
       </div>
@@ -270,8 +273,8 @@ export function AssessorCandidatesPage() {
       ) : candidates.length === 0 ? (
         <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
           <Users size={32} className="text-gray-300 mx-auto mb-3" />
-          <p className="font-black text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>No candidates assigned yet</p>
-          <p className="text-sm text-gray-500">Contact your UKAG coordinator to link candidates to your account.</p>
+          <p className="font-black text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>{isAreaLead ? 'No coaches linked yet' : 'No candidates assigned yet'}</p>
+          <p className="text-sm text-gray-500">{isAreaLead ? 'Contact your UKAG admin to link coaches in your area to your account.' : 'Contact your UKAG coordinator to link candidates to your account.'}</p>
         </div>
       ) : (
         <CandidateList candidates={candidates} navigate={navigate} />
