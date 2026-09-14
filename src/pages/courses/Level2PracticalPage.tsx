@@ -415,6 +415,9 @@ export function Level2PracticalPage() {
                 <>Level 2 Lead Coach<br />Practical Portfolio</>
               )}
             </h1>
+            {isAssessorView && (
+              <p className="text-[#f4cc2c] text-xs font-bold mt-1">Level 2 Lead Coach (Gymnastics) — Practical Portfolio</p>
+            )}
             <p className="text-white/70 text-sm mt-1">
               {isAssessorView
                 ? 'Advanced Assessor Sign-Off — only Advanced Assessors can sign off Level 2 portfolios'

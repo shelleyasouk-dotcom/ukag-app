@@ -471,23 +471,32 @@ export function AdminPage() {
     const pl = priorLearning[userId]
     if (!pl?.courseId || !pl?.date) return
     setIssuingCert(userId)
-    const course = COURSE_REGISTRY.find(c => c.id === pl.courseId)
-    await supabase.from('course_certificates').upsert(
-      {
+    try {
+      // Delete any existing cert for this course first, then insert fresh
+      await supabase.from('course_certificates')
+        .delete()
+        .eq('user_id', userId)
+        .eq('course_id', pl.courseId)
+      const { error } = await supabase.from('course_certificates').insert({
         user_id: userId,
         course_id: pl.courseId,
-        course_title: course?.title ?? pl.courseId,
         completed_at: new Date(pl.date).toISOString(),
-      },
-      { onConflict: 'user_id,course_id' }
-    )
-    // Reload certs
-    const { data: certs } = await supabase
-      .from('course_certificates')
-      .select('id, user_id, course_id, completed_at')
-      .order('completed_at', { ascending: false })
-    setAllCertificates(certs ?? [])
-    setIssuingCert(null)
+      })
+      if (error) {
+        alert('Error issuing certificate: ' + error.message)
+        return
+      }
+      // Reload certs
+      const { data: certs } = await supabase
+        .from('course_certificates')
+        .select('id, user_id, course_id, completed_at')
+        .order('completed_at', { ascending: false })
+      setAllCertificates(certs ?? [])
+      // Reset picker
+      setPriorLearning(prev => ({ ...prev, [userId]: { courseId: '', date: new Date().toISOString().slice(0, 10) } }))
+    } finally {
+      setIssuingCert(null)
+    }
   }
 
   function openGrantAccess(user: ProfileRow, userEnrollments: EnrollmentRow[]) {

@@ -438,6 +438,9 @@ export function PracticalPortfolioPage() {
                 <>Level 1 Assistant Coach<br />Practical Portfolio</>
               )}
             </h1>
+            {isAssessorView && (
+              <p className="text-[#f4cc2c] text-xs font-bold mt-1">Level 1 Assistant Coach — Practical Portfolio</p>
+            )}
             <p className="text-white/70 text-sm mt-1">
               {isAssessorView
                 ? 'Sign off practical competencies for this candidate'
