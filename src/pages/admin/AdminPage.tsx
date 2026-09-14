@@ -4,6 +4,7 @@ import { Layout } from '../../components/layout/Layout'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { COURSE_REGISTRY, COURSE_ACADEMIES } from '../../data/courses'
+import { PRACTICAL_SECTIONS, ALL_COMPETENCY_KEYS, WEEKLY_LOG_KEYS } from '../../data/level1Portfolio'
 import { EVENTS } from '../../data/events'
 import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus, KeyRound, GraduationCap, Pencil, Check, X, Award, Bell, BellOff } from 'lucide-react'
 import { CreateInvoiceModal } from '../../components/admin/CreateInvoiceModal'
@@ -485,6 +486,50 @@ export function AdminPage() {
       if (error) {
         alert('Error issuing certificate: ' + error.message)
         return
+      }
+      // Auto-complete L1 practical portfolio when a Level 1 prior learning cert is issued
+      if (pl.courseId === 'level1_assistant_v1') {
+        const completedAt = new Date(pl.date).toISOString()
+        // Upsert the practical_assessments record
+        const { data: assessmentRows } = await supabase
+          .from('practical_assessments')
+          .upsert({ user_id: userId, course_id: 'level1_assistant_v1' }, { onConflict: 'user_id,course_id' })
+          .select('id')
+        let assessmentId: string | null = null
+        if (assessmentRows && assessmentRows.length > 0) {
+          assessmentId = assessmentRows[0].id
+        } else {
+          // upsert may not return rows on conflict; fetch it
+          const { data: existing } = await supabase
+            .from('practical_assessments')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('course_id', 'level1_assistant_v1')
+            .single()
+          assessmentId = existing?.id ?? null
+        }
+        if (assessmentId) {
+          const allKeys = [...ALL_COMPETENCY_KEYS, ...WEEKLY_LOG_KEYS]
+          // Build signoff rows with section_id looked up from PRACTICAL_SECTIONS
+          const sectionForKey = new Map<string, string>()
+          for (const sec of PRACTICAL_SECTIONS) {
+            for (const item of sec.items) sectionForKey.set(item.key, sec.id)
+          }
+          // Weekly log items don't belong to a section — use 'C'
+          for (const k of WEEKLY_LOG_KEYS) sectionForKey.set(k, 'C')
+
+          const signoffRows = allKeys.map(key => ({
+            assessment_id: assessmentId!,
+            item_key: key,
+            section_id: sectionForKey.get(key) ?? '',
+            signed_off_by: 'Prior learning — completed before portal',
+            signed_off_at: completedAt,
+            notes: 'Auto-completed: prior learning certificate issued by admin',
+          }))
+          // Delete existing signoffs first (idempotent re-issue)
+          await supabase.from('practical_signoffs').delete().eq('assessment_id', assessmentId)
+          await supabase.from('practical_signoffs').insert(signoffRows)
+        }
       }
       // Reload certs
       const { data: certs } = await supabase
