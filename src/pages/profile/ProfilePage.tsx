@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { COURSE_REGISTRY } from '../../data/courses'
 import { ACADEMIES } from '../../data/academies'
-import { Pencil, Check, X, Award, User, Calendar, Clock, Camera, PlayCircle, ChevronRight, BookOpen, Wand2, FileText as FileTextIcon } from 'lucide-react'
+import { Pencil, Check, X, Award, User, Calendar, Clock, Camera, PlayCircle, ChevronRight, BookOpen, Wand2, FileText as FileTextIcon, ShieldCheck } from 'lucide-react'
 import { SHOP_PRODUCTS } from '../../data/shop'
 import { IdCardDownload } from '../../components/profile/IdCardDownload'
 import { CertificateDownload } from '../../components/courses/CertificateDownload'
@@ -77,6 +77,11 @@ export function ProfilePage() {
   const [onlineEnrollments, setOnlineEnrollments] = useState<{ course_id: string; enrolled_at: string }[]>([])
   const [courseProgress, setCourseProgress] = useState<{ course_id: string; module_id: string }[]>([])
   const [docPurchases, setDocPurchases] = useState<{ id: string; product_id: string; purchased_at: string; personalisation: Record<string, string> | null }[]>([])
+  const [traineeAuth, setTraineeAuth] = useState<{
+    id: string; status: string; authorisation_date: string; expiry_date: string | null
+    organisation: string | null; safeguarding_confirmed: boolean; dbs_confirmed: boolean
+    first_aid_confirmed: boolean; authorised_by: string
+  } | null>(null)
 
   useEffect(() => {
     if (!profile) return
@@ -150,6 +155,14 @@ export function ProfilePage() {
       .eq('status', 'paid')
       .order('purchased_at', { ascending: false })
       .then(({ data }) => setDocPurchases(data ?? []))
+
+    // Trainee authorisation linked to this portal account
+    supabase
+      .from('trainee_authorisations')
+      .select('id, status, authorisation_date, expiry_date, organisation, safeguarding_confirmed, dbs_confirmed, first_aid_confirmed, authorised_by')
+      .eq('user_id', profile.id)
+      .maybeSingle()
+      .then(({ data }) => setTraineeAuth(data ?? null))
   }, [profile])
 
   function startEdit() {
@@ -637,23 +650,71 @@ export function ProfilePage() {
             )}
           </div>
 
-          {/* Qualifications */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="font-black text-gray-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>Qualifications Held</h2>
-            <p className="text-sm text-gray-400 italic">
-              No qualifications recorded yet — contact your Lead Coach or UKAG admin.
-            </p>
-          </div>
+          {/* Trainee Authorisation */}
+          {traineeAuth && (
+            <div className="bg-white rounded-xl border-2 border-blue-100 p-5" style={{ borderColor: '#1e52a4' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <ShieldCheck size={18} style={{ color: '#1e52a4' }} />
+                <h2 className="font-black text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Trainee Authorisation</h2>
+                <span className={`ml-auto px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                  traineeAuth.status === 'active' ? 'bg-green-100 text-green-700' :
+                  traineeAuth.status === 'expired' ? 'bg-amber-100 text-amber-700' :
+                  traineeAuth.status === 'suspended' ? 'bg-red-100 text-red-700' :
+                  'bg-blue-100 text-blue-700'
+                }`}>
+                  {traineeAuth.status.charAt(0).toUpperCase() + traineeAuth.status.slice(1)}
+                </span>
+              </div>
+              <div className="space-y-1 text-sm text-gray-600 mb-4">
+                <p><span className="font-semibold text-gray-800">Type:</span> Trainee Level 2 Lead Coach</p>
+                {traineeAuth.organisation && <p><span className="font-semibold text-gray-800">Organisation:</span> {traineeAuth.organisation}</p>}
+                <p><span className="font-semibold text-gray-800">Authorised:</span> {new Date(traineeAuth.authorisation_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                {traineeAuth.expiry_date && (
+                  <p><span className="font-semibold text-gray-800">Expires:</span> {new Date(traineeAuth.expiry_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                )}
+                <p><span className="font-semibold text-gray-800">Authorised by:</span> {traineeAuth.authorised_by}</p>
+              </div>
+              <div className="flex gap-4 mb-4">
+                {[
+                  { ok: traineeAuth.safeguarding_confirmed, label: 'Safeguarding' },
+                  { ok: traineeAuth.dbs_confirmed, label: 'DBS' },
+                  { ok: traineeAuth.first_aid_confirmed, label: 'First Aid' },
+                ].map(({ ok, label }) => (
+                  <span key={label} className="flex items-center gap-1.5 text-xs">
+                    <span className={`w-2.5 h-2.5 rounded-full ${ok ? 'bg-green-500' : 'bg-red-400'}`} />
+                    <span className="text-gray-600">{label}</span>
+                  </span>
+                ))}
+              </div>
+              <Link
+                to={`/admin/authorisations/${traineeAuth.id}/certificate`}
+                target="_blank"
+                className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg text-white"
+                style={{ backgroundColor: '#1e52a4' }}
+              >
+                <Award size={12} />
+                View Authorisation Certificate
+              </Link>
+            </div>
+          )}
 
           {/* Compliance */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <h2 className="font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>Compliance</h2>
             <div className="space-y-3">
-              {['DBS Check', 'First Aid Certificate', 'Safeguarding Training'].map(label => (
+              {[
+                { label: 'DBS Check', ok: traineeAuth?.dbs_confirmed ?? null },
+                { label: 'First Aid Certificate', ok: traineeAuth?.first_aid_confirmed ?? null },
+                { label: 'Safeguarding Training', ok: traineeAuth?.safeguarding_confirmed ?? null },
+              ].map(({ label, ok }) => (
                 <div key={label} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                   <span className="text-sm text-gray-700">{label}</span>
-                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
-                    Not recorded
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                    ok === true ? 'bg-green-100 text-green-700' :
+                    ok === false ? 'bg-red-100 text-red-700' :
+                    'bg-gray-100 text-gray-500'
+                  }`}>
+                    {ok === true ? 'Confirmed' : ok === false ? 'Not confirmed' : 'Not recorded'}
                   </span>
                 </div>
               ))}

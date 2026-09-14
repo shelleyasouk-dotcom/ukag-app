@@ -365,6 +365,8 @@ export function AdminPage() {
   const [resetSent, setResetSent] = useState<string | null>(null)
   const [assessorLinks, setAssessorLinks] = useState<{ assessor_id: string; candidate_id: string; course_id: string }[]>([])
   const [assessorLinkWorking, setAssessorLinkWorking] = useState(false)
+  const [priorLearning, setPriorLearning] = useState<Record<string, { courseId: string; date: string }>>({})
+  const [issuingCert, setIssuingCert] = useState<string | null>(null)
   const [interestFilter, setInterestFilter] = useState<{ course: string; status: string; search: string }>({ course: '', status: '', search: '' })
   const [expandedInterest, setExpandedInterest] = useState<string | null>(null)
   const [expandedOrg, setExpandedOrg] = useState<string | null>(null)
@@ -463,6 +465,29 @@ export function AdminPage() {
     const { data } = await supabase.from('assessor_candidates').select('assessor_id, candidate_id, course_id')
     setAssessorLinks(data || [])
     setAssessorLinkWorking(false)
+  }
+
+  async function issuePriorLearningCert(userId: string) {
+    const pl = priorLearning[userId]
+    if (!pl?.courseId || !pl?.date) return
+    setIssuingCert(userId)
+    const course = COURSE_REGISTRY.find(c => c.id === pl.courseId)
+    await supabase.from('course_certificates').upsert(
+      {
+        user_id: userId,
+        course_id: pl.courseId,
+        course_title: course?.title ?? pl.courseId,
+        completed_at: new Date(pl.date).toISOString(),
+      },
+      { onConflict: 'user_id,course_id' }
+    )
+    // Reload certs
+    const { data: certs } = await supabase
+      .from('course_certificates')
+      .select('id, user_id, course_id, completed_at')
+      .order('completed_at', { ascending: false })
+    setAllCertificates(certs ?? [])
+    setIssuingCert(null)
   }
 
   function openGrantAccess(user: ProfileRow, userEnrollments: EnrollmentRow[]) {
@@ -1070,6 +1095,47 @@ export function AdminPage() {
                           </div>
                         )
                       })()}
+
+                      {/* Prior Learning / Manual Certificate */}
+                      <div>
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+                          Issue Prior Learning Certificate
+                        </div>
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
+                          <p className="text-xs text-amber-700">Use this to issue a certificate for a course completed before the portal existed (e.g. Level 1 done via Zoom or a previous system).</p>
+                          <div className="flex gap-2 flex-wrap">
+                            <select
+                              value={priorLearning[p.id]?.courseId ?? ''}
+                              onChange={e => setPriorLearning(prev => ({ ...prev, [p.id]: { ...prev[p.id], courseId: e.target.value, date: prev[p.id]?.date ?? new Date().toISOString().slice(0, 10) } }))}
+                              className="flex-1 min-w-0 text-xs border border-amber-300 rounded-lg px-2 py-1.5 bg-white focus:outline-none"
+                            >
+                              <option value="">Select course…</option>
+                              {COURSE_REGISTRY.map(c => {
+                                const already = allCertificates.some(cert => cert.user_id === p.id && cert.course_id === c.id)
+                                return (
+                                  <option key={c.id} value={c.id} disabled={already}>
+                                    {c.title}{already ? ' ✓ already issued' : ''}
+                                  </option>
+                                )
+                              })}
+                            </select>
+                            <input
+                              type="date"
+                              value={priorLearning[p.id]?.date ?? new Date().toISOString().slice(0, 10)}
+                              onChange={e => setPriorLearning(prev => ({ ...prev, [p.id]: { ...prev[p.id], date: e.target.value } }))}
+                              className="text-xs border border-amber-300 rounded-lg px-2 py-1.5 bg-white focus:outline-none w-36"
+                            />
+                            <button
+                              onClick={() => issuePriorLearningCert(p.id)}
+                              disabled={!priorLearning[p.id]?.courseId || !priorLearning[p.id]?.date || issuingCert === p.id}
+                              className="text-xs font-bold text-white px-3 py-1.5 rounded-lg disabled:opacity-40 transition-colors whitespace-nowrap"
+                              style={{ backgroundColor: '#d97706' }}
+                            >
+                              {issuingCert === p.id ? 'Issuing…' : 'Issue Certificate'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
 
                       {/* Course progress & certificates */}
                       <div>
