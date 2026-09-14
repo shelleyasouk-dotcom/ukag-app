@@ -100,6 +100,8 @@ export function TraineeAuthorisationsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [profiles, setProfiles] = useState<{ id: string; full_name: string; email: string }[]>([])
+  const [profileSearch, setProfileSearch] = useState('')
 
   const [form, setForm] = useState<Omit<TraineeAuth, 'id' | 'created_at' | 'updated_at' | 'completed_at'>>({
     ...EMPTY_FORM,
@@ -125,10 +127,21 @@ export function TraineeAuthorisationsPage() {
 
   useEffect(() => { load() }, [])
 
+  async function loadProfiles() {
+    if (profiles.length > 0) return
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, full_name, email')
+      .order('full_name')
+    setProfiles(data ?? [])
+  }
+
   function openNew() {
     setEditingId(null)
     setForm({ ...EMPTY_FORM, authorised_by: profile?.full_name ?? '' })
     setFormError(null)
+    setProfileSearch('')
+    loadProfiles()
     setPanelOpen(true)
   }
 
@@ -156,6 +169,8 @@ export function TraineeAuthorisationsPage() {
       notes: a.notes,
     })
     setFormError(null)
+    setProfileSearch('')
+    loadProfiles()
     setPanelOpen(true)
   }
 
@@ -338,6 +353,59 @@ export function TraineeAuthorisationsPage() {
             <div className="flex-1 px-6 py-5 space-y-4">
               {/* Coach Info */}
               <Section title="Coach Information">
+                <Field label="Link to Coach Portal Account">
+                  {(() => {
+                    const linked = profiles.find(p => p.id === form.user_id)
+                    return (
+                      <div className="space-y-1.5">
+                        {linked ? (
+                          <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                            <div>
+                              <p className="text-sm font-semibold text-blue-900">{linked.full_name}</p>
+                              <p className="text-xs text-blue-600">{linked.email}</p>
+                            </div>
+                            <button onClick={() => { sf('user_id', null); setProfileSearch('') }}
+                              className="text-xs text-blue-500 hover:text-red-500 font-semibold ml-2">Remove</button>
+                          </div>
+                        ) : (
+                          <>
+                            <input
+                              type="text"
+                              placeholder="Search by name or email…"
+                              value={profileSearch}
+                              onChange={e => setProfileSearch(e.target.value)}
+                              className="input-base"
+                            />
+                            {profileSearch.length > 1 && (
+                              <div className="border border-gray-200 rounded-lg overflow-hidden max-h-40 overflow-y-auto">
+                                {profiles
+                                  .filter(p => {
+                                    const q = profileSearch.toLowerCase()
+                                    return (p.full_name ?? '').toLowerCase().includes(q) || (p.email ?? '').toLowerCase().includes(q)
+                                  })
+                                  .slice(0, 8)
+                                  .map(p => (
+                                    <button key={p.id}
+                                      onClick={() => {
+                                        sf('user_id', p.id)
+                                        if (!form.coach_full_name) sf('coach_full_name', p.full_name)
+                                        setProfileSearch('')
+                                      }}
+                                      className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 border-b border-gray-100 last:border-0"
+                                    >
+                                      <span className="font-semibold text-gray-900">{p.full_name}</span>
+                                      <span className="text-gray-400 text-xs ml-2">{p.email}</span>
+                                    </button>
+                                  ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+                        <p className="text-xs text-gray-400">Linking an account lets the coach see this authorisation on their own profile.</p>
+                      </div>
+                    )
+                  })()}
+                </Field>
                 <Field label="Coach Full Name" required>
                   <input type="text" value={form.coach_full_name} onChange={e => sf('coach_full_name', e.target.value)}
                     className="input-base" placeholder="Full name" />
