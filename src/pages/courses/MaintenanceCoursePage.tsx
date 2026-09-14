@@ -90,6 +90,8 @@ export function MaintenanceCoursePage() {
               courseTitle="UKAG Equipment Servicing Technician"
               completedAt={certificate.completed_at}
               certificateId={certificate.id}
+              courseId={MAINTENANCE_COURSE_ID}
+              userId={profile?.id}
             />
           </div>
         ) : allDone ? (

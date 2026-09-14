@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Users, ClipboardCheck, GraduationCap, Info, Loader2 } from 'lucide-react'
+import { Users, ClipboardCheck, GraduationCap, Info, Loader2, MessageSquare } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
@@ -73,6 +73,21 @@ export function AssessorDashboardPage() {
             </p>
           </div>
           <div className="text-[#1e52a4] text-xs font-bold group-hover:underline">View →</div>
+        </Link>
+
+        {/* Course Feedback card */}
+        <Link
+          to="/assessor/feedback"
+          className="flex items-center gap-4 bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all group"
+        >
+          <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+            <MessageSquare size={22} className="text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-black text-gray-900 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>Course Feedback</p>
+            <p className="text-xs text-gray-500 mt-0.5">View feedback submitted by coaches</p>
+          </div>
+          <div className="text-amber-600 text-xs font-bold group-hover:underline">View →</div>
         </Link>
 
         {/* Tutor Assessor course card */}

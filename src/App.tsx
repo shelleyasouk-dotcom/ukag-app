@@ -52,6 +52,7 @@ import { Level2VideoPage } from './pages/courses/Level2VideoPage'
 import { Level2CompletionPage } from './pages/courses/Level2CompletionPage'
 import { AssessorDashboardPage } from './pages/assessor/AssessorDashboardPage'
 import { AssessorCandidatesPage } from './pages/assessor/AssessorCandidatesPage'
+import { AssessorFeedbackPage } from './pages/assessor/AssessorFeedbackPage'
 import { MyGymnastsPage } from './pages/gymnasts/MyGymnastsPage'
 import { GymnastTrackerPage } from './pages/gymnasts/GymnastTrackerPage'
 import { CoursesLandingPage } from './pages/courses/CoursesLandingPage'
@@ -192,6 +193,7 @@ function AppRoutes() {
       <Route path="/courses/level-2-lead/:moduleId" element={<ProtectedRoute><Level2CoachModulePage /></ProtectedRoute>} />
       <Route path="/assessor" element={<ProtectedRoute><AssessorDashboardPage /></ProtectedRoute>} />
       <Route path="/assessor/candidates" element={<ProtectedRoute><AssessorCandidatesPage /></ProtectedRoute>} />
+      <Route path="/assessor/feedback" element={<ProtectedRoute><AssessorFeedbackPage /></ProtectedRoute>} />
       <Route path="/gymnasts" element={<ProtectedRoute><MyGymnastsPage /></ProtectedRoute>} />
       <Route path="/gymnasts/:gymnastId" element={<ProtectedRoute><GymnastTrackerPage /></ProtectedRoute>} />
       <Route path="/courses/level-1-assistant/:moduleId" element={<ProtectedRoute><Level1CoachModulePage /></ProtectedRoute>} />
