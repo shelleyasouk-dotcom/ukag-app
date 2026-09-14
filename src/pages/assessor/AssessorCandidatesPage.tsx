@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Users, CheckCircle, Loader2, ClipboardList } from 'lucide-react'
+import { ArrowLeft, Users, CheckCircle, Loader2, ClipboardList, ChevronDown, ChevronUp } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
@@ -29,6 +29,83 @@ const COURSE_META: Record<string, { label: string; practicalPath: string; totalS
     practicalPath: '/courses/level-2-lead/practical',
     totalSignoffs: L2_TOTAL_SIGNOFFS,
   },
+}
+
+function CandidateCard({ c, navigate }: { c: CandidateRow; navigate: ReturnType<typeof useNavigate> }) {
+  const pct = Math.round((c.signoffCount / c.totalSignoffs) * 100)
+  const allComplete = c.signoffCount >= c.totalSignoffs
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl p-4">
+      <div className="flex items-start gap-3 mb-3">
+        <div className="w-10 h-10 rounded-xl bg-[#1e52a4]/10 flex items-center justify-center flex-shrink-0">
+          {allComplete ? <CheckCircle size={20} className="text-green-600" /> : <ClipboardList size={20} className="text-[#1e52a4]" />}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-black text-gray-900 text-sm leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>{c.name}</p>
+          <p className="text-xs text-gray-400 mt-0.5">{c.email}</p>
+          <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+            {c.courseLabel}
+          </span>
+        </div>
+        {allComplete && (
+          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 flex-shrink-0">Complete</span>
+        )}
+      </div>
+      <div className="mb-3">
+        <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+          <span>{c.signoffCount} of {c.totalSignoffs} sign-offs</span>
+          <span>{pct}%</span>
+        </div>
+        <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: allComplete ? '#16a34a' : '#1e52a4' }} />
+        </div>
+      </div>
+      <button
+        onClick={() => navigate(`${c.practicalUrl}?candidateId=${c.candidateId}&assessorView=1`)}
+        className="w-full py-2.5 rounded-xl text-sm font-black text-white transition-colors"
+        style={{ backgroundColor: allComplete ? '#16a34a' : '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+      >
+        {allComplete ? 'View Completed Portfolio →' : 'Open Portfolio →'}
+      </button>
+    </div>
+  )
+}
+
+function CandidateList({ candidates, navigate }: { candidates: CandidateRow[]; navigate: ReturnType<typeof useNavigate> }) {
+  const [showCompleted, setShowCompleted] = useState(false)
+  const active = candidates.filter(c => c.signoffCount < c.totalSignoffs)
+  const completed = candidates.filter(c => c.signoffCount >= c.totalSignoffs)
+
+  return (
+    <div className="space-y-4">
+      {/* Active candidates */}
+      {active.length === 0 ? (
+        <p className="text-sm text-gray-500 text-center py-4">No active assessments — all portfolios complete.</p>
+      ) : (
+        <div className="space-y-3">
+          {active.map(c => <CandidateCard key={`${c.candidateId}-${c.courseId}`} c={c} navigate={navigate} />)}
+        </div>
+      )}
+
+      {/* Completed — collapsed by default */}
+      {completed.length > 0 && (
+        <div>
+          <button
+            onClick={() => setShowCompleted(v => !v)}
+            className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-gray-700 w-full py-2"
+          >
+            {showCompleted ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {completed.length} completed portfolio{completed.length !== 1 ? 's' : ''}
+          </button>
+          {showCompleted && (
+            <div className="space-y-3 mt-1">
+              {completed.map(c => <CandidateCard key={`${c.candidateId}-${c.courseId}`} c={c} navigate={navigate} />)}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function AssessorCandidatesPage() {
@@ -197,57 +274,7 @@ export function AssessorCandidatesPage() {
           <p className="text-sm text-gray-500">Contact your UKAG coordinator to link candidates to your account.</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {candidates.map(c => {
-            const pct = Math.round((c.signoffCount / c.totalSignoffs) * 100)
-            const allComplete = c.signoffCount >= c.totalSignoffs
-            return (
-              <div key={`${c.candidateId}-${c.courseId}`} className="bg-white border border-gray-200 rounded-xl p-4">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#1e52a4]/10 flex items-center justify-center flex-shrink-0">
-                    {allComplete ? (
-                      <CheckCircle size={20} className="text-green-600" />
-                    ) : (
-                      <ClipboardList size={20} className="text-[#1e52a4]" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-black text-gray-900 text-sm leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>{c.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{c.email}</p>
-                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                      {c.courseLabel}
-                    </span>
-                  </div>
-                  {allComplete && (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 flex-shrink-0">Complete</span>
-                  )}
-                </div>
-
-                {/* Progress bar */}
-                <div className="mb-3">
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                    <span>{c.signoffCount} of {c.totalSignoffs} sign-offs</span>
-                    <span>{pct}%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%`, backgroundColor: allComplete ? '#16a34a' : '#1e52a4' }}
-                    />
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => navigate(`${c.practicalUrl}?candidateId=${c.candidateId}&assessorView=1`)}
-                  className="w-full py-2.5 rounded-xl text-sm font-black text-white transition-colors"
-                  style={{ backgroundColor: '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Open Portfolio →
-                </button>
-              </div>
-            )
-          })}
-        </div>
+        <CandidateList candidates={candidates} navigate={navigate} />
       )}
     </Layout>
   )
