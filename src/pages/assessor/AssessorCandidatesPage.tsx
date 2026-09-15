@@ -60,13 +60,22 @@ function CandidateCard({ c, navigate }: { c: CandidateRow; navigate: ReturnType<
           <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: allComplete ? '#16a34a' : '#1e52a4' }} />
         </div>
       </div>
-      <button
-        onClick={() => navigate(`${c.practicalUrl}?candidateId=${c.candidateId}&assessorView=1`)}
-        className="w-full py-2.5 rounded-xl text-sm font-black text-white transition-colors"
-        style={{ backgroundColor: allComplete ? '#16a34a' : '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
-      >
-        {allComplete ? 'View Completed Portfolio →' : 'Open Portfolio →'}
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={() => navigate(`${c.practicalUrl}?candidateId=${c.candidateId}&assessorView=1`)}
+          className="flex-1 py-2.5 rounded-xl text-sm font-black text-white transition-colors"
+          style={{ backgroundColor: allComplete ? '#16a34a' : '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
+        >
+          {allComplete ? 'View Portfolio →' : 'Open Portfolio →'}
+        </button>
+        <button
+          onClick={() => navigate(`/assessor/candidates/${c.candidateId}`)}
+          className="px-3 py-2.5 rounded-xl text-sm font-bold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+          title="View full profile"
+        >
+          👤
+        </button>
+      </div>
     </div>
   )
 }
