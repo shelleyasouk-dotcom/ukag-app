@@ -269,8 +269,10 @@ export function Level2CompletionPage() {
           </div>
           {letter.feedback && (
             <div className="mb-3">
-              <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Written Feedback</p>
-              <p className="text-sm text-gray-700 leading-relaxed">{letter.feedback}</p>
+              <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Completion Letter</p>
+              <div className="bg-white border border-green-100 rounded-lg p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                {letter.feedback}
+              </div>
             </div>
           )}
           {letter.progression_advice && (
@@ -286,8 +288,8 @@ export function Level2CompletionPage() {
       {!isAssessorView && !letter && (
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-4 text-center">
           <Loader2 size={24} className="text-gray-400 mx-auto mb-2" />
-          <p className="font-bold text-gray-700" style={{ fontFamily: 'Montserrat, sans-serif' }}>Awaiting Final Assessment Sign-Off</p>
-          <p className="text-sm text-gray-500 mt-1">Your assessor will complete the final sign-off and issue your certificate once all stages are reviewed.</p>
+          <p className="font-bold text-gray-700" style={{ fontFamily: 'Montserrat, sans-serif' }}>Practical Portfolio Not Yet Complete</p>
+          <p className="text-sm text-gray-500 mt-1">Your completion letter and certificate will be issued automatically once your assessor has signed off all 6 weekly observations and the final declaration in your practical portfolio.</p>
         </div>
       )}
 
