@@ -468,6 +468,15 @@ export function AdminPage() {
     setAssessorLinkWorking(false)
   }
 
+  const COURSE_MODULE_IDS: Record<string, string[]> = {
+    junior_coach_v1:       ['intro-ukag', 'professional-behaviour', 'communication-skills', 'supporting-sessions', 'warm-ups', 'session-setup', 'safeguarding', 'assistant-coaching'],
+    level1_assistant_v1:   ['understanding-ukag', 'session-structure', 'warm-up-cool-down', 'coaching-fundamentals', 'skill-development', 'behaviour-management', 'safeguarding', 'health-safety'],
+    level2_lead_v1:        ['l2-role-pathway', 'l2-session-planning', 'l2-leadership-mentoring', 'l2-admin-hs', 'l2-advanced-skills', 'l2-routine-building', 'l2-behaviour-send', 'l2-risk-equipment', 'l2-safeguarding', 'l2-schools-communication'],
+    leadership_v1:         ['role', 'team', 'communication', 'sessions', 'app', 'safety', 'leadership'],
+    area_lead_v1:          ['regional-leadership', 'supporting-coaches', 'school-relationships', 'recruitment-support', 'quality-assurance', 'problem-solving', 'reporting-systems', 'communication'],
+    tutor_assessor_v1:     ['role', 'adult-learning', 'planning', 'delivering', 'assessment', 'feedback', 'safeguarding', 'quality-assurance', 'practical-cpd'],
+  }
+
   async function issuePriorLearningCert(userId: string) {
     const pl = priorLearning[userId]
     if (!pl?.courseId || !pl?.date) return
@@ -531,12 +540,23 @@ export function AdminPage() {
           await supabase.from('practical_signoffs').insert(signoffRows)
         }
       }
-      // Reload certs
-      const { data: certs } = await supabase
-        .from('course_certificates')
-        .select('id, user_id, course_id, completed_at')
-        .order('completed_at', { ascending: false })
+      // Auto-complete all course_progress rows so module count is correct
+      const moduleIds = COURSE_MODULE_IDS[pl.courseId]
+      if (moduleIds) {
+        const completedAt = new Date(pl.date).toISOString()
+        await supabase.from('course_progress').delete().eq('user_id', userId).eq('course_id', pl.courseId)
+        await supabase.from('course_progress').insert(
+          moduleIds.map(moduleId => ({ user_id: userId, course_id: pl.courseId, module_id: moduleId, completed_at: completedAt }))
+        )
+      }
+
+      // Reload certs and progress so UI reflects the new state
+      const [{ data: certs }, { data: progress }] = await Promise.all([
+        supabase.from('course_certificates').select('id, user_id, course_id, completed_at').order('completed_at', { ascending: false }),
+        supabase.from('course_progress').select('user_id, course_id, module_id'),
+      ])
       setAllCertificates(certs ?? [])
+      setAllProgress(progress ?? [])
       // Reset picker
       setPriorLearning(prev => ({ ...prev, [userId]: { courseId: '', date: new Date().toISOString().slice(0, 10) } }))
     } finally {
@@ -1104,7 +1124,7 @@ export function AdminPage() {
 
                       {/* Assessor links */}
                       {(() => {
-                        const assessors = profiles.filter(pr => pr.role === 'assessor' || pr.role === 'admin')
+                        const assessors = profiles.filter(pr => pr.role === 'assessor' || pr.role === 'admin' || pr.role === 'area_lead')
                         const LINK_COURSES = [
                           { id: 'level1_assistant_v1', label: 'Level 1 Portfolio' },
                           { id: 'level2_lead_v1', label: 'Level 2 Portfolio' },

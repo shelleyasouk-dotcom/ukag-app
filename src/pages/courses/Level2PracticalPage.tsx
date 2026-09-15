@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, CheckCircle, ClipboardList, Award, ChevronDown, ChevronUp, Loader2, ArrowRight } from 'lucide-react'
+import { ArrowLeft, CheckCircle, ClipboardList, Award, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
@@ -33,6 +33,7 @@ interface WeeklyLogEntry {
   venue: string
   notes: string
   assessorName: string
+  assessorFeedback: string
 }
 
 type ModalState =
@@ -74,6 +75,7 @@ export function Level2PracticalPage() {
   const [theoryCheck, setTheoryCheck] = useState(false)
 
   const [weeklyEntries, setWeeklyEntries] = useState<Record<string, WeeklyLogEntry>>({})
+  const [expandedWeek, setExpandedWeek] = useState<string | null>(null)
 
   const [finalAssessorName, setFinalAssessorName] = useState('')
 
@@ -361,16 +363,56 @@ export function Level2PracticalPage() {
   async function submitFinalDeclaration() {
     if (!assessment || !finalAssessorName.trim()) return
     setSaving(true)
+    const now = new Date().toISOString()
     try {
       await supabase
         .from('level2_practical_assessments')
         .update({
           final_advanced_assessor_name: finalAssessorName.trim(),
-          final_advanced_assessor_signed_at: new Date().toISOString(),
+          final_advanced_assessor_signed_at: now,
         })
         .eq('id', assessment.id)
-      const updated = { ...assessment, final_advanced_assessor_name: finalAssessorName.trim(), final_advanced_assessor_signed_at: new Date().toISOString() }
+      const updated = { ...assessment, final_advanced_assessor_name: finalAssessorName.trim(), final_advanced_assessor_signed_at: now }
       setAssessment(updated)
+
+      // Build auto-completion letter from weekly log data
+      const sectionSummary = LEVEL2_SECTIONS.map(sec => {
+        const done = sec.items.filter(it => signoffs.get(it.key)?.signed_off_by).length
+        return `  • ${sec.id} — ${sec.title}: ${done}/${sec.items.length} signed off`
+      }).join('\n')
+
+      const weekSummary = L2_WEEKLY_LOG_KEYS.map((key, i) => {
+        const entry = weeklyEntries[key] ?? { date: '', venue: '', notes: '', assessorName: '', assessorFeedback: '' }
+        const dateStr = entry.date ? new Date(entry.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'date not recorded'
+        const venue = entry.venue || 'venue not recorded'
+        const obs = entry.assessorFeedback?.trim() || entry.notes?.trim() || 'no observations recorded'
+        return `  Week ${i + 1} (${dateStr}) — ${venue}:\n  ${obs}`
+      }).join('\n\n')
+
+      const candidateDisplayName = isAssessorView ? candidateName : (profile?.full_name ?? profile?.email ?? 'the candidate')
+
+      const letterFeedback = `Dear ${candidateDisplayName},\n\nCongratulations on successfully completing the UKAG Level 2 Lead Coach Award in Gymnastics.\n\nYou have demonstrated all required competencies across all assessment stages:\n\n${sectionSummary}\n  • Section D — Weekly Practical Log: 6 sessions observed and signed off\n\nWeekly Observation Summary:\n\n${weekSummary}\n\nThis portfolio has been assessed and signed off by ${finalAssessorName.trim()} as your Advanced Assessor on ${new Date(now).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.\n\nThis letter confirms your successful completion of the Level 2 Lead Coach Award and is issued alongside your UKAG Certificate of Achievement.\n\nUKAG — United Kingdom Artistic Gymnastics`
+
+      // Auto-create completion letter
+      try {
+        await supabase.from('level2_completion_letters').upsert({
+          user_id: effectiveUserId,
+          course_id: COURSE_ID,
+          outcome: 'pass',
+          feedback: letterFeedback,
+          assessor_name: finalAssessorName.trim(),
+          assessor_id: profile!.id,
+          completed_at: now,
+        }, { onConflict: 'user_id,course_id' })
+      } catch { /* ignore */ }
+
+      // Auto-issue certificate
+      try {
+        const { data: existing } = await supabase.from('course_certificates').select('id').eq('user_id', effectiveUserId).eq('course_id', COURSE_ID).maybeSingle()
+        if (!existing) {
+          await supabase.from('course_certificates').insert({ user_id: effectiveUserId, course_id: COURSE_ID, completed_at: now })
+        }
+      } catch { /* ignore */ }
     } catch { /* ignore */ }
     setSaving(false)
     setModal({ type: 'none' })
@@ -676,38 +718,77 @@ export function Level2PracticalPage() {
         {L2_WEEKLY_LOG_KEYS.map((weekKey, i) => {
           const soff = signoffs.get(weekKey)
           const weekNum = i + 1
-          const entry = weeklyEntries[weekKey] ?? { date: '', venue: '', notes: '', assessorName: '' }
+          const entry = weeklyEntries[weekKey] ?? { date: '', venue: '', notes: '', assessorName: '', assessorFeedback: '' }
+
+          const isExpanded = expandedWeek === weekKey
+          const hasDetail = !!(entry.date || entry.venue || entry.notes || entry.assessorFeedback)
 
           return (
-            <div key={weekKey} className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <p className="font-black text-gray-900 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                    Week {weekNum} Observation
-                  </p>
-                  {soff?.signed_off_by && (
-                    <p className="text-xs text-green-600 mt-0.5">
-                      ✓ Signed off by {soff.signed_off_by} · {new Date(soff.signed_off_at!).toLocaleDateString('en-GB')}
+            <div key={weekKey} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div
+                className={`flex items-center justify-between p-4 ${soff?.signed_off_by ? 'cursor-pointer active:bg-gray-50' : ''}`}
+                onClick={() => soff?.signed_off_by && setExpandedWeek(isExpanded ? null : weekKey)}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <CheckCircle size={20} className={soff?.signed_off_by ? 'text-green-500 flex-shrink-0' : 'text-gray-200 flex-shrink-0'} />
+                  <div className="min-w-0">
+                    <p className="font-black text-gray-900 text-sm" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                      Week {weekNum} Observation
                     </p>
-                  )}
+                    {soff?.signed_off_by ? (
+                      <p className="text-xs text-green-600 mt-0.5">
+                        Signed off by {soff.signed_off_by} · {new Date(soff.signed_off_at!).toLocaleDateString('en-GB')}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-400 mt-0.5">Not yet completed</p>
+                    )}
+                  </div>
                 </div>
                 {soff?.signed_off_by ? (
-                  <CheckCircle size={20} className="text-green-500 flex-shrink-0" />
-                ) : !isAssessorView ? (
+                  isExpanded ? <ChevronUp size={16} className="text-gray-400 flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />
+                ) : (
                   <button
-                    onClick={() => setModal({ type: 'weekly', weekKey, weekLabel: `Week ${weekNum} Observation` })}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#1e52a4] text-white"
+                    onClick={e => { e.stopPropagation(); setModal({ type: 'weekly', weekKey, weekLabel: `Week ${weekNum} Observation` }) }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#1e52a4] text-white flex-shrink-0"
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                   >
-                    Log &amp; Sign
+                    {isAssessorView ? 'Record Observation' : 'Log & Sign'}
                   </button>
-                ) : null}
+                )}
               </div>
-              {soff?.signed_off_by && entry.date && (
-                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 mt-1">
-                  {entry.date && <span>Date: {entry.date}</span>}
-                  {entry.venue && <span>Venue: {entry.venue}</span>}
-                  {entry.notes && <p className="col-span-2 italic">"{entry.notes}"</p>}
+
+              {soff?.signed_off_by && isExpanded && (
+                <div className="border-t border-gray-100 px-4 pb-4 pt-3 bg-gray-50 space-y-2">
+                  {hasDetail ? (
+                    <>
+                      {entry.date && (
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Date of Session</p>
+                          <p className="text-sm text-gray-800">{new Date(entry.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                        </div>
+                      )}
+                      {entry.venue && (
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Venue / School</p>
+                          <p className="text-sm text-gray-800">{entry.venue}</p>
+                        </div>
+                      )}
+                      {entry.notes && (
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Coach Session Notes</p>
+                          <p className="text-sm text-gray-700 italic leading-relaxed">"{entry.notes}"</p>
+                        </div>
+                      )}
+                      {entry.assessorFeedback && (
+                        <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                          <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1">Assessor Observations</p>
+                          <p className="text-sm text-blue-900 leading-relaxed">{entry.assessorFeedback}</p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-xs text-gray-400 italic">No session details were recorded for this week.</p>
+                  )}
                 </div>
               )}
             </div>
@@ -762,16 +843,32 @@ export function Level2PracticalPage() {
         </div>
       )}
 
-      {/* Proceed to Video Assessment */}
-      {allDone && hasFinalSig && !isAssessorView && (
-        <button
-          onClick={() => navigate('/courses/level-2-lead/video')}
-          className="w-full py-4 rounded-xl text-base font-black text-white bg-[#1e52a4] flex items-center justify-center gap-2 mb-6"
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Proceed to Video Assessment
-          <ArrowRight size={18} />
-        </button>
+      {/* Completion banner — certificate and letter auto-issued */}
+      {allDone && hasFinalSig && (
+        <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-xl p-5 mb-6 text-white">
+          <div className="flex items-start gap-3">
+            <span className="text-3xl flex-shrink-0">🏆</span>
+            <div>
+              <p className="font-black text-lg leading-tight mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                {isAssessorView ? `${candidateName} has completed the Level 2 Award!` : 'Congratulations — Practical Portfolio Complete!'}
+              </p>
+              <p className="text-green-100 text-sm mb-3">
+                {isAssessorView
+                  ? 'The certificate and completion letter have been issued automatically to the candidate\'s profile.'
+                  : 'Your certificate and completion letter have been issued. You can find them on your profile and on the course completion page.'}
+              </p>
+              {!isAssessorView && (
+                <button
+                  onClick={() => navigate('/courses/level-2-lead/completion')}
+                  className="px-4 py-2 rounded-lg text-sm font-black bg-white text-green-700"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  View Certificate &amp; Letter →
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Competency sign-off modal */}
@@ -833,23 +930,30 @@ export function Level2PracticalPage() {
         </div>
       )}
 
-      {/* Weekly log modal */}
-      {!isAssessorView && modal.type === 'weekly' && (
+      {/* Weekly log modal — open in both coach and assessor view */}
+      {modal.type === 'weekly' && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setModal({ type: 'none' })}>
-          <div className="bg-white rounded-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h3 className="font-black text-gray-900 text-lg mb-1 text-center" style={{ fontFamily: 'Montserrat, sans-serif' }}>
               {modal.weekLabel}
             </h3>
-            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4 text-center">
-              Complete the log, then hand the phone to your assessor to sign off
-            </p>
+            {!isAssessorView && (
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4 text-center">
+                Complete the log, then hand the phone to your assessor to sign off
+              </p>
+            )}
+            {isAssessorView && (
+              <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-4 text-center">
+                Record what you observed during this session and sign off
+              </p>
+            )}
             <div className="space-y-3 mb-4">
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Date of Session</label>
                 <input
                   type="date"
                   value={weeklyEntries[modal.weekKey]?.date ?? ''}
-                  onChange={e => setWeeklyEntries(prev => ({ ...prev, [modal.weekKey]: { ...(prev[modal.weekKey] ?? { date: '', venue: '', notes: '', assessorName: '' }), date: e.target.value } }))}
+                  onChange={e => setWeeklyEntries(prev => ({ ...prev, [modal.weekKey]: { ...(prev[modal.weekKey] ?? { date: '', venue: '', notes: '', assessorName: '', assessorFeedback: '' }), date: e.target.value } }))}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e52a4]/30"
                 />
               </div>
@@ -857,26 +961,40 @@ export function Level2PracticalPage() {
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Venue / School</label>
                 <input
                   value={weeklyEntries[modal.weekKey]?.venue ?? ''}
-                  onChange={e => setWeeklyEntries(prev => ({ ...prev, [modal.weekKey]: { ...(prev[modal.weekKey] ?? { date: '', venue: '', notes: '', assessorName: '' }), venue: e.target.value } }))}
+                  onChange={e => setWeeklyEntries(prev => ({ ...prev, [modal.weekKey]: { ...(prev[modal.weekKey] ?? { date: '', venue: '', notes: '', assessorName: '', assessorFeedback: '' }), venue: e.target.value } }))}
                   placeholder="e.g. Riverside Primary"
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e52a4]/30"
                 />
               </div>
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Session Notes</label>
+              {!isAssessorView && (
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Coach Session Notes</label>
+                  <textarea
+                    value={weeklyEntries[modal.weekKey]?.notes ?? ''}
+                    onChange={e => setWeeklyEntries(prev => ({ ...prev, [modal.weekKey]: { ...(prev[modal.weekKey] ?? { date: '', venue: '', notes: '', assessorName: '', assessorFeedback: '' }), notes: e.target.value } }))}
+                    placeholder="What did you lead? How did it go?"
+                    rows={2}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e52a4]/30 resize-none"
+                  />
+                </div>
+              )}
+              <div className={isAssessorView ? 'bg-blue-50 border border-blue-200 rounded-xl p-3' : ''}>
+                <label className={`text-xs font-bold uppercase tracking-wide block mb-1 ${isAssessorView ? 'text-blue-600' : 'text-gray-500'}`}>
+                  {isAssessorView ? 'Assessor Observations *' : 'Assessor Observations'}
+                </label>
                 <textarea
-                  value={weeklyEntries[modal.weekKey]?.notes ?? ''}
-                  onChange={e => setWeeklyEntries(prev => ({ ...prev, [modal.weekKey]: { ...(prev[modal.weekKey] ?? { date: '', venue: '', notes: '', assessorName: '' }), notes: e.target.value } }))}
-                  placeholder="What did you lead? How did it go?"
-                  rows={2}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e52a4]/30 resize-none"
+                  value={weeklyEntries[modal.weekKey]?.assessorFeedback ?? ''}
+                  onChange={e => setWeeklyEntries(prev => ({ ...prev, [modal.weekKey]: { ...(prev[modal.weekKey] ?? { date: '', venue: '', notes: '', assessorName: '', assessorFeedback: '' }), assessorFeedback: e.target.value } }))}
+                  placeholder="What skills did you observe? How did the coach perform? Any areas to develop?"
+                  rows={4}
+                  className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none resize-none ${isAssessorView ? 'border border-blue-300 bg-white focus:ring-2 focus:ring-blue-300' : 'border border-gray-200 focus:ring-2 focus:ring-[#1e52a4]/30'}`}
                 />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Assessor Name *</label>
                 <input
                   value={weeklyEntries[modal.weekKey]?.assessorName ?? ''}
-                  onChange={e => setWeeklyEntries(prev => ({ ...prev, [modal.weekKey]: { ...(prev[modal.weekKey] ?? { date: '', venue: '', notes: '', assessorName: '' }), assessorName: e.target.value } }))}
+                  onChange={e => setWeeklyEntries(prev => ({ ...prev, [modal.weekKey]: { ...(prev[modal.weekKey] ?? { date: '', venue: '', notes: '', assessorName: '', assessorFeedback: '' }), assessorName: e.target.value } }))}
                   placeholder="Full name of assessor"
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e52a4]/30"
                 />
@@ -888,7 +1006,7 @@ export function Level2PracticalPage() {
               className="w-full py-4 rounded-xl text-base font-black text-white bg-green-600 active:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
-              {saving ? 'Saving…' : 'I Confirm — Sign Off ✓'}
+              {saving ? 'Saving…' : 'Sign Off Observation ✓'}
             </button>
             <button onClick={() => setModal({ type: 'none' })} className="w-full mt-2 py-2 text-sm text-gray-400 hover:text-gray-600">
               Cancel

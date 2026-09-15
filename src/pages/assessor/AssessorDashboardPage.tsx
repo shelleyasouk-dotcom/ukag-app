@@ -7,6 +7,7 @@ import { Layout } from '../../components/layout/Layout'
 
 export function AssessorDashboardPage() {
   const { profile } = useAuth()
+  const isAreaLead = profile?.role === 'area_lead'
   const [candidateCount, setCandidateCount] = useState<number>(0)
   const [loading, setLoading] = useState(true)
 
@@ -36,7 +37,7 @@ export function AssessorDashboardPage() {
           <div>
             <p className="text-xs font-extrabold uppercase tracking-widest text-[#f4cc2c] mb-1">UKAG</p>
             <h1 className="text-2xl font-black leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-              Assessor Portal
+              {isAreaLead ? 'Area Lead Portal' : 'Assessor Portal'}
             </h1>
             <p className="text-white/70 text-sm mt-1">
               Welcome back{profile?.full_name ? `, ${profile.full_name}` : ''}
@@ -49,7 +50,9 @@ export function AssessorDashboardPage() {
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 flex items-start gap-3">
         <Info size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
         <p className="text-sm text-blue-800">
-          As an assessor, you can sign off practical portfolio items for your assigned candidates directly from your own account — no phone hand-over required.
+          {isAreaLead
+            ? 'As an area lead, you can review and sign off practical portfolios for coaches in your area — open a candidate\'s portfolio to view their progress and sign off the area lead declaration.'
+            : 'As an assessor, you can sign off practical portfolio items for your assigned candidates directly from your own account — no phone hand-over required.'}
         </p>
       </div>
 
