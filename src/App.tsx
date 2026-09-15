@@ -50,6 +50,7 @@ import { Level2CoachModulePage } from './pages/courses/Level2CoachModulePage'
 import { Level2PracticalPage } from './pages/courses/Level2PracticalPage'
 import { Level2VideoPage } from './pages/courses/Level2VideoPage'
 import { Level2CompletionPage } from './pages/courses/Level2CompletionPage'
+import { Level1CompletionPage } from './pages/courses/Level1CompletionPage'
 import { AssessorDashboardPage } from './pages/assessor/AssessorDashboardPage'
 import { AssessorCandidatesPage } from './pages/assessor/AssessorCandidatesPage'
 import { AssessorFeedbackPage } from './pages/assessor/AssessorFeedbackPage'
@@ -186,6 +187,7 @@ function AppRoutes() {
       <Route path="/courses/junior-coach/:moduleId" element={<ProtectedRoute><JuniorCoachModulePage /></ProtectedRoute>} />
       <Route path="/courses/level-1-assistant" element={<ProtectedRoute><Level1CoachCoursePage /></ProtectedRoute>} />
       <Route path="/courses/level-1-assistant/practical" element={<ProtectedRoute><PracticalPortfolioPage /></ProtectedRoute>} />
+      <Route path="/courses/level-1-assistant/completion" element={<ProtectedRoute><Level1CompletionPage /></ProtectedRoute>} />
       <Route path="/courses/level-2-lead" element={<ProtectedRoute><Level2CoachCoursePage /></ProtectedRoute>} />
       <Route path="/courses/level-2-lead/practical" element={<ProtectedRoute><Level2PracticalPage /></ProtectedRoute>} />
       <Route path="/courses/level-2-lead/video" element={<ProtectedRoute><Level2VideoPage /></ProtectedRoute>} />

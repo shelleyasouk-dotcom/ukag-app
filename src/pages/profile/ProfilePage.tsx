@@ -636,14 +636,26 @@ export function ProfilePage() {
                         Awarded {new Date(cert.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                       </p>
                     </div>
-                    {profile && (
-                      <CertificateDownload
-                        participantName={profile.full_name ?? profile.email ?? ''}
-                        courseTitle={courseName(cert.course_id)}
-                        completedAt={cert.completed_at}
-                        certificateId={cert.id}
-                      />
-                    )}
+                    <div className="flex flex-col items-end gap-1">
+                      {profile && (
+                        <CertificateDownload
+                          participantName={profile.full_name ?? profile.email ?? ''}
+                          courseTitle={courseName(cert.course_id)}
+                          completedAt={cert.completed_at}
+                          certificateId={cert.id}
+                        />
+                      )}
+                      {cert.course_id === 'level1_assistant_v1' && (
+                        <Link to="/courses/level-1-assistant/completion" className="text-[11px] text-[#1e52a4] font-bold underline whitespace-nowrap">
+                          View completion letter
+                        </Link>
+                      )}
+                      {cert.course_id === 'level2_lead_v1' && (
+                        <Link to="/courses/level-2-lead/completion" className="text-[11px] text-[#1e52a4] font-bold underline whitespace-nowrap">
+                          View completion letter
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

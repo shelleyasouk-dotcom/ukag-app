@@ -542,7 +542,11 @@ UKAG Coaching Academy`
                 ? `${candidateName} has been awarded the Level 1 Assistant Coach certificate.`
                 : 'Your Level 1 Assistant Coach certificate has been awarded.'}
             </p>
-            {!isAssessorView && <Link to="/profile" className="text-xs text-green-600 underline mt-1 inline-block">View in My Profile →</Link>}
+            {!isAssessorView && (
+              <Link to="/courses/level-1-assistant/completion" className="text-xs text-green-700 font-bold underline mt-1 inline-block">
+                View completion letter &amp; certificate →
+              </Link>
+            )}
           </div>
         </div>
       )}
