@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Users, CheckCircle, Loader2, ClipboardList, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, Users, CheckCircle, Loader2, ClipboardList } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
@@ -66,14 +66,14 @@ function CandidateCard({ c, navigate }: { c: CandidateRow; navigate: ReturnType<
           className="flex-1 py-2.5 rounded-xl text-sm font-black text-white transition-colors"
           style={{ backgroundColor: allComplete ? '#16a34a' : '#1e52a4', fontFamily: 'Montserrat, sans-serif' }}
         >
-          {allComplete ? 'View Portfolio →' : 'Open Portfolio →'}
+          {allComplete ? 'Portfolio →' : 'Open Portfolio →'}
         </button>
         <button
           onClick={() => navigate(`/assessor/candidates/${c.candidateId}`)}
-          className="px-3 py-2.5 rounded-xl text-sm font-bold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-          title="View full profile"
+          className="px-3 py-2.5 rounded-xl text-sm font-bold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors whitespace-nowrap"
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
         >
-          👤
+          Full Profile
         </button>
       </div>
     </div>
@@ -81,37 +81,32 @@ function CandidateCard({ c, navigate }: { c: CandidateRow; navigate: ReturnType<
 }
 
 function CandidateList({ candidates, navigate }: { candidates: CandidateRow[]; navigate: ReturnType<typeof useNavigate> }) {
-  const [showCompleted, setShowCompleted] = useState(false)
   const active = candidates.filter(c => c.signoffCount < c.totalSignoffs)
   const completed = candidates.filter(c => c.signoffCount >= c.totalSignoffs)
 
   return (
     <div className="space-y-4">
       {/* Active candidates */}
-      {active.length === 0 ? (
-        <p className="text-sm text-gray-500 text-center py-4">No active assessments — all portfolios complete.</p>
-      ) : (
+      {active.length > 0 && (
         <div className="space-y-3">
           {active.map(c => <CandidateCard key={`${c.candidateId}-${c.courseId}`} c={c} navigate={navigate} />)}
         </div>
       )}
 
-      {/* Completed — collapsed by default */}
+      {/* Completed — always visible */}
       {completed.length > 0 && (
-        <div>
-          <button
-            onClick={() => setShowCompleted(v => !v)}
-            className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-gray-700 w-full py-2"
-          >
-            {showCompleted ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            {completed.length} completed portfolio{completed.length !== 1 ? 's' : ''}
-          </button>
-          {showCompleted && (
-            <div className="space-y-3 mt-1">
-              {completed.map(c => <CandidateCard key={`${c.candidateId}-${c.courseId}`} c={c} navigate={navigate} />)}
-            </div>
+        <div className="space-y-3">
+          {active.length > 0 && (
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide pt-2">
+              Completed ({completed.length})
+            </p>
           )}
+          {completed.map(c => <CandidateCard key={`${c.candidateId}-${c.courseId}`} c={c} navigate={navigate} />)}
         </div>
+      )}
+
+      {candidates.length === 0 && (
+        <p className="text-sm text-gray-500 text-center py-4">No candidates assigned yet.</p>
       )}
     </div>
   )
