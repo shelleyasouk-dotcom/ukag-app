@@ -114,13 +114,26 @@ export function PracticalPortfolioPage() {
 
     // Upsert/load assessment record for the effective user
     if (isAssessorView) {
-      // In assessor view: load without upserting
-      const { data: existing } = await supabase
+      let existing: Assessment | null = null
+      const { data: loaded } = await supabase
         .from('practical_assessments')
         .select('*')
         .eq('user_id', effectiveUserId)
         .eq('course_id', COURSE_ID)
         .maybeSingle()
+
+      if (loaded) {
+        existing = loaded
+      } else {
+        // Create the record if the candidate hasn't visited their portfolio yet
+        const { data: created } = await supabase
+          .from('practical_assessments')
+          .insert({ user_id: effectiveUserId, course_id: COURSE_ID })
+          .select('*')
+          .single()
+        existing = created
+      }
+
       setAssessment(existing)
       if (existing) {
         setLeadCoachName(existing.lead_coach_name ?? '')
