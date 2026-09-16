@@ -351,6 +351,7 @@ export function AdminPage() {
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
   const [allProgress, setAllProgress] = useState<ProgressRow[]>([])
   const [allCertificates, setAllCertificates] = useState<CertificateRow[]>([])
+  const [allLetters, setAllLetters] = useState<{ user_id: string; course_id: string; completed_at: string }[]>([])
   const [working, setWorking] = useState(false)
   const [roleError, setRoleError] = useState<string | null>(null)
   const [roleSuccess, setRoleSuccess] = useState<string | null>(null)
@@ -421,6 +422,13 @@ export function AdminPage() {
       const { data: links } = await supabase.from('assessor_candidates').select('assessor_id, candidate_id, course_id')
       setAssessorLinks(links || [])
     } catch { /* table may not exist yet */ }
+    try {
+      const [{ data: l1 }, { data: l2 }] = await Promise.all([
+        supabase.from('level1_completion_letters').select('user_id, course_id, completed_at'),
+        supabase.from('level2_completion_letters').select('user_id, course_id, completed_at'),
+      ])
+      setAllLetters([...(l1 ?? []), ...(l2 ?? [])])
+    } catch { /* ignore */ }
     setLoading(false)
   }
 
@@ -1223,6 +1231,7 @@ export function AdminPage() {
                             {userEnrollments.map(en => {
                               const course = COURSE_REGISTRY.find(c => c.id === en.course_id)
                               const cert = userCerts.find(c => c.course_id === en.course_id)
+                              const letter = allLetters.find(l => l.user_id === p.id && l.course_id === en.course_id)
                               const completedModules = userProgress.filter(pr => pr.course_id === en.course_id).length
                               const total = course?.moduleCount ?? 0
                               const pct = total > 0 ? Math.round((completedModules / total) * 100) : 0
@@ -1267,8 +1276,20 @@ export function AdminPage() {
                                     </div>
                                   )}
                                   {cert && (
-                                    <div className="text-[10px] text-gray-400 mt-1">
-                                      Completed {new Date(cert.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    <div className="flex items-center gap-3 mt-1">
+                                      <span className="text-[10px] text-gray-400">
+                                        Completed {new Date(cert.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                      </span>
+                                      {en.course_id === 'level1_assistant_v1' && (
+                                        <Link to={`/courses/level-1-assistant/completion?candidateId=${p.id}`} className="text-[10px] text-[#1e52a4] font-bold underline">
+                                          {letter ? 'View letter' : 'No letter yet'}
+                                        </Link>
+                                      )}
+                                      {en.course_id === 'level2_lead_v1' && (
+                                        <Link to={`/courses/level-2-lead/completion?candidateId=${p.id}`} className="text-[10px] text-[#1e52a4] font-bold underline">
+                                          {letter ? 'View letter' : 'Write letter'}
+                                        </Link>
+                                      )}
                                     </div>
                                   )}
                                 </div>
