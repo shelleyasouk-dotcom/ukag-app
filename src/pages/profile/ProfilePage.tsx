@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { COURSE_REGISTRY } from '../../data/courses'
 import { ACADEMIES } from '../../data/academies'
-import { Pencil, Check, X, Award, User, Calendar, Clock, Camera, PlayCircle, ChevronRight, BookOpen, Wand2, FileText as FileTextIcon, ShieldCheck } from 'lucide-react'
+import { Pencil, Check, X, Award, User, Calendar, Clock, Camera, PlayCircle, ChevronRight, BookOpen, Wand2, FileText as FileTextIcon, ShieldCheck, Trophy } from 'lucide-react'
 import { SHOP_PRODUCTS } from '../../data/shop'
 import { IdCardDownload } from '../../components/profile/IdCardDownload'
 import { CertificateDownload } from '../../components/courses/CertificateDownload'
@@ -238,10 +238,6 @@ export function ProfilePage() {
   }
 
   const memberId = profile ? `UKAG-${profile.id.slice(0, 8).toUpperCase()}` : '—'
-
-  function courseName(courseId: string) {
-    return COURSE_REGISTRY.find(c => c.id === courseId)?.title ?? courseId
-  }
 
   return (
     <Layout>
@@ -616,51 +612,28 @@ export function ProfilePage() {
             </div>
           )}
 
-          {/* CPD Certificates */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="font-black text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>CPD Certificates</h2>
-            {certsLoading ? (
-              <p className="text-sm text-gray-400">Loading…</p>
-            ) : certificates.length === 0 ? (
-              <p className="text-sm text-gray-400 italic">No certificates earned yet — complete a course to earn your first one.</p>
-            ) : (
-              <div className="space-y-4">
-                {certificates.map(cert => (
-                  <div key={cert.id} className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: '#1e52a4' }}>
-                      <Award size={18} className="text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-gray-900 leading-tight">{courseName(cert.course_id)}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        Awarded {new Date(cert.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      {profile && (
-                        <CertificateDownload
-                          participantName={profile.full_name ?? profile.email ?? ''}
-                          courseTitle={courseName(cert.course_id)}
-                          completedAt={cert.completed_at}
-                          certificateId={cert.id}
-                        />
-                      )}
-                      {cert.course_id === 'level1_assistant_v1' && (
-                        <Link to="/courses/level-1-assistant/completion" className="text-[11px] text-[#1e52a4] font-bold underline whitespace-nowrap">
-                          View completion letter
-                        </Link>
-                      )}
-                      {cert.course_id === 'level2_lead_v1' && (
-                        <Link to="/courses/level-2-lead/completion" className="text-[11px] text-[#1e52a4] font-bold underline whitespace-nowrap">
-                          View completion letter
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                ))}
+          {/* My Awards */}
+          <Link
+            to="/my-awards"
+            className="block bg-white rounded-xl border border-gray-200 p-5 hover:border-[#1e52a4]/40 hover:bg-blue-50/30 transition-colors group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1e52a4' }}>
+                <Trophy size={20} className="text-white" />
               </div>
-            )}
-          </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-black text-gray-900 leading-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  My Awards &amp; Certificates
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {certsLoading ? 'Loading…' : certificates.length === 0
+                    ? 'No certificates yet — complete a course to earn your first'
+                    : `${certificates.length} certificate${certificates.length !== 1 ? 's' : ''} — download certificates &amp; completion letters`}
+                </p>
+              </div>
+              <ChevronRight size={18} className="text-gray-400 group-hover:text-[#1e52a4] flex-shrink-0 transition-colors" />
+            </div>
+          </Link>
 
           {/* Trainee Authorisation */}
           {traineeAuth && (
