@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
 import { CertificateDownload } from '../../components/courses/CertificateDownload'
+import { CompletionLetterDownload } from '../../components/courses/CompletionLetterDownload'
 
 const COURSE_ID = 'level1_assistant_v1'
 
@@ -188,9 +189,17 @@ export function Level1CompletionPage() {
           {letter.feedback && (
             <div>
               <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Completion Letter</p>
-              <div className="bg-white border border-green-100 rounded-lg p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+              <div className="bg-white border border-green-100 rounded-lg p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-3">
                 {letter.feedback}
               </div>
+              <CompletionLetterDownload
+                coachName={displayName}
+                awardTitle="Level 1 Assistant Coach Award in Gymnastics"
+                feedback={letter.feedback}
+                leadCoachName={letter.lead_coach_name ?? undefined}
+                areaLeadName={letter.area_lead_name ?? undefined}
+                assessmentDate={letter.completed_at}
+              />
             </div>
           )}
         </div>
