@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Loader2, CheckCircle, Award, BookOpen,
   Pencil, Check, X, KeyRound, ExternalLink, ShieldCheck,
-  PlayCircle, ChevronRight,
+  PlayCircle, ChevronRight, Crown,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -62,6 +62,7 @@ interface ProfileRow {
   phone: string | null
   role: string
   organisation_name: string | null
+  is_super_admin: boolean
 }
 
 interface EnrollmentRow { course_id: string; enrolled_at: string }
@@ -103,7 +104,7 @@ export function AdminUserDetailPage() {
     async function load() {
       setLoading(true)
       const [userRes, enrollRes, progRes, certRes, l1Res, l2Res, authRes] = await Promise.allSettled([
-        supabase.from('profiles').select('id, full_name, email, phone, role, organisation_name').eq('id', userId).single(),
+        supabase.from('profiles').select('id, full_name, email, phone, role, organisation_name, is_super_admin').eq('id', userId).single(),
         supabase.from('course_enrollments').select('course_id, enrolled_at').eq('user_id', userId),
         supabase.from('course_progress').select('course_id, module_id').eq('user_id', userId),
         supabase.from('course_certificates').select('id, course_id, completed_at').eq('user_id', userId),
@@ -200,12 +201,13 @@ export function AdminUserDetailPage() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-extrabold uppercase tracking-widest text-[#f4cc2c] mb-0.5">Admin — User Profile</p>
-            <h1 className="text-xl font-black leading-tight truncate" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            <h1 className="text-xl font-black leading-tight flex items-center gap-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
               {displayName}
+              {user.is_super_admin && <Crown size={16} className="text-[#f4cc2c] flex-shrink-0" title="Super Admin" />}
             </h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-white/20 text-white">
-                {ROLE_LABELS[user.role] ?? user.role}
+                {user.is_super_admin ? 'Super Admin' : (ROLE_LABELS[user.role] ?? user.role)}
               </span>
               <span className="text-white/50 text-xs font-mono">{memberId}</span>
             </div>
@@ -282,7 +284,11 @@ export function AdminUserDetailPage() {
             )}
             <div className="flex items-center justify-between py-2.5">
               <span className="text-sm text-gray-500 w-28 shrink-0">Role</span>
-              {editing ? (
+              {user.is_super_admin ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold text-[#f4cc2c]" style={{ backgroundColor: '#0F1E3A' }}>
+                  <Crown size={11} /> Super Admin
+                </span>
+              ) : editing ? (
                 <select value={editRole} onChange={e => setEditRole(e.target.value)}
                   className="text-sm border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-[#1e52a4]/30">
                   {ROLE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}

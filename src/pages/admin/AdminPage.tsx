@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { COURSE_REGISTRY, COURSE_ACADEMIES } from '../../data/courses'
 import { PRACTICAL_SECTIONS, ALL_COMPETENCY_KEYS, WEEKLY_LOG_KEYS } from '../../data/level1Portfolio'
 import { EVENTS } from '../../data/events'
-import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus, KeyRound, GraduationCap, Pencil, Check, X, Award, Bell, BellOff, Search, UserCircle } from 'lucide-react'
+import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus, KeyRound, GraduationCap, Pencil, Check, X, Award, Bell, BellOff, Search, UserCircle, Crown } from 'lucide-react'
 import { CreateInvoiceModal } from '../../components/admin/CreateInvoiceModal'
 import { CertificateDownload } from '../../components/courses/CertificateDownload'
 
@@ -16,6 +16,7 @@ interface ProfileRow {
   full_name: string
   role: string
   organisation_name?: string
+  is_super_admin: boolean
 }
 
 interface EnrollmentRow {
@@ -391,7 +392,7 @@ export function AdminPage() {
   async function loadAll() {
     setLoading(true)
     const [{ data: p }, { data: e }, { data: r }, { data: i }, { data: b }, { data: er }, { data: si }, { data: ro }, { data: cd }, { data: inv }, { data: gb }, { data: sr }, { data: prog }, { data: certs }] = await Promise.all([
-      supabase.from('profiles').select('id, email, full_name, role, organisation_name').order('full_name'),
+      supabase.from('profiles').select('id, email, full_name, role, organisation_name, is_super_admin').order('full_name'),
       supabase.from('course_enrollments').select('*'),
       supabase.from('course_access_requests').select('*').order('requested_at', { ascending: false }),
       supabase.from('course_interest').select('*').order('created_at', { ascending: false }),
@@ -1055,11 +1056,14 @@ export function AdminPage() {
                     {(p.full_name || p.email).charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-gray-900 text-sm">{p.full_name || '—'}</div>
+                    <div className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+                      {p.full_name || '—'}
+                      {p.is_super_admin && <Crown size={12} className="text-[#f4cc2c] flex-shrink-0" title="Super Admin" />}
+                    </div>
                     <div className="text-xs text-gray-500 truncate">{p.email}</div>
                   </div>
                   <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 flex-shrink-0">
-                    {ROLE_LABELS[p.role] || p.role}
+                    {p.is_super_admin ? 'Super Admin' : (ROLE_LABELS[p.role] || p.role)}
                   </span>
                   <span className="text-xs text-gray-400 flex-shrink-0">
                     {userEnrollments.length} course{userEnrollments.length !== 1 ? 's' : ''}
@@ -1128,10 +1132,16 @@ export function AdminPage() {
                           <div className="px-3 py-2 space-y-1.5">
                             <div className="flex items-center gap-3">
                               <span className="text-xs text-gray-400 w-24 shrink-0">Role</span>
-                              <select value={p.role} onChange={e => changeRole(p.id, e.target.value)} disabled={working}
-                                className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-50">
-                                {ROLE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                              </select>
+                              {p.is_super_admin ? (
+                                <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full text-[#f4cc2c]" style={{ backgroundColor: '#0F1E3A' }}>
+                                  <Crown size={11} /> Super Admin
+                                </span>
+                              ) : (
+                                <select value={p.role} onChange={e => changeRole(p.id, e.target.value)} disabled={working}
+                                  className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-50">
+                                  {ROLE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                </select>
+                              )}
                               {roleSuccess === p.id && <span className="text-[10px] text-green-600 font-bold shrink-0">✓ Saved</span>}
                             </div>
                             {roleError && expandedUser === p.id && (
