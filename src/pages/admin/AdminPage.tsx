@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { COURSE_REGISTRY, COURSE_ACADEMIES } from '../../data/courses'
 import { PRACTICAL_SECTIONS, ALL_COMPETENCY_KEYS, WEEKLY_LOG_KEYS } from '../../data/level1Portfolio'
 import { EVENTS } from '../../data/events'
-import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus, KeyRound, GraduationCap, Pencil, Check, X, Award, Bell, BellOff, Search } from 'lucide-react'
+import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus, KeyRound, GraduationCap, Pencil, Check, X, Award, Bell, BellOff, Search, UserCircle } from 'lucide-react'
 import { CreateInvoiceModal } from '../../components/admin/CreateInvoiceModal'
 import { CertificateDownload } from '../../components/courses/CertificateDownload'
 
@@ -325,6 +325,7 @@ export function AdminPage() {
   const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources' | 'dates' | 'invoices' | 'group_bookings' | 'service_reports' | 'defect_register'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [coachSearch, setCoachSearch] = useState('')
+  const [roleFilter, setRoleFilter] = useState<string>('all')
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
   const [interests, setInterests] = useState<InterestRow[]>([])
@@ -1003,7 +1004,40 @@ export function AdminPage() {
             />
           </div>
 
+          {/* Role filter chips */}
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: 'all', label: 'All' },
+              { value: 'coach', label: 'Coach' },
+              { value: 'junior_coach', label: 'Junior Coach' },
+              { value: 'assistant_coach', label: 'Asst Coach' },
+              { value: 'lead_coach', label: 'Lead Coach' },
+              { value: 'area_lead', label: 'Area Lead' },
+              { value: 'assessor', label: 'Assessor' },
+              { value: 'admin', label: 'Admin' },
+            ].map(chip => (
+              <button
+                key={chip.value}
+                onClick={() => setRoleFilter(chip.value)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                  roleFilter === chip.value
+                    ? 'text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+                style={roleFilter === chip.value ? { backgroundColor: '#1e52a4' } : undefined}
+              >
+                {chip.label}
+                {chip.value !== 'all' && (
+                  <span className="ml-1 opacity-60">
+                    ({profiles.filter(p => p.role === chip.value).length})
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
           {profiles.filter(p => {
+            if (roleFilter !== 'all' && p.role !== roleFilter) return false
             if (!coachSearch.trim()) return true
             const q = coachSearch.toLowerCase()
             return (p.full_name ?? '').toLowerCase().includes(q) || (p.email ?? '').toLowerCase().includes(q)
@@ -1011,7 +1045,7 @@ export function AdminPage() {
             const userEnrollments = enrollments.filter(e => e.user_id === p.id)
             const isExpanded = expandedUser === p.id
             return (
-              <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden relative">
                 <button
                   onClick={() => setExpandedUser(isExpanded ? null : p.id)}
                   className="w-full flex items-center gap-3 p-4 text-left hover:bg-gray-50 transition-colors"
@@ -1032,6 +1066,16 @@ export function AdminPage() {
                   </span>
                   {isExpanded ? <ChevronUp size={16} className="text-gray-400 flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />}
                 </button>
+                <Link
+                  to={`/admin/users/${p.id}`}
+                  onClick={e => e.stopPropagation()}
+                  className="absolute right-14 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  title="View full profile"
+                >
+                  <UserCircle size={13} />
+                  View
+                </Link>
 
                 {isExpanded && (() => {
                   const userProgress = allProgress.filter(pr => pr.user_id === p.id)
