@@ -82,7 +82,7 @@ export function CompletionLetterDownload({
     try {
       const logoResp = await fetch('/ukag-full.png')
       const logoData = await logoResp.arrayBuffer()
-      const LOGO_W = convertInchesToTwip(1.8)
+      const LOGO_W = convertInchesToTwip(1.2)
       const LOGO_H = Math.round(LOGO_W * (827 / 1169))
 
       const formattedDate = new Date(assessmentDate).toLocaleDateString('en-GB', {
@@ -183,21 +183,40 @@ export function CompletionLetterDownload({
             new Paragraph({
               spacing: { before: 0, after: dxa(3) },
               children: [
-                new TextRun({ text: 'Assessed by:  ', font: 'Calibri', size: pt(11), bold: true, color: NAVY }),
-                new TextRun({ text: signerLine, font: 'Calibri', size: pt(11), color: BLACK }),
+                new TextRun({ text: 'Yours sincerely,', font: 'Calibri', size: pt(11), color: BLACK }),
+              ],
+            }),
+            spacer(14),
+            new Paragraph({
+              spacing: { before: 0, after: dxa(2) },
+              children: [
+                new TextRun({ text: 'Shelley Wood', font: 'Calibri', size: pt(11), bold: true, color: NAVY }),
+              ],
+            }),
+            new Paragraph({
+              spacing: { before: 0, after: dxa(2) },
+              children: [
+                new TextRun({ text: 'Director of Coaching', font: 'Calibri', size: pt(11), color: BLACK }),
+              ],
+            }),
+            new Paragraph({
+              spacing: { before: 0, after: dxa(2) },
+              children: [
+                new TextRun({ text: 'UK Academies of Gymnastics', font: 'Calibri', size: pt(11), color: BLACK }),
               ],
             }),
             new Paragraph({
               spacing: { before: 0, after: dxa(3) },
               children: [
-                new TextRun({ text: 'Issued:  ', font: 'Calibri', size: pt(11), bold: true, color: NAVY }),
-                new TextRun({ text: formattedDate, font: 'Calibri', size: pt(11), color: BLACK }),
+                new TextRun({ text: `Issued: ${formattedDate}`, font: 'Calibri', size: pt(10), color: MID, italics: true }),
               ],
             }),
-
-            spacer(8),
-
-            bodyPara('We look forward to seeing you continue to grow as a coach. Well done on this achievement.'),
+            ...(signerLine ? [new Paragraph({
+              spacing: { before: 0, after: dxa(3) },
+              children: [
+                new TextRun({ text: `Assessed by: ${signerLine}`, font: 'Calibri', size: pt(10), color: MID, italics: true }),
+              ],
+            })] : []),
 
             spacer(12),
             rule(GOLD, 6),
@@ -207,7 +226,7 @@ export function CompletionLetterDownload({
               alignment: AlignmentType.CENTER,
               spacing: { before: 0, after: 0 },
               children: [
-                new TextRun({ text: 'UK Academy of Gymnastics  ·  ', font: 'Calibri', size: pt(9), color: MID }),
+                new TextRun({ text: 'UK Academies of Gymnastics  ·  ', font: 'Calibri', size: pt(9), color: MID }),
                 new TextRun({ text: 'www.ukacademyofgymnastics.com', font: 'Calibri', size: pt(9), color: NAVY }),
               ],
             }),

@@ -378,20 +378,34 @@ export function Level2PracticalPage() {
       // Build auto-completion letter from weekly log data
       const sectionSummary = LEVEL2_SECTIONS.map(sec => {
         const done = sec.items.filter(it => signoffs.get(it.key)?.signed_off_by).length
-        return `  • ${sec.id} — ${sec.title}: ${done}/${sec.items.length} signed off`
+        return `  • ${sec.title}: ${done}/${sec.items.length} competencies signed off`
       }).join('\n')
 
-      const weekSummary = L2_WEEKLY_LOG_KEYS.map((key, i) => {
-        const entry = weeklyEntries[key] ?? { date: '', venue: '', notes: '', assessorName: '', assessorFeedback: '' }
-        const dateStr = entry.date ? new Date(entry.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'date not recorded'
-        const venue = entry.venue || 'venue not recorded'
-        const obs = entry.assessorFeedback?.trim() || entry.notes?.trim() || 'no observations recorded'
-        return `  Week ${i + 1} (${dateStr}) — ${venue}:\n  ${obs}`
-      }).join('\n\n')
+      const weeksObserved = L2_WEEKLY_LOG_KEYS.filter(key => signoffs.get(key)?.signed_off_by).length
 
-      const candidateDisplayName = isAssessorView ? candidateName : (profile?.full_name ?? profile?.email ?? 'the candidate')
+      const candidateDisplayName = isAssessorView ? candidateName : (profile?.full_name ?? profile?.email ?? 'Candidate')
+      const firstName = candidateDisplayName.split(' ')[0]
+      const assessmentDateStr = new Date(now).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 
-      const letterFeedback = `Dear ${candidateDisplayName},\n\nCongratulations on successfully completing the UKAG Level 2 Lead Coach Award in Gymnastics.\n\nYou have demonstrated all required competencies across all assessment stages:\n\n${sectionSummary}\n  • Section D — Weekly Practical Log: 6 sessions observed and signed off\n\nWeekly Observation Summary:\n\n${weekSummary}\n\nThis portfolio has been assessed and signed off by ${finalAssessorName.trim()} as your Advanced Assessor on ${new Date(now).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.\n\nThis letter confirms your successful completion of the Level 2 Lead Coach Award and is issued alongside your UKAG Certificate of Achievement.\n\nUKAG — United Kingdom Artistic Gymnastics`
+      const letterFeedback = `Dear ${firstName},
+
+Congratulations on successfully completing the UKAG Level 2 Lead Coach Award in Gymnastics.
+
+This letter confirms that you have demonstrated all required competencies across all assessment stages and completed ${weeksObserved} weekly practical observation${weeksObserved !== 1 ? 's' : ''}.
+
+Competency Summary
+${sectionSummary}
+  • Weekly Practical Log: ${weeksObserved}/6 sessions observed and signed off
+
+This portfolio has been assessed and signed off by ${finalAssessorName.trim()} as your Advanced Assessor on ${assessmentDateStr}.
+
+We are delighted to confirm your achievement and look forward to seeing you continue to grow as a coach.
+
+Yours sincerely,
+
+Shelley Wood
+Director of Coaching
+UK Academies of Gymnastics`
 
       // Auto-create completion letter
       try {

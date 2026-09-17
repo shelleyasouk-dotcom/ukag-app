@@ -412,39 +412,35 @@ export function PracticalPortfolioPage() {
       // Auto-generate completion letter
       if (!hasLetter) {
         const dateStr = new Date(now).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-        const weekSummaries = WEEKLY_LOG_KEYS.map((wk, i) => {
-          const s = signoffs.get(wk)
-          const e: WeeklyLogEntry = weeklyEntries[wk] ?? { date: '', venue: '', notes: '', assessorName: '', assessorFeedback: '' }
-          const datePart = e.date ? ` (${new Date(e.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })})` : ''
-          const venuePart = e.venue ? ` at ${e.venue}` : ''
-          const feedbackPart = e.assessorFeedback ? `\n   Assessor notes: ${e.assessorFeedback}` : ''
-          return s?.signed_off_by ? `• Week ${i + 1}${datePart}${venuePart}${feedbackPart}` : `• Week ${i + 1}: not recorded`
-        }).join('\n')
-
         const sectionSummary = PRACTICAL_SECTIONS.map(sec => {
           const done = sec.items.filter(it => signoffs.get(it.key)?.signed_off_by).length
-          return `• ${sec.id} — ${sec.title}: ${done}/${sec.items.length} competencies signed off`
+          return `  • ${sec.title}: ${done}/${sec.items.length} competencies signed off`
         }).join('\n')
 
-        const letterText = `Dear ${isAssessorView ? 'Candidate' : (profile?.full_name ?? profile?.email ?? 'Candidate')},
+        const weeksObserved = WEEKLY_LOG_KEYS.filter(wk => signoffs.get(wk)?.signed_off_by).length
 
-Congratulations on successfully completing the UKAG Level 1 Assistant Coach Award (Gymnastics).
+        const coachName = isAssessorView ? 'Candidate' : (profile?.full_name ?? profile?.email ?? 'Candidate')
+        const firstName = coachName.split(' ')[0]
 
-This letter confirms that you have met all requirements of the qualification, having demonstrated the full range of practical competencies and completed all four weekly placement observations.
+        const letterText = `Dear ${firstName},
 
-PORTFOLIO SUMMARY
+Congratulations on successfully completing the UKAG Level 1 Assistant Coach Award in Gymnastics.
+
+This letter confirms that you have met all requirements of the qualification, having demonstrated the full range of practical competencies across all assessment sections and completed ${weeksObserved} weekly placement observation${weeksObserved !== 1 ? 's' : ''}.
+
+Competency Summary
 ${sectionSummary}
+  • Weekly Placement Log: ${weeksObserved}/4 observations signed off
 
-WEEKLY PLACEMENT OBSERVATIONS
-${weekSummaries}
+All competencies have been assessed and signed off by your Lead Coach (${latestLead}) and countersigned by your Area Lead (${latestArea}) on ${dateStr}.
 
-FINAL DECLARATIONS
-Lead Coach: ${latestLead} — signed ${dateStr}
-Area Lead: ${latestArea} — signed ${dateStr}
+We are delighted to confirm your achievement and look forward to seeing you continue to grow as a coach.
 
-Your certificate has been issued and is available in your profile. We wish you every success in your coaching journey.
+Yours sincerely,
 
-UKAG Coaching Academy`
+Shelley Wood
+Director of Coaching
+UK Academies of Gymnastics`
 
         try {
           await supabase
