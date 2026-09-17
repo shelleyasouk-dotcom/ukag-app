@@ -51,6 +51,7 @@ import { Level2PracticalPage } from './pages/courses/Level2PracticalPage'
 import { Level2VideoPage } from './pages/courses/Level2VideoPage'
 import { Level2CompletionPage } from './pages/courses/Level2CompletionPage'
 import { Level1CompletionPage } from './pages/courses/Level1CompletionPage'
+import { MyAwardsPage } from './pages/profile/MyAwardsPage'
 import { AssessorDashboardPage } from './pages/assessor/AssessorDashboardPage'
 import { AssessorCandidatesPage } from './pages/assessor/AssessorCandidatesPage'
 import { AssessorCandidateProfilePage } from './pages/assessor/AssessorCandidateProfilePage'
@@ -136,6 +137,7 @@ function AppRoutes() {
       <Route path="/library/:level" element={<ProtectedRoute><LevelDetailPage /></ProtectedRoute>} />
       <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/my-awards" element={<ProtectedRoute><MyAwardsPage /></ProtectedRoute>} />
       <Route path="/organisation" element={<ProtectedRoute><OrganisationPage /></ProtectedRoute>} />
       <Route path="/certifications" element={<Navigate to="/profile" replace />} />
       <Route path="/courses/leadership" element={<ProtectedRoute><LeadershipCoursePage /></ProtectedRoute>} />
