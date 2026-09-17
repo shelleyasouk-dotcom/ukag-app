@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { COURSE_REGISTRY, COURSE_ACADEMIES } from '../../data/courses'
 import { PRACTICAL_SECTIONS, ALL_COMPETENCY_KEYS, WEEKLY_LOG_KEYS } from '../../data/level1Portfolio'
 import { EVENTS } from '../../data/events'
-import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus, KeyRound, GraduationCap, Pencil, Check, X, Award, Bell, BellOff } from 'lucide-react'
+import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Mail, Phone, MapPin, Copy, ExternalLink, FileText, Plus, KeyRound, GraduationCap, Pencil, Check, X, Award, Bell, BellOff, Search, UserCircle } from 'lucide-react'
 import { CreateInvoiceModal } from '../../components/admin/CreateInvoiceModal'
 import { CertificateDownload } from '../../components/courses/CertificateDownload'
 
@@ -324,6 +324,8 @@ export function AdminPage() {
   const { profile } = useAuth()
   const [tab, setTab] = useState<'coaches' | 'requests' | 'interest' | 'bookings' | 'events' | 'analytics' | 'organisations' | 'services' | 'resources' | 'dates' | 'invoices' | 'group_bookings' | 'service_reports' | 'defect_register'>('coaches')
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
+  const [coachSearch, setCoachSearch] = useState('')
+  const [roleFilter, setRoleFilter] = useState<string>('all')
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
   const [requests, setRequests] = useState<RequestRow[]>([])
   const [interests, setInterests] = useState<InterestRow[]>([])
@@ -773,24 +775,6 @@ export function AdminPage() {
     loadAll()
   }
 
-  async function bulkEnrollAnaphylaxis() {
-    const courseId = 'anaphylaxis_v1'
-    const alreadyEnrolled = new Set(enrollments.filter(e => e.course_id === courseId).map(e => e.user_id))
-    const toEnroll = profiles.filter(p => p.role !== 'admin' && !alreadyEnrolled.has(p.id))
-    if (toEnroll.length === 0) {
-      alert('Everyone is already enrolled in the Anaphylaxis course.')
-      return
-    }
-    if (!confirm(`Enrol ${toEnroll.length} coach${toEnroll.length === 1 ? '' : 'es'} in the Anaphylaxis Awareness & Emergency Response course?`)) return
-    setWorking(true)
-    await supabase.from('course_enrollments').insert(
-      toEnroll.map(p => ({ user_id: p.id, course_id: courseId, enrolled_at: new Date().toISOString() }))
-    )
-    setWorking(false)
-    await loadAll()
-    alert(`Done — ${toEnroll.length} coach${toEnroll.length === 1 ? '' : 'es'} enrolled.`)
-  }
-
   async function changeBookingStatus(bookingId: string, status: BookingRow['status']) {
     setWorking(true)
     await supabase.from('course_bookings').update({ status }).eq('id', bookingId)
@@ -1009,27 +993,59 @@ export function AdminPage() {
       {/* Coaches tab */}
       {!loading && tab === 'coaches' && (
         <div className="space-y-3">
-          {/* Bulk action banner */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex-1">
-              <p className="text-sm font-bold text-amber-800" style={{ fontFamily: 'Montserrat, sans-serif' }}>⚖️ Benedict's Law — Mandatory Anaphylaxis Training</p>
-              <p className="text-xs text-amber-700 mt-0.5">Enrol all coaches in the Anaphylaxis Awareness course to meet the September 2026 requirement.</p>
-            </div>
-            <button
-              onClick={bulkEnrollAnaphylaxis}
-              disabled={working}
-              className="flex-shrink-0 px-4 py-2 rounded-lg text-xs font-black text-white disabled:opacity-60 transition-colors"
-              style={{ backgroundColor: '#0d9488', fontFamily: 'Montserrat, sans-serif' }}
-            >
-              {working ? 'Enrolling…' : 'Enrol Everyone →'}
-            </button>
+          {/* Search */}
+          <div className="relative">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <input
+              value={coachSearch}
+              onChange={e => setCoachSearch(e.target.value)}
+              placeholder="Search by name or email…"
+              className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e52a4]/30"
+            />
           </div>
 
-          {profiles.map(p => {
+          {/* Role filter chips */}
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: 'all', label: 'All' },
+              { value: 'coach', label: 'Coach' },
+              { value: 'junior_coach', label: 'Junior Coach' },
+              { value: 'assistant_coach', label: 'Asst Coach' },
+              { value: 'lead_coach', label: 'Lead Coach' },
+              { value: 'area_lead', label: 'Area Lead' },
+              { value: 'assessor', label: 'Assessor' },
+              { value: 'admin', label: 'Admin' },
+            ].map(chip => (
+              <button
+                key={chip.value}
+                onClick={() => setRoleFilter(chip.value)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                  roleFilter === chip.value
+                    ? 'text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+                style={roleFilter === chip.value ? { backgroundColor: '#1e52a4' } : undefined}
+              >
+                {chip.label}
+                {chip.value !== 'all' && (
+                  <span className="ml-1 opacity-60">
+                    ({profiles.filter(p => p.role === chip.value).length})
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {profiles.filter(p => {
+            if (roleFilter !== 'all' && p.role !== roleFilter) return false
+            if (!coachSearch.trim()) return true
+            const q = coachSearch.toLowerCase()
+            return (p.full_name ?? '').toLowerCase().includes(q) || (p.email ?? '').toLowerCase().includes(q)
+          }).map(p => {
             const userEnrollments = enrollments.filter(e => e.user_id === p.id)
             const isExpanded = expandedUser === p.id
             return (
-              <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden relative">
                 <button
                   onClick={() => setExpandedUser(isExpanded ? null : p.id)}
                   className="w-full flex items-center gap-3 p-4 text-left hover:bg-gray-50 transition-colors"
@@ -1050,6 +1066,16 @@ export function AdminPage() {
                   </span>
                   {isExpanded ? <ChevronUp size={16} className="text-gray-400 flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />}
                 </button>
+                <Link
+                  to={`/admin/users/${p.id}`}
+                  onClick={e => e.stopPropagation()}
+                  className="absolute right-14 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  title="View full profile"
+                >
+                  <UserCircle size={13} />
+                  View
+                </Link>
 
                 {isExpanded && (() => {
                   const userProgress = allProgress.filter(pr => pr.user_id === p.id)
