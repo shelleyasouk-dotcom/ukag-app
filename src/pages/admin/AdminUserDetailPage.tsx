@@ -203,7 +203,7 @@ export function AdminUserDetailPage() {
             <p className="text-xs font-extrabold uppercase tracking-widest text-[#f4cc2c] mb-0.5">Admin — User Profile</p>
             <h1 className="text-xl font-black leading-tight flex items-center gap-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
               {displayName}
-              {user.is_super_admin && <Crown size={16} className="text-[#f4cc2c] flex-shrink-0" title="Super Admin" />}
+              {user.is_super_admin && <Crown size={16} className="text-[#f4cc2c] flex-shrink-0" aria-label="Super Admin" />}
             </h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-white/20 text-white">
