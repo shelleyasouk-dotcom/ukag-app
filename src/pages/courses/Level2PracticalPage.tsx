@@ -78,6 +78,9 @@ export function Level2PracticalPage() {
   const [expandedWeek, setExpandedWeek] = useState<string | null>(null)
 
   const [finalAssessorName, setFinalAssessorName] = useState('')
+  const [obsType, setObsType] = useState<'video' | 'practical'>('video')
+  const [obsNotes, setObsNotes] = useState('')
+  const [videoApproved, setVideoApproved] = useState(false)
 
   const [inlinePanel, setInlinePanel] = useState<InlinePanel | null>(null)
   const [inlineName, setInlineName] = useState('')
@@ -145,6 +148,16 @@ export function Level2PracticalPage() {
             }
           }
           setSignoffs(map)
+
+          // Load video/final observation approval status
+          const { data: vid } = await supabase
+            .from('level2_video_submissions')
+            .select('status, assessor_feedback')
+            .eq('user_id', effectiveUserId)
+            .eq('course_id', COURSE_ID)
+            .maybeSingle()
+          setVideoApproved(vid?.status === 'approved')
+          if (vid?.assessor_feedback) setObsNotes(vid.assessor_feedback)
         }
       } catch { /* ignore */ }
     } else {
@@ -387,6 +400,27 @@ export function Level2PracticalPage() {
       const firstName = candidateDisplayName.split(' ')[0]
       const assessmentDateStr = new Date(now).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 
+      // Approve video / final practical observation
+      try {
+        await supabase.from('level2_video_submissions').upsert({
+          user_id: effectiveUserId,
+          course_id: COURSE_ID,
+          status: 'approved',
+          assessor_feedback: obsNotes.trim() || null,
+          assessor_id: profile!.id,
+          reviewed_at: now,
+        }, { onConflict: 'user_id,course_id' })
+        setVideoApproved(true)
+      } catch { /* ignore */ }
+
+      const obsTypeLabel = obsType === 'video'
+        ? 'Video Assessment Watched & Approved'
+        : 'Practical Session Observed & Approved'
+
+      const obsSection = obsNotes.trim()
+        ? `\nFinal Assessment — ${obsTypeLabel}:\n${obsNotes.trim()}\n`
+        : `\nFinal Assessment: ${obsTypeLabel}\n`
+
       const letterFeedback = `Dear ${firstName},
 
 Congratulations on successfully completing the UKAG Level 2 Lead Coach Award in Gymnastics.
@@ -396,7 +430,7 @@ This letter confirms that you have demonstrated all required competencies across
 Competency Summary
 ${sectionSummary}
   • Weekly Practical Log: ${weeksObserved}/6 sessions observed and signed off
-
+${obsSection}
 This portfolio has been assessed and signed off by ${finalAssessorName.trim()} as your Advanced Assessor on ${assessmentDateStr}.
 
 We are delighted to confirm your achievement and look forward to seeing you continue to grow as a coach.
@@ -824,16 +858,44 @@ UK Academies of Gymnastics`
           <div className="bg-white/10 rounded-lg p-4">
             <p className="text-xs font-bold text-white/60 uppercase tracking-wide mb-2">Advanced Assessor Declaration</p>
             {hasFinalSig ? (
-              <p className="text-sm text-green-400">
-                ✓ Signed by {assessment?.final_advanced_assessor_name} · {new Date(assessment!.final_advanced_assessor_signed_at!).toLocaleDateString('en-GB')}
-              </p>
+              <div className="space-y-1">
+                <p className="text-sm text-green-400">
+                  ✓ Signed by {assessment?.final_advanced_assessor_name} · {new Date(assessment!.final_advanced_assessor_signed_at!).toLocaleDateString('en-GB')}
+                </p>
+                {videoApproved && (
+                  <p className="text-sm text-green-300">
+                    ✓ {obsType === 'practical' ? 'Practical session observed & approved' : 'Video assessment approved'}
+                    {obsNotes && <span className="text-white/50"> — notes included in letter</span>}
+                  </p>
+                )}
+              </div>
             ) : isAssessorView ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <input
                   value={finalAssessorName}
                   onChange={e => setFinalAssessorName(e.target.value)}
                   placeholder="Advanced Assessor full name"
                   className="w-full border border-white/20 bg-white/10 text-white rounded-lg px-3 py-2 text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
+                />
+                <div>
+                  <p className="text-xs font-bold text-white/60 uppercase tracking-wide mb-2">Final Assessment Type</p>
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-sm text-white cursor-pointer">
+                      <input type="radio" checked={obsType === 'video'} onChange={() => setObsType('video')} className="accent-[#f4cc2c]" />
+                      Video assessment watched &amp; approved
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-white cursor-pointer">
+                      <input type="radio" checked={obsType === 'practical'} onChange={() => setObsType('practical')} className="accent-[#f4cc2c]" />
+                      Practical session observed &amp; approved
+                    </label>
+                  </div>
+                </div>
+                <textarea
+                  value={obsNotes}
+                  onChange={e => setObsNotes(e.target.value)}
+                  placeholder="Observation notes (optional) — these appear in the completion letter…"
+                  rows={3}
+                  className="w-full border border-white/20 bg-white/10 text-white rounded-lg px-3 py-2 text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 resize-none"
                 />
                 <button
                   onClick={submitFinalDeclaration}

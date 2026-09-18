@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Download, Loader2 } from 'lucide-react'
+import { cleanLetterFeedback } from '../../lib/letterUtils'
 import {
   Document, Packer, Paragraph, TextRun, AlignmentType,
   BorderStyle, convertInchesToTwip, LineRuleType, Table, TableRow,
@@ -100,48 +101,22 @@ function competencyTable(bullets: string[]): Table {
   })
 }
 
-// Strip verbose weekly observations — keep only the intro + competency bullets.
-// Works on both old-format letters (with "Weekly Observation Summary:" section)
-// and new-format letters (which don't have it).
-function extractLetterContent(raw: string): { greeting: string; intro: string[]; bullets: string[]; hasPassed: boolean } {
-  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean)
-
-  const stopPatterns = [
-    /^weekly observation summary/i,
-    /^yours sincerely/i,
-    /^this letter confirms completion of the practical assessment component/i,
-    /^ukag\s*[—\-]/i,
-    /^assessor recommendation:/i,
-    /^this portfolio has been assessed/i,
-    /^this letter confirms your successful completion/i,
-    /^subject to completion of all required/i,
-    /^week \d+\s*\(/i,
-  ]
-
-  const skipPatterns = [
-    /^ukag\s*[—\-]/i,
-    /^certificate of completion$/i,
-  ]
-
+function parseLetter(raw: string): { greeting: string; intro: string[]; bullets: string[]; hasPassed: boolean } {
+  const lines = cleanLetterFeedback(raw).split('\n').map(l => l.trim()).filter(Boolean)
   let greeting = ''
   const intro: string[] = []
   const bullets: string[] = []
   let hasPassed = false
-
   for (const line of lines) {
-    if (stopPatterns.some(p => p.test(line))) break
-    if (skipPatterns.some(p => p.test(line))) continue
-
     if (/^dear /i.test(line)) {
       greeting = line
-    } else if (/^[•\-]\s/.test(line) || /^section /i.test(line)) {
+    } else if (/^[•\-]\s/.test(line)) {
       bullets.push(line)
       if (/signed off/i.test(line)) hasPassed = true
-    } else if (line.length > 0) {
+    } else {
       intro.push(line)
     }
   }
-
   return { greeting, intro, bullets, hasPassed }
 }
 
@@ -168,7 +143,7 @@ export function CompletionLetterDownload({
         ? `${leadCoachName} (Lead Coach) & ${areaLeadName} (Area Lead)`
         : (assessorName ?? null)
 
-      const { greeting, intro, bullets, hasPassed } = extractLetterContent(feedback)
+      const { greeting, intro, bullets, hasPassed } = parseLetter(feedback)
 
       const children: (Paragraph | Table)[] = []
 
