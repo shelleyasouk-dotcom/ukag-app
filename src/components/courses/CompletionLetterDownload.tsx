@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Download, Loader2 } from 'lucide-react'
 import {
-  Document, Packer, Paragraph, TextRun, ImageRun, AlignmentType,
+  Document, Packer, Paragraph, TextRun, AlignmentType,
   BorderStyle, convertInchesToTwip, LineRuleType, Table, TableRow,
   TableCell, WidthType, ShadingType,
 } from 'docx'
@@ -160,11 +160,6 @@ export function CompletionLetterDownload({
   async function downloadLetter() {
     setGenerating(true)
     try {
-      const logoResp = await fetch('/ukag-full.png')
-      const logoData = await logoResp.arrayBuffer()
-      const LOGO_W = convertInchesToTwip(1.6)
-      const LOGO_H = Math.round(LOGO_W * (827 / 2480))
-
       const formattedDate = new Date(assessmentDate).toLocaleDateString('en-GB', {
         day: 'numeric', month: 'long', year: 'numeric',
       })
@@ -177,65 +172,22 @@ export function CompletionLetterDownload({
 
       const children: (Paragraph | Table)[] = []
 
-      // ── Header: logo left, org right ──────────────────────────────
-      children.push(
-        new Table({
-          width: { size: CONTENT_W, type: WidthType.DXA },
-          columnWidths: [Math.round(CONTENT_W * 0.45), Math.round(CONTENT_W * 0.55)],
-          borders: {
-            top: { style: BorderStyle.NONE, size: 0 },
-            bottom: { style: BorderStyle.NONE, size: 0 },
-            left: { style: BorderStyle.NONE, size: 0 },
-            right: { style: BorderStyle.NONE, size: 0 },
-            insideH: { style: BorderStyle.NONE, size: 0 },
-            insideV: { style: BorderStyle.NONE, size: 0 },
-          },
-          rows: [
-            new TableRow({
-              children: [
-                new TableCell({
-                  width: { size: Math.round(CONTENT_W * 0.45), type: WidthType.DXA },
-                  borders: { top: { style: BorderStyle.NONE, size: 0 }, bottom: { style: BorderStyle.NONE, size: 0 }, left: { style: BorderStyle.NONE, size: 0 }, right: { style: BorderStyle.NONE, size: 0 } },
-                  children: [
-                    new Paragraph({
-                      alignment: AlignmentType.LEFT,
-                      spacing: { before: 0, after: 0 },
-                      children: [
-                        new ImageRun({
-                          data: logoData,
-                          type: 'png',
-                          transformation: { width: LOGO_W, height: LOGO_H },
-                        }),
-                      ],
-                    }),
-                  ],
-                }),
-                new TableCell({
-                  width: { size: Math.round(CONTENT_W * 0.55), type: WidthType.DXA },
-                  borders: { top: { style: BorderStyle.NONE, size: 0 }, bottom: { style: BorderStyle.NONE, size: 0 }, left: { style: BorderStyle.NONE, size: 0 }, right: { style: BorderStyle.NONE, size: 0 } },
-                  children: [
-                    new Paragraph({
-                      alignment: AlignmentType.RIGHT,
-                      spacing: { before: 0, after: dxa(3) },
-                      children: [new TextRun({ text: 'UK Academies of Gymnastics', font: 'Calibri', size: pt(11), bold: true, color: NAVY })],
-                    }),
-                    new Paragraph({
-                      alignment: AlignmentType.RIGHT,
-                      spacing: { before: 0, after: dxa(3) },
-                      children: [new TextRun({ text: 'www.ukacademyofgymnastics.com', font: 'Calibri', size: pt(9), color: MID })],
-                    }),
-                    new Paragraph({
-                      alignment: AlignmentType.RIGHT,
-                      spacing: { before: 0, after: 0 },
-                      children: [new TextRun({ text: formattedDate, font: 'Calibri', size: pt(10), color: MID, italics: true })],
-                    }),
-                  ],
-                }),
-              ],
-            }),
-          ],
-        })
-      )
+      // ── Header: text-only letterhead ─────────────────────────────
+      children.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 0, after: dxa(3) },
+        children: [new TextRun({ text: 'UK Academies of Gymnastics', font: 'Calibri', size: pt(16), bold: true, color: NAVY })],
+      }))
+      children.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 0, after: dxa(3) },
+        children: [new TextRun({ text: 'www.ukacademyofgymnastics.com', font: 'Calibri', size: pt(10), color: MID })],
+      }))
+      children.push(new Paragraph({
+        alignment: AlignmentType.RIGHT,
+        spacing: { before: 0, after: 0 },
+        children: [new TextRun({ text: formattedDate, font: 'Calibri', size: pt(10), color: MID, italics: true })],
+      }))
 
       children.push(spacer(6))
       children.push(rule(GOLD, 10))
