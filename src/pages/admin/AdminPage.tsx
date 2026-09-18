@@ -1058,7 +1058,7 @@ export function AdminPage() {
                   <div className="flex-1 min-w-0">
                     <div className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
                       {p.full_name || '—'}
-                      {p.is_super_admin && <Crown size={12} className="text-[#f4cc2c] flex-shrink-0" title="Super Admin" />}
+                      {p.is_super_admin && <Crown size={12} className="text-[#f4cc2c] flex-shrink-0" aria-label="Super Admin" />}
                     </div>
                     <div className="text-xs text-gray-500 truncate">{p.email}</div>
                   </div>
