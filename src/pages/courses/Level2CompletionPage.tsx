@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
 import { CertificateDownload } from '../../components/courses/CertificateDownload'
 import { CompletionLetterDownload } from '../../components/courses/CompletionLetterDownload'
+import { cleanLetterFeedback } from '../../lib/letterUtils'
 
 const COURSE_ID = 'level2_lead_v1'
 
@@ -272,7 +273,7 @@ export function Level2CompletionPage() {
             <div className="mb-3">
               <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Completion Letter</p>
               <div className="bg-white border border-green-100 rounded-lg p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                {letter.feedback}
+                {cleanLetterFeedback(letter.feedback)}
               </div>
             </div>
           )}
