@@ -16,24 +16,23 @@ interface CompletionLetterDownloadProps {
   areaLeadName?: string
   progressionAdvice?: string
   assessmentDate: string
+  location?: string
 }
 
 const NAVY = '0F1E3A'
 const GOLD = 'F5C518'
-const NAVY_LIGHT = '1a3260'
 const BLACK = '1A1A1A'
 const MID = '555F6E'
-const CELL_BG = 'F0F4FA'
+const LIGHT = 'F0F4FA'
 
 const pt = (n: number) => n * 2
 const dxa = (n: number) => n * 20
 
-// Page content width in twips (A4 - 1.1" each side = 8741)
 const CONTENT_W = 8741
 
-function rule(color = GOLD, thickness = 6) {
+function hRule(color = GOLD, thickness = 6) {
   return new Paragraph({
-    spacing: { before: 0, after: 0 },
+    spacing: { before: dxa(4), after: dxa(4) },
     border: { bottom: { style: BorderStyle.SINGLE, size: thickness, color, space: 1 } },
     children: [new TextRun('')],
   })
@@ -46,13 +45,20 @@ function spacer(pts = 8) {
   })
 }
 
-function body(text: string, opts: { bold?: boolean; italic?: boolean; color?: string; size?: number } = {}) {
+function sectionHeading(text: string) {
   return new Paragraph({
-    spacing: { before: dxa(5), after: dxa(5), line: dxa(14), lineRule: LineRuleType.EXACT },
+    spacing: { before: dxa(8), after: dxa(4) },
+    children: [new TextRun({ text, font: 'Calibri', size: pt(11), bold: true, color: BLACK })],
+  })
+}
+
+function bodyPara(text: string, opts: { bold?: boolean; color?: string; size?: number; italic?: boolean } = {}) {
+  return new Paragraph({
+    spacing: { before: dxa(3), after: dxa(3), line: dxa(14), lineRule: LineRuleType.EXACT },
     children: [new TextRun({
       text,
       font: 'Calibri',
-      size: pt(opts.size ?? 11),
+      size: pt(opts.size ?? 10.5),
       bold: opts.bold,
       italics: opts.italic,
       color: opts.color ?? BLACK,
@@ -60,40 +66,33 @@ function body(text: string, opts: { bold?: boolean; italic?: boolean; color?: st
   })
 }
 
-function competencyTable(bullets: string[]): Table {
+function infoTable(rows: [string, string][]): Table {
+  const labelW = Math.round(CONTENT_W * 0.32)
+  const valueW = CONTENT_W - labelW
   return new Table({
     width: { size: CONTENT_W, type: WidthType.DXA },
-    columnWidths: [CONTENT_W],
-    margins: { top: dxa(4), bottom: dxa(4), left: dxa(8), right: dxa(8) },
-    rows: bullets.map((line, i) =>
+    columnWidths: [labelW, valueW],
+    margins: { top: dxa(3), bottom: dxa(3), left: dxa(6), right: dxa(6) },
+    rows: rows.map(([label, value]) =>
       new TableRow({
         children: [
           new TableCell({
-            width: { size: CONTENT_W, type: WidthType.DXA },
-            borders: {
-              top: i === 0
-                ? { style: BorderStyle.SINGLE, size: 4, color: NAVY_LIGHT }
-                : { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
-              bottom: i === bullets.length - 1
-                ? { style: BorderStyle.SINGLE, size: 4, color: NAVY_LIGHT }
-                : { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
-              left: { style: BorderStyle.SINGLE, size: 12, color: GOLD },
-              right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
-            },
-            shading: { type: ShadingType.CLEAR, color: 'auto', fill: CELL_BG },
-            children: [
-              new Paragraph({
-                spacing: { before: dxa(3), after: dxa(3) },
-                children: [
-                  new TextRun({
-                    text: line.replace(/^[•\-]\s*/, ''),
-                    font: 'Calibri',
-                    size: pt(11),
-                    color: BLACK,
-                  }),
-                ],
-              }),
-            ],
+            width: { size: labelW, type: WidthType.DXA },
+            borders: noBorders(),
+            shading: { type: ShadingType.CLEAR, color: 'auto', fill: LIGHT },
+            children: [new Paragraph({
+              spacing: { before: dxa(3), after: dxa(3) },
+              children: [new TextRun({ text: label, font: 'Calibri', size: pt(10.5), bold: true, color: NAVY })],
+            })],
+          }),
+          new TableCell({
+            width: { size: valueW, type: WidthType.DXA },
+            borders: noBorders(),
+            shading: { type: ShadingType.CLEAR, color: 'auto', fill: LIGHT },
+            children: [new Paragraph({
+              spacing: { before: dxa(3), after: dxa(3) },
+              children: [new TextRun({ text: value, font: 'Calibri', size: pt(10.5), color: BLACK })],
+            })],
           }),
         ],
       })
@@ -101,23 +100,38 @@ function competencyTable(bullets: string[]): Table {
   })
 }
 
-function parseLetter(raw: string): { greeting: string; intro: string[]; bullets: string[]; hasPassed: boolean } {
+function noBorders() {
+  const none = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }
+  return { top: none, bottom: none, left: none, right: none }
+}
+
+function bulletList(items: string[]): Paragraph[] {
+  return items.map(item =>
+    new Paragraph({
+      spacing: { before: dxa(2), after: dxa(2), line: dxa(14), lineRule: LineRuleType.EXACT },
+      children: [new TextRun({
+        text: '• ' + item.replace(/^[•\-]\s*/, ''),
+        font: 'Calibri',
+        size: pt(10.5),
+        color: BLACK,
+      })],
+    })
+  )
+}
+
+function parseFeedback(raw: string): { intro: string[]; bullets: string[] } {
   const lines = cleanLetterFeedback(raw).split('\n').map(l => l.trim()).filter(Boolean)
-  let greeting = ''
   const intro: string[] = []
   const bullets: string[] = []
-  let hasPassed = false
   for (const line of lines) {
-    if (/^dear /i.test(line)) {
-      greeting = line
-    } else if (/^[•\-]\s/.test(line)) {
+    if (/^dear /i.test(line)) continue
+    if (/^[•\-]\s/.test(line)) {
       bullets.push(line)
-      if (/signed off/i.test(line)) hasPassed = true
     } else {
       intro.push(line)
     }
   }
-  return { greeting, intro, bullets, hasPassed }
+  return { intro, bullets }
 }
 
 export function CompletionLetterDownload({
@@ -129,6 +143,7 @@ export function CompletionLetterDownload({
   areaLeadName,
   progressionAdvice,
   assessmentDate,
+  location,
 }: CompletionLetterDownloadProps) {
   const [generating, setGenerating] = useState(false)
 
@@ -139,160 +154,161 @@ export function CompletionLetterDownload({
         day: 'numeric', month: 'long', year: 'numeric',
       })
 
-      const signerLine = leadCoachName && areaLeadName
-        ? `${leadCoachName} (Lead Coach) & ${areaLeadName} (Area Lead)`
-        : (assessorName ?? null)
+      const assessedBy = leadCoachName
+        ? `${leadCoachName}${areaLeadName ? ` (Lead Coach) & ${areaLeadName} (Area Lead)` : ''}`
+        : (assessorName ?? 'UKAG Assessor')
 
-      const { greeting, intro, bullets, hasPassed } = parseLetter(feedback)
+      const isLevel1 = /level 1/i.test(awardTitle)
+      const courseFullName = isLevel1
+        ? 'UKAG Level 1 Gymnastics Coaching Award'
+        : 'UKAG Level 2 Lead Coach Award in Gymnastics'
+      const assessmentType = 'Blended (Online and Practical)'
+      const awardConfirmText = isLevel1
+        ? 'This confirms that the above candidate has met the required Level 1 gymnastics coaching competencies and is approved to support gymnastics sessions under the supervision of a qualified Lead Coach.'
+        : 'This confirms that the above candidate has met the required Level 2 gymnastics coaching competencies and is approved to lead gymnastics sessions as a qualified Lead Coach.'
+      const outcomeText = isLevel1
+        ? `${coachName} has successfully completed both the theoretical and practical components of the UKAG Level 1 Gymnastics Coaching Award.`
+        : `${coachName} has successfully completed both the theoretical and practical components of the UKAG Level 2 Lead Coach Award in Gymnastics.`
+
+      const { bullets } = parseFeedback(feedback)
+
+      const competencyLabels = bullets.length > 0 ? bullets : [
+        'Session Preparation and Organisation',
+        'Warm Up and Stretch Delivery',
+        'Floor Skill Coaching',
+        'Apparatus Coaching',
+        'Supporting Participants Safely',
+        'Communication and Coaching Behaviour',
+        'Safety Awareness and Risk Management',
+      ]
 
       const children: (Paragraph | Table)[] = []
 
-      // ── Header: text-only letterhead ─────────────────────────────
+      // ── Header ────────────────────────────────────────────────────
       children.push(new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { before: 0, after: dxa(3) },
-        children: [new TextRun({ text: 'UK Academies of Gymnastics', font: 'Calibri', size: pt(16), bold: true, color: NAVY })],
-      }))
-      children.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { before: 0, after: dxa(3) },
-        children: [new TextRun({ text: 'www.ukacademyofgymnastics.com', font: 'Calibri', size: pt(10), color: MID })],
-      }))
-      children.push(new Paragraph({
-        alignment: AlignmentType.RIGHT,
-        spacing: { before: 0, after: 0 },
-        children: [new TextRun({ text: formattedDate, font: 'Calibri', size: pt(10), color: MID, italics: true })],
-      }))
-
-      children.push(spacer(6))
-      children.push(rule(GOLD, 10))
-      children.push(spacer(12))
-
-      // ── Award title block ─────────────────────────────────────────
-      children.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { before: 0, after: dxa(3) },
-        children: [new TextRun({ text: 'CERTIFICATE OF COMPLETION', font: 'Calibri', size: pt(13), bold: true, color: NAVY, allCaps: true })],
-      }))
-      children.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { before: 0, after: 0 },
-        children: [new TextRun({ text: awardTitle, font: 'Calibri', size: pt(12), color: NAVY_LIGHT, italics: true })],
-      }))
-
-      children.push(spacer(12))
-      children.push(rule(NAVY, 4))
-      children.push(spacer(12))
-
-      // ── Greeting ─────────────────────────────────────────────────
-      if (greeting) {
-        children.push(body(greeting))
-        children.push(spacer(6))
-      }
-
-      // ── Intro paragraphs ─────────────────────────────────────────
-      for (const line of intro) {
-        children.push(body(line))
-      }
-
-      // ── Competency table ─────────────────────────────────────────
-      if (bullets.length > 0) {
-        children.push(spacer(8))
-        children.push(competencyTable(bullets))
-      }
-
-      // ── Assessment decision ───────────────────────────────────────
-      if (hasPassed) {
-        children.push(spacer(10))
-        children.push(new Paragraph({
-          spacing: { before: 0, after: 0 },
-          children: [
-            new TextRun({ text: 'Assessment Decision:  ', font: 'Calibri', size: pt(11), bold: true, color: NAVY }),
-            new TextRun({ text: 'Competent — all sections successfully completed.', font: 'Calibri', size: pt(11), color: BLACK }),
-          ],
-        }))
-      }
-
-      // ── Progression advice ────────────────────────────────────────
-      if (progressionAdvice?.trim()) {
-        children.push(spacer(10))
-        children.push(new Paragraph({
-          spacing: { before: 0, after: dxa(4) },
-          children: [new TextRun({ text: 'Progression Advice', font: 'Calibri', size: pt(11), bold: true, color: NAVY })],
-        }))
-        for (const line of progressionAdvice.split('\n').map(l => l.trim()).filter(Boolean)) {
-          children.push(body(line))
-        }
-      }
-
-      // ── Disclaimer ────────────────────────────────────────────────
-      children.push(spacer(12))
-      children.push(new Paragraph({
-        spacing: { before: 0, after: 0, line: dxa(13), lineRule: LineRuleType.EXACT },
+        spacing: { before: 0, after: dxa(2) },
         children: [new TextRun({
-          text: 'This letter confirms completion of the practical assessment component. Full award certification is subject to completion of all required theory modules, safeguarding training, and any additional qualification requirements.',
+          text: 'UK ACADEMIES OF GYMNASTICS',
+          font: 'Montserrat, Calibri',
+          size: pt(22),
+          bold: true,
+          color: NAVY,
+        })],
+      }))
+      children.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 0, after: 0 },
+        children: [new TextRun({
+          text: `${awardTitle} – Assessment Outcome`,
           font: 'Calibri',
-          size: pt(9),
-          color: MID,
-          italics: true,
+          size: pt(11),
+          bold: true,
+          color: NAVY,
         })],
       }))
 
-      // ── Sign-off ──────────────────────────────────────────────────
-      children.push(spacer(14))
-      children.push(rule(NAVY, 4))
-      children.push(spacer(12))
+      children.push(spacer(6))
+      children.push(hRule(GOLD, 8))
+      children.push(spacer(6))
 
-      children.push(body('Yours sincerely,'))
-      children.push(spacer(16))
+      // ── Info block ────────────────────────────────────────────────
+      const infoRows: [string, string][] = [
+        ['Candidate:', coachName],
+        ['Course:', courseFullName],
+        ['Assessment Type:', assessmentType],
+        ...(location ? [['Location:', location] as [string, string]] : []),
+        ['Date Assessed:', formattedDate],
+        ['Assessed By:', assessedBy],
+        ['Verified By:', 'Shelley Harrison, Director of Coaching'],
+      ]
+      children.push(infoTable(infoRows))
 
+      children.push(spacer(6))
+      children.push(hRule(MID, 4))
+
+      // ── Assessment Summary ────────────────────────────────────────
+      children.push(sectionHeading('Assessment Summary'))
+      children.push(bodyPara(
+        `The candidate has been assessed against the UK Academies of Gymnastics ${isLevel1 ? 'Level 1' : 'Level 2'} Coaching Framework and has demonstrated competence across all required areas, including:`
+      ))
+      children.push(spacer(4))
+      children.push(...bulletList(competencyLabels))
+
+      children.push(spacer(4))
+      children.push(hRule(MID, 4))
+
+      // ── Outcome ───────────────────────────────────────────────────
+      children.push(sectionHeading('Outcome'))
+      children.push(bodyPara(outcomeText))
+      children.push(spacer(4))
       children.push(new Paragraph({
-        spacing: { before: 0, after: dxa(2) },
-        children: [new TextRun({ text: 'Shelley Wood', font: 'Calibri', size: pt(12), bold: true, color: NAVY })],
-      }))
-      children.push(new Paragraph({
-        spacing: { before: 0, after: dxa(2) },
-        children: [new TextRun({ text: 'Director of Coaching', font: 'Calibri', size: pt(11), color: BLACK })],
-      }))
-      children.push(new Paragraph({
-        spacing: { before: 0, after: dxa(4) },
-        children: [new TextRun({ text: 'UK Academies of Gymnastics', font: 'Calibri', size: pt(11), color: BLACK })],
+        spacing: { before: dxa(2), after: dxa(2) },
+        children: [new TextRun({ text: 'Result: PASS', font: 'Calibri', size: pt(10.5), bold: true, color: NAVY })],
       }))
 
-      if (signerLine) {
-        children.push(new Paragraph({
-          spacing: { before: 0, after: dxa(2) },
-          children: [new TextRun({ text: `Assessed by: ${signerLine}`, font: 'Calibri', size: pt(10), color: MID, italics: true })],
-        }))
+      // ── Progression advice ────────────────────────────────────────
+      if (progressionAdvice?.trim()) {
+        children.push(spacer(4))
+        children.push(hRule(MID, 4))
+        children.push(sectionHeading('Progression Advice'))
+        for (const line of progressionAdvice.split('\n').map(l => l.trim()).filter(Boolean)) {
+          children.push(bodyPara(line))
+        }
       }
 
-      // ── Footer ────────────────────────────────────────────────────
-      children.push(spacer(14))
-      children.push(rule(GOLD, 8))
+      children.push(spacer(4))
+      children.push(hRule(MID, 4))
+
+      // ── Award Confirmation ────────────────────────────────────────
+      children.push(sectionHeading('Award Confirmation'))
+      children.push(bodyPara(awardConfirmText))
+
+      children.push(spacer(4))
+      children.push(hRule(MID, 4))
+
+      // ── Authorised By ─────────────────────────────────────────────
+      children.push(sectionHeading('Authorised By'))
+      children.push(bodyPara('Shelley Harrison'))
+      children.push(bodyPara('Director of Coaching'))
+      children.push(spacer(20))
+      children.push(new Paragraph({
+        spacing: { before: 0, after: dxa(2) },
+        border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: BLACK, space: 1 } },
+        children: [new TextRun({ text: 'Signature:', font: 'Calibri', size: pt(10.5), color: MID })],
+      }))
       children.push(spacer(6))
+      children.push(bodyPara(`Date: ${formattedDate}`))
+
+      // ── Footer ────────────────────────────────────────────────────
+      children.push(spacer(10))
+      children.push(hRule(GOLD, 6))
+      children.push(spacer(4))
       children.push(new Paragraph({
         alignment: AlignmentType.CENTER,
         spacing: { before: 0, after: 0 },
-        children: [
-          new TextRun({ text: 'UK Academies of Gymnastics  ·  ', font: 'Calibri', size: pt(9), color: MID }),
-          new TextRun({ text: 'www.ukacademyofgymnastics.com', font: 'Calibri', size: pt(9), color: NAVY }),
-        ],
+        children: [new TextRun({
+          text: 'Registered in England and Wales 13798243: UK Academies of Gymnastics. Registered address 34 Clifton Road, Salisbury, SP2 7BS',
+          font: 'Calibri',
+          size: pt(8),
+          color: MID,
+        })],
       }))
 
       const doc = new Document({
         styles: {
           default: {
-            document: { run: { font: 'Calibri', size: pt(11), color: BLACK } },
+            document: { run: { font: 'Calibri', size: pt(10.5), color: BLACK } },
           },
         },
         sections: [{
           properties: {
             page: {
               margin: {
-                top: convertInchesToTwip(0.85),
+                top: convertInchesToTwip(0.9),
                 bottom: convertInchesToTwip(0.75),
-                left: convertInchesToTwip(1.1),
-                right: convertInchesToTwip(1.1),
+                left: convertInchesToTwip(1.0),
+                right: convertInchesToTwip(1.0),
               },
             },
           },
@@ -304,7 +320,7 @@ export function CompletionLetterDownload({
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `UKAG_Completion_Letter_${coachName.replace(/\s+/g, '_')}.docx`
+      a.download = `UKAG_${isLevel1 ? 'L1' : 'L2'}_Assessment_Outcome_${coachName.replace(/\s+/g, '_')}.docx`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -323,7 +339,7 @@ export function CompletionLetterDownload({
       style={{ fontFamily: 'Montserrat, sans-serif' }}
     >
       {generating ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-      {generating ? 'Generating…' : 'Download Completion Letter (.docx)'}
+      {generating ? 'Generating…' : 'Download Assessment Outcome (.docx)'}
     </button>
   )
 }
