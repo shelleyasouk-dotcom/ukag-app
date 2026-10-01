@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Loader2, CheckCircle, Award, BookOpen,
   Pencil, Check, X, KeyRound, ExternalLink, ShieldCheck,
-  PlayCircle, ChevronRight, Crown,
+  PlayCircle, ChevronRight, Crown, Upload, Trash2, Download,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -71,10 +71,13 @@ interface CertRow { id: string; course_id: string; completed_at: string }
 interface L1Letter { course_id: string; outcome: string; feedback: string | null; lead_coach_name: string | null; area_lead_name: string | null; completed_at: string }
 interface L2Letter { course_id: string; outcome: string; feedback: string | null; progression_advice: string | null; assessor_name: string | null; completed_at: string }
 interface TraineeAuth { id: string; status: string; authorisation_date: string; expiry_date: string | null; organisation: string | null; safeguarding_confirmed: boolean; dbs_confirmed: boolean; first_aid_confirmed: boolean; authorised_by: string }
+interface CandidateDoc { id: string; course_key: string; document_type: string; file_name: string; storage_path: string; uploaded_at: string }
+
+const COACHING_COURSE_KEYS = ['level1_assistant_v1', 'level2_lead_v1']
 
 export function AdminUserDetailPage() {
   const { userId } = useParams<{ userId: string }>()
-  useAuth()
+  const { user: authUser } = useAuth()
   const navigate = useNavigate()
 
   const [user, setUser] = useState<ProfileRow | null>(null)
@@ -84,7 +87,11 @@ export function AdminUserDetailPage() {
   const [l1Letters, setL1Letters] = useState<L1Letter[]>([])
   const [l2Letters, setL2Letters] = useState<L2Letter[]>([])
   const [traineeAuth, setTraineeAuth] = useState<TraineeAuth | null>(null)
+  const [candidateDocs, setCandidateDocs] = useState<CandidateDoc[]>([])
   const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
 
   // Edit state
   const [editing, setEditing] = useState(false)
@@ -103,7 +110,7 @@ export function AdminUserDetailPage() {
     if (!userId) return
     async function load() {
       setLoading(true)
-      const [userRes, enrollRes, progRes, certRes, l1Res, l2Res, authRes] = await Promise.allSettled([
+      const [userRes, enrollRes, progRes, certRes, l1Res, l2Res, authRes, docsRes] = await Promise.allSettled([
         supabase.from('profiles').select('id, full_name, email, phone, role, organisation_name, is_super_admin').eq('id', userId).single(),
         supabase.from('course_enrollments').select('course_id, enrolled_at').eq('user_id', userId),
         supabase.from('course_progress').select('course_id, module_id').eq('user_id', userId),
@@ -111,6 +118,7 @@ export function AdminUserDetailPage() {
         supabase.from('level1_completion_letters').select('course_id, outcome, feedback, lead_coach_name, area_lead_name, completed_at').eq('user_id', userId),
         supabase.from('level2_completion_letters').select('course_id, outcome, feedback, progression_advice, assessor_name, completed_at').eq('user_id', userId),
         supabase.from('trainee_authorisations').select('id, status, authorisation_date, expiry_date, organisation, safeguarding_confirmed, dbs_confirmed, first_aid_confirmed, authorised_by').eq('user_id', userId).maybeSingle(),
+        supabase.from('candidate_documents').select('id, course_key, document_type, file_name, storage_path, uploaded_at').eq('user_id', userId),
       ])
 
       if (userRes.status === 'fulfilled' && userRes.value.data) {
@@ -127,6 +135,7 @@ export function AdminUserDetailPage() {
       if (l1Res.status === 'fulfilled') setL1Letters(l1Res.value.data ?? [])
       if (l2Res.status === 'fulfilled') setL2Letters(l2Res.value.data ?? [])
       if (authRes.status === 'fulfilled') setTraineeAuth(authRes.value.data ?? null)
+      if (docsRes.status === 'fulfilled') setCandidateDocs(docsRes.value.data ?? [])
       setLoading(false)
     }
     load()
@@ -146,6 +155,61 @@ export function AdminUserDetailPage() {
     setSaveOk(true)
     setEditing(false)
     setTimeout(() => setSaveOk(false), 2500)
+  }
+
+  async function uploadDocument(courseKey: string, docType: 'certificate' | 'letter', file: File) {
+    if (!userId || !authUser) return
+    const key = `${courseKey}:${docType}`
+    setUploading(key)
+    try {
+      const ext = file.name.split('.').pop() ?? 'pdf'
+      const storagePath = `${userId}/${courseKey}/${docType}.${ext}`
+      const { error: uploadErr } = await supabase.storage
+        .from('candidate-docs')
+        .upload(storagePath, file, { upsert: true, contentType: file.type })
+      if (uploadErr) { console.error(uploadErr); return }
+      await supabase.from('candidate_documents').upsert({
+        user_id: userId,
+        course_key: courseKey,
+        document_type: docType,
+        file_name: file.name,
+        storage_path: storagePath,
+        uploaded_by: authUser.id,
+        uploaded_at: new Date().toISOString(),
+      }, { onConflict: 'user_id,course_key,document_type' })
+      const { data: fresh } = await supabase.from('candidate_documents')
+        .select('id, course_key, document_type, file_name, storage_path, uploaded_at')
+        .eq('user_id', userId)
+      setCandidateDocs(fresh ?? [])
+    } finally {
+      setUploading(null)
+    }
+  }
+
+  async function deleteDocument(doc: CandidateDoc) {
+    setDeleting(doc.id)
+    try {
+      await supabase.storage.from('candidate-docs').remove([doc.storage_path])
+      await supabase.from('candidate_documents').delete().eq('id', doc.id)
+      setCandidateDocs(prev => prev.filter(d => d.id !== doc.id))
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  async function downloadDocument(doc: CandidateDoc) {
+    const { data } = await supabase.storage
+      .from('candidate-docs')
+      .createSignedUrl(doc.storage_path, 3600)
+    if (data?.signedUrl) {
+      const a = document.createElement('a')
+      a.href = data.signedUrl
+      a.download = doc.file_name
+      a.target = '_blank'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    }
   }
 
   async function sendPasswordReset() {
@@ -389,7 +453,8 @@ export function AdminUserDetailPage() {
                           Completion Page
                         </Link>
                       )}
-                      {cert && (
+                      {/* Short course certificate — auto-generated, only for non-coaching courses */}
+                      {cert && !COACHING_COURSE_KEYS.includes(courseId) && (
                         <CertificateDownload
                           participantName={displayName}
                           courseTitle={courseEntry?.title ?? courseId}
@@ -399,10 +464,94 @@ export function AdminUserDetailPage() {
                           userId={user.id}
                         />
                       )}
-                      {letterProps && (
+                      {/* Admin DOCX letter generator — still available for admin to produce a draft */}
+                      {letterProps && !COACHING_COURSE_KEYS.includes(courseId) && (
+                        <CompletionLetterDownload {...letterProps} />
+                      )}
+                      {/* Coaching award letter draft for admin use */}
+                      {letterProps && COACHING_COURSE_KEYS.includes(courseId) && (
                         <CompletionLetterDownload {...letterProps} />
                       )}
                     </div>
+
+                    {/* Official document upload — coaching awards only */}
+                    {COACHING_COURSE_KEYS.includes(courseId) && (
+                      <div className="px-4 pb-4 border-t border-gray-100 pt-3">
+                        <p className="text-xs font-black text-gray-700 mb-3 uppercase tracking-wide" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                          Official Documents
+                        </p>
+                        <div className="space-y-2">
+                          {(['certificate', 'letter'] as const).map(docType => {
+                            const existing = candidateDocs.find(d => d.course_key === courseId && d.document_type === docType)
+                            const uploadKey = `${courseId}:${docType}`
+                            const isUploading = uploading === uploadKey
+                            const isDeleting = deleting === existing?.id
+                            const label = docType === 'certificate' ? 'Certificate' : 'Assessment Letter'
+                            const refKey = uploadKey
+                            return (
+                              <div key={docType} className="flex items-center gap-3">
+                                <span className="text-xs text-gray-500 w-28 shrink-0">{label}</span>
+                                {existing ? (
+                                  <div className="flex items-center gap-2 flex-1">
+                                    <button
+                                      onClick={() => downloadDocument(existing)}
+                                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 transition-colors"
+                                    >
+                                      <Download size={11} />
+                                      {existing.file_name.length > 24 ? existing.file_name.slice(0, 24) + '…' : existing.file_name}
+                                    </button>
+                                    <button
+                                      onClick={() => deleteDocument(existing)}
+                                      disabled={isDeleting}
+                                      className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                                    >
+                                      {isDeleting ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+                                    </button>
+                                    <label className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-100 cursor-pointer transition-colors">
+                                      <Upload size={11} /> Replace
+                                      <input
+                                        ref={el => { fileInputRefs.current[refKey] = el }}
+                                        type="file"
+                                        accept=".pdf,.docx"
+                                        className="hidden"
+                                        onChange={e => {
+                                          const f = e.target.files?.[0]
+                                          if (f) uploadDocument(courseId, docType, f)
+                                          e.target.value = ''
+                                        }}
+                                      />
+                                    </label>
+                                  </div>
+                                ) : (
+                                  <label className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-dashed cursor-pointer transition-colors ${
+                                    isUploading
+                                      ? 'border-blue-300 text-blue-400 bg-blue-50'
+                                      : 'border-gray-300 text-gray-500 hover:border-[#1e52a4] hover:text-[#1e52a4] hover:bg-blue-50'
+                                  }`}>
+                                    {isUploading
+                                      ? <><Loader2 size={11} className="animate-spin" /> Uploading…</>
+                                      : <><Upload size={11} /> Upload {label} PDF</>
+                                    }
+                                    <input
+                                      ref={el => { fileInputRefs.current[refKey] = el }}
+                                      type="file"
+                                      accept=".pdf,.docx"
+                                      className="hidden"
+                                      disabled={isUploading}
+                                      onChange={e => {
+                                        const f = e.target.files?.[0]
+                                        if (f) uploadDocument(courseId, docType, f)
+                                        e.target.value = ''
+                                      }}
+                                    />
+                                  </label>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               })}

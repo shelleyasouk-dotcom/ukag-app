@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Loader2, CheckCircle, Award } from 'lucide-react'
+import { ArrowLeft, Loader2, CheckCircle, Award, Download, FileText } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Layout } from '../../components/layout/Layout'
-import { CertificateDownload } from '../../components/courses/CertificateDownload'
-import { CompletionLetterDownload } from '../../components/courses/CompletionLetterDownload'
 import { cleanLetterFeedback } from '../../lib/letterUtils'
 
 const COURSE_ID = 'level2_lead_v1'
@@ -19,9 +17,12 @@ interface CompletionLetter {
   completed_at: string
 }
 
-interface Certificate {
+interface CandidateDoc {
   id: string
-  completed_at: string
+  document_type: string
+  file_name: string
+  storage_path: string
+  uploaded_at: string
 }
 
 export function Level2CompletionPage() {
@@ -31,10 +32,11 @@ export function Level2CompletionPage() {
   const isAssessorView = !!candidateId
 
   const [letter, setLetter] = useState<CompletionLetter | null>(null)
-  const [certificate, setCertificate] = useState<Certificate | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [candidateName, setCandidateName] = useState('')
+  const [candidateDocs, setCandidateDocs] = useState<CandidateDoc[]>([])
+  const [downloadingDoc, setDownloadingDoc] = useState<string | null>(null)
 
   // Summary stats
   const [modulesCount, setModulesCount] = useState(0)
@@ -82,16 +84,15 @@ export function Level2CompletionPage() {
       }
     } catch { /* ignore */ }
 
-    // Load certificate
+    // Load candidate documents
     try {
-      const { data: cert } = await supabase
-        .from('course_certificates')
-        .select('id, completed_at')
+      const { data: docs } = await supabase
+        .from('candidate_documents')
+        .select('id, document_type, file_name, storage_path, uploaded_at')
         .eq('user_id', effectiveUserId)
-        .eq('course_id', COURSE_ID)
-        .maybeSingle()
-      setCertificate(cert)
-    } catch { /* ignore */ }
+        .eq('course_key', COURSE_ID)
+      setCandidateDocs(docs ?? [])
+    } catch { /* table may not exist yet */ }
 
     // Load summary stats
     try {
@@ -151,32 +152,33 @@ export function Level2CompletionPage() {
         .single()
       setLetter(newLetter)
 
-      // Issue certificate if outcome is pass
-      if (outcome === 'pass') {
-        const { data: existing } = await supabase
-          .from('course_certificates')
-          .select('id')
-          .eq('user_id', effectiveUserId)
-          .eq('course_id', COURSE_ID)
-          .maybeSingle()
-        if (!existing) {
-          const { data: cert } = await supabase
-            .from('course_certificates')
-            .insert({
-              user_id: effectiveUserId,
-              course_id: COURSE_ID,
-              completed_at: now,
-            })
-            .select('id, completed_at')
-            .single()
-          setCertificate(cert)
-        }
-      }
     } catch { /* ignore */ }
     setSaving(false)
   }
 
-  const displayName = isAssessorView ? candidateName : (profile?.full_name ?? profile?.email ?? '')
+  async function downloadDoc(doc: CandidateDoc) {
+    setDownloadingDoc(doc.id)
+    try {
+      const { data } = await supabase.storage
+        .from('candidate-docs')
+        .createSignedUrl(doc.storage_path, 3600)
+      if (data?.signedUrl) {
+        const a = document.createElement('a')
+        a.href = data.signedUrl
+        a.download = doc.file_name
+        a.target = '_blank'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+      }
+    } finally {
+      setDownloadingDoc(null)
+    }
+  }
+
+  const certDoc = candidateDocs.find(d => d.document_type === 'certificate')
+  const letterDoc = candidateDocs.find(d => d.document_type === 'letter')
+  const hasOfficialDocs = certDoc || letterDoc
 
   if (loading) {
     return (
@@ -239,21 +241,7 @@ export function Level2CompletionPage() {
         </div>
       </div>
 
-      {/* Certificate — show if issued */}
-      {certificate && !isAssessorView && (
-        <div className="mb-4">
-          <CertificateDownload
-            participantName={displayName}
-            courseTitle="UKAG Level 2 Lead Coach Award"
-            completedAt={certificate.completed_at}
-            certificateId={certificate.id}
-            courseId={COURSE_ID}
-            userId={profile?.id}
-          />
-        </div>
-      )}
-
-      {/* Completion letter */}
+      {/* Assessment feedback (visible to candidate and assessor once signed off) */}
       {letter && (
         <div className={`rounded-xl border p-5 mb-4 ${
           letter.outcome === 'pass' ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'
@@ -271,37 +259,76 @@ export function Level2CompletionPage() {
           </div>
           {letter.feedback && (
             <div className="mb-3">
-              <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Completion Letter</p>
+              <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Assessment Feedback</p>
               <div className="bg-white border border-green-100 rounded-lg p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
                 {cleanLetterFeedback(letter.feedback)}
               </div>
             </div>
           )}
           {letter.progression_advice && (
-            <div className="mb-3">
+            <div>
               <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Progression Advice</p>
               <p className="text-sm text-gray-700 leading-relaxed">{letter.progression_advice}</p>
             </div>
           )}
-          {letter.feedback && (
-            <CompletionLetterDownload
-              coachName={displayName}
-              awardTitle="Level 2 Lead Coach Award in Gymnastics"
-              feedback={letter.feedback}
-              assessorName={letter.assessor_name ?? undefined}
-              progressionAdvice={letter.progression_advice ?? undefined}
-              assessmentDate={letter.completed_at}
-            />
-          )}
         </div>
       )}
 
-      {/* Awaiting sign-off message for candidate */}
+      {/* Official documents — uploaded by admin */}
+      {!isAssessorView && hasOfficialDocs && (
+        <div className="rounded-xl border border-[#0F1E3A]/20 bg-[#0F1E3A]/5 p-5 mb-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Award size={20} className="text-[#0F1E3A]" />
+            <h2 className="font-black text-[#0F1E3A]" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              Your Official Documents
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {certDoc && (
+              <button
+                onClick={() => downloadDoc(certDoc)}
+                disabled={downloadingDoc === certDoc.id}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white bg-[#0F1E3A] hover:bg-[#1a3260] disabled:opacity-50 transition-colors"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                {downloadingDoc === certDoc.id ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+                Download Certificate
+              </button>
+            )}
+            {letterDoc && (
+              <button
+                onClick={() => downloadDoc(letterDoc)}
+                disabled={downloadingDoc === letterDoc.id}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white bg-[#1e52a4] hover:bg-[#163d80] disabled:opacity-50 transition-colors"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                {downloadingDoc === letterDoc.id ? <Loader2 size={15} className="animate-spin" /> : <FileText size={15} />}
+                Download Assessment Letter
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Awaiting official docs */}
+      {!isAssessorView && letter && letter.outcome === 'pass' && !hasOfficialDocs && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-4 text-center">
+          <Loader2 size={22} className="text-amber-400 mx-auto mb-2" />
+          <p className="font-bold text-amber-800" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            Awaiting Your Official Documents
+          </p>
+          <p className="text-sm text-amber-700 mt-1">
+            You will receive an email once your certificate and assessment letter are ready to download. This usually happens within a few working days of your portfolio being signed off.
+          </p>
+        </div>
+      )}
+
+      {/* Not yet complete */}
       {!isAssessorView && !letter && (
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-4 text-center">
           <Loader2 size={24} className="text-gray-400 mx-auto mb-2" />
           <p className="font-bold text-gray-700" style={{ fontFamily: 'Montserrat, sans-serif' }}>Practical Portfolio Not Yet Complete</p>
-          <p className="text-sm text-gray-500 mt-1">Your completion letter and certificate will be issued automatically once your assessor has signed off all 6 weekly observations and the final declaration in your practical portfolio.</p>
+          <p className="text-sm text-gray-500 mt-1">Your certificate and assessment letter will be issued once your assessor has completed the final sign-off and your coordinator has reviewed your portfolio.</p>
         </div>
       )}
 
