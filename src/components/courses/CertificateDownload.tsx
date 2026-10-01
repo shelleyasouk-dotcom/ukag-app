@@ -13,11 +13,10 @@ interface Props {
   userId?: string
 }
 
-export function CertificateDownload({ participantName, courseTitle, completedAt, certificateId, issuedBy, courseId, userId }: Props) {
+export function CertificateDownload({ participantName, courseTitle, completedAt, certificateId: _certificateId, issuedBy, courseId, userId }: Props) {
   const certRef = useRef<HTMLDivElement>(null)
   const [downloading, setDownloading] = useState(false)
 
-  // Feedback state
   const [feedbackDone, setFeedbackDone] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [rating, setRating] = useState(0)
@@ -37,11 +36,15 @@ export function CertificateDownload({ participantName, courseTitle, completedAt,
       .then(({ data }) => { if (data) setFeedbackDone(true) })
   }, [courseId, userId])
 
-  const certNumber = `UKAG-${certificateId.slice(0, 8).toUpperCase()}`
   const dateStr = new Date(completedAt).toLocaleDateString('en-GB', {
-    day: 'numeric', month: 'long', year: 'numeric',
+    day: '2-digit', month: '2-digit', year: '2-digit',
   })
-  const issuerName = issuedBy ?? 'UK Academies of Gymnastics'
+  const signerName = issuedBy ?? 'Shelley Harrison'
+
+  // Derive the coaching level and role text from courseTitle
+  const isLevel1 = /level 1/i.test(courseTitle)
+  const coachingRole = 'Gymnastics Coach'
+  const levelText = isLevel1 ? 'Level 1' : 'Level 2'
 
   async function download() {
     if (!certRef.current) return
@@ -58,7 +61,7 @@ export function CertificateDownload({ participantName, courseTitle, completedAt,
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `${certNumber}.png`
+        a.download = `UKAG_Certificate_${participantName.replace(/\s+/g, '_')}.png`
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
@@ -91,7 +94,6 @@ export function CertificateDownload({ participantName, courseTitle, completedAt,
   return (
     <>
       <div className="flex flex-col gap-3">
-        {/* Download button row */}
         <button
           onClick={download}
           disabled={downloading}
@@ -102,7 +104,6 @@ export function CertificateDownload({ participantName, courseTitle, completedAt,
           {downloading ? 'Generating…' : 'Download Certificate'}
         </button>
 
-        {/* Feedback prompt — only when courseId + userId provided */}
         {courseId && userId && (
           feedbackDone ? (
             <p className="text-xs text-green-700 font-semibold flex items-center gap-1">
@@ -114,8 +115,6 @@ export function CertificateDownload({ participantName, courseTitle, completedAt,
               <p className="text-xs font-black text-gray-800 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                 How was this course?
               </p>
-
-              {/* Star rating */}
               <div className="flex gap-1 mb-3">
                 {[1, 2, 3, 4, 5].map(n => (
                   <button
@@ -130,7 +129,6 @@ export function CertificateDownload({ participantName, courseTitle, completedAt,
                   </button>
                 ))}
               </div>
-
               <label className="block text-xs font-semibold text-gray-700 mb-1">What did you enjoy most?</label>
               <textarea
                 value={enjoyed}
@@ -139,7 +137,6 @@ export function CertificateDownload({ participantName, courseTitle, completedAt,
                 className="w-full text-xs border border-blue-200 rounded-lg px-3 py-2 mb-3 resize-none focus:outline-none focus:border-blue-400 bg-white"
                 placeholder="What worked well for you…"
               />
-
               <label className="block text-xs font-semibold text-gray-700 mb-1">Any suggestions for improvement?</label>
               <textarea
                 value={suggestions}
@@ -148,7 +145,6 @@ export function CertificateDownload({ participantName, courseTitle, completedAt,
                 className="w-full text-xs border border-blue-200 rounded-lg px-3 py-2 mb-3 resize-none focus:outline-none focus:border-blue-400 bg-white"
                 placeholder="Anything you'd change or add…"
               />
-
               <div className="flex items-center gap-2">
                 <button
                   onClick={submitFeedback}
@@ -158,10 +154,7 @@ export function CertificateDownload({ participantName, courseTitle, completedAt,
                 >
                   {submitting ? 'Sending…' : 'Submit Feedback'}
                 </button>
-                <button
-                  onClick={() => setShowForm(false)}
-                  className="text-xs text-gray-500 hover:text-gray-700"
-                >
+                <button onClick={() => setShowForm(false)} className="text-xs text-gray-500 hover:text-gray-700">
                   Cancel
                 </button>
               </div>
@@ -185,242 +178,200 @@ export function CertificateDownload({ participantName, courseTitle, completedAt,
           style={{
             width: '1400px',
             height: '990px',
-            backgroundColor: '#f8f6f0',
+            backgroundColor: '#ffffff',
             fontFamily: 'Georgia, "Times New Roman", serif',
             position: 'relative',
             overflow: 'hidden',
+            boxSizing: 'border-box',
           }}
         >
-          {/* Navy background band top */}
+          {/* Outer gold border (double frame effect like the PDF) */}
           <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0, height: '180px',
-            backgroundColor: '#0f172a',
+            position: 'absolute', inset: '20px',
+            border: '3px solid #D4AF37',
+            boxSizing: 'border-box',
+          }} />
+          <div style={{
+            position: 'absolute', inset: '28px',
+            border: '1px solid #D4AF37',
+            boxSizing: 'border-box',
           }} />
 
-          {/* Gold accent stripe */}
-          <div style={{
-            position: 'absolute', top: '180px', left: 0, right: 0, height: '8px',
-            background: 'linear-gradient(to right, #1e52a4 33%, #f4cc2c 33% 66%, #ef462c 66%)',
-          }} />
+          {/* Gold ribbon / bow in top-left corner */}
+          <svg
+            style={{ position: 'absolute', top: '20px', left: '20px', width: '120px', height: '120px' }}
+            viewBox="0 0 120 120"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Ribbon strips */}
+            <polygon points="0,0 120,0 0,120" fill="#D4AF37" opacity="0.9" />
+            <polygon points="0,0 100,0 0,100" fill="#F5C518" opacity="0.7" />
+            <polygon points="0,0 70,0 0,70" fill="#D4AF37" opacity="0.5" />
+          </svg>
 
-          {/* Watermark crest area */}
+          {/* Watermark text behind content */}
           <div style={{
-            position: 'absolute', top: '230px', left: '50%', transform: 'translateX(-50%)',
-            width: '920px', height: '600px',
-            border: '2px solid rgba(30,82,164,0.12)',
-            borderRadius: '8px',
-          }} />
-
-          {/* Outer page border */}
-          <div style={{
-            position: 'absolute', inset: '24px',
-            border: '1.5px solid rgba(30,82,164,0.25)',
-            borderRadius: '4px',
-            pointerEvents: 'none',
-          }} />
-
-          {/* LOGO area in navy band */}
-          <div style={{
-            position: 'absolute', top: '32px', left: 0, right: 0,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+            position: 'absolute', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%) rotate(-30deg)',
+            fontSize: '140px',
+            fontWeight: 900,
+            fontFamily: 'Montserrat, Arial, sans-serif',
+            color: 'rgba(244,204,44,0.07)',
+            letterSpacing: '-4px',
+            whiteSpace: 'nowrap',
+            userSelect: 'none',
           }}>
+            UK ACADEMIES
+          </div>
+
+          {/* Main content */}
+          <div style={{
+            position: 'absolute', inset: '40px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0',
+            padding: '20px 100px 20px 100px',
+          }}>
+            {/* Organisation name */}
             <div style={{
               fontFamily: 'Montserrat, Arial, sans-serif',
               fontWeight: 900,
-              fontSize: '36px',
-              letterSpacing: '-1px',
-              color: '#ffffff',
-            }}>
-              <span style={{ color: '#ef462c' }}>UK</span><span style={{ color: '#f4cc2c' }}>AG</span>
-            </div>
-            <div style={{
-              fontFamily: 'Montserrat, Arial, sans-serif',
-              fontSize: '11px',
-              fontWeight: 600,
-              color: '#94a3b8',
-              letterSpacing: '3px',
-              textTransform: 'uppercase',
-            }}>
-              UK Academies of Gymnastics
-            </div>
-            <div style={{
-              width: '160px', height: '1px', backgroundColor: 'rgba(148,163,184,0.4)',
-            }} />
-            <div style={{
-              fontFamily: 'Montserrat, Arial, sans-serif',
-              fontSize: '10px',
-              color: '#64748b',
-              letterSpacing: '2px',
-              textTransform: 'uppercase',
-            }}>
-              Coaching &amp; Accreditation
-            </div>
-          </div>
-
-          {/* Main body */}
-          <div style={{
-            position: 'absolute', top: '210px', left: 0, right: 0, bottom: '100px',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            gap: '0',
-            padding: '0 100px',
-          }}>
-            <div style={{
-              fontFamily: 'Montserrat, Arial, sans-serif',
-              fontSize: '12px',
-              fontWeight: 700,
-              color: '#1e52a4',
-              letterSpacing: '5px',
-              textTransform: 'uppercase',
-              marginBottom: '18px',
-            }}>
-              Certificate of Completion
-            </div>
-
-            <div style={{
-              fontSize: '14px',
-              color: '#64748b',
-              fontStyle: 'italic',
-              marginBottom: '12px',
-            }}>
-              This is to certify that
-            </div>
-
-            <div style={{
-              fontFamily: 'Palatino Linotype, Palatino, Book Antiqua, Georgia, serif',
-              fontSize: '68px',
-              fontWeight: 700,
-              color: '#0f172a',
+              fontSize: '54px',
+              color: '#0F1E3A',
               textAlign: 'center',
               lineHeight: 1.05,
-              marginBottom: '18px',
-              borderBottom: '1.5px solid #e2e8f0',
-              paddingBottom: '18px',
-              width: '100%',
+              letterSpacing: '-1px',
+              marginBottom: '8px',
+            }}>
+              UK ACADEMIES<br />OF GYMNASTICS
+            </div>
+
+            {/* Certify text */}
+            <div style={{
+              fontSize: '18px',
+              color: '#5a3e1b',
+              fontStyle: 'italic',
+              marginBottom: '16px',
+              marginTop: '8px',
+              letterSpacing: '0.5px',
+            }}>
+              This is to certify that:
+            </div>
+
+            {/* Candidate name */}
+            <div style={{
+              fontFamily: 'Montserrat, Arial, sans-serif',
+              fontWeight: 900,
+              fontSize: '64px',
+              color: '#2b2b2b',
+              textAlign: 'center',
+              lineHeight: 1.05,
+              marginBottom: '12px',
             }}>
               {participantName}
             </div>
 
+            {/* Divider line */}
+            <div style={{ width: '600px', height: '1.5px', backgroundColor: '#2b2b2b', marginBottom: '20px' }} />
+
+            {/* Description */}
             <div style={{
-              fontSize: '15px',
-              color: '#475569',
+              fontSize: '17px',
+              color: '#3a3a3a',
+              textAlign: 'center',
+              fontFamily: 'Montserrat, Arial, sans-serif',
+              fontWeight: 600,
+              lineHeight: 1.5,
               marginBottom: '14px',
             }}>
-              has successfully completed the
+              Has completed and obtained the training and learning objectives to<br />
+              successfully coach at a UK Academies of Gymnastics centre as a
             </div>
 
+            {/* Role + level */}
             <div style={{
               fontFamily: 'Montserrat, Arial, sans-serif',
-              fontSize: '28px',
               fontWeight: 900,
-              color: '#1e52a4',
+              fontSize: '52px',
+              color: '#2b2b2b',
               textAlign: 'center',
-              lineHeight: 1.2,
-              maxWidth: '900px',
-              marginBottom: '8px',
+              lineHeight: 1.1,
+              marginBottom: '28px',
             }}>
-              {courseTitle}
+              {coachingRole}<br />{levelText}
             </div>
 
-            <div style={{
-              fontFamily: 'Montserrat, Arial, sans-serif',
-              fontSize: '12px',
-              color: '#64748b',
-              letterSpacing: '1px',
-              marginBottom: '32px',
-            }}>
-              CPD — Continuing Professional Development
-            </div>
-
-            {/* Signatures row */}
+            {/* Signature row */}
             <div style={{
               display: 'flex',
-              gap: '80px',
+              justifyContent: 'space-between',
               alignItems: 'flex-end',
-              marginBottom: '20px',
               width: '100%',
-              justifyContent: 'center',
+              maxWidth: '900px',
             }}>
-              {/* Date column */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+              {/* UKAG logo block (bottom left) */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+              }}>
                 <div style={{
-                  fontFamily: 'Montserrat, Arial, sans-serif',
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  color: '#0f172a',
+                  width: '64px',
+                  height: '64px',
+                  backgroundColor: '#0F1E3A',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}>
-                  {dateStr}
-                </div>
-                <div style={{
-                  width: '200px', height: '1px', backgroundColor: '#94a3b8',
-                }} />
-                <div style={{
-                  fontSize: '10px',
-                  color: '#94a3b8',
-                  letterSpacing: '2px',
-                  textTransform: 'uppercase',
-                  fontFamily: 'Montserrat, Arial, sans-serif',
-                }}>
-                  Date of Completion
+                  <div style={{ fontFamily: 'Montserrat, Arial, sans-serif', fontWeight: 900, fontSize: '16px', color: '#F5C518', lineHeight: 1 }}>UK</div>
+                  <div style={{ fontFamily: 'Montserrat, Arial, sans-serif', fontWeight: 900, fontSize: '16px', color: '#ffffff', lineHeight: 1 }}>AG</div>
                 </div>
               </div>
 
-              {/* Issuer column */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+              {/* Signature + name in centre */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                 <div style={{
-                  fontFamily: 'Palatino Linotype, Palatino, Georgia, serif',
-                  fontSize: '18px',
-                  fontStyle: 'italic',
-                  color: '#0f172a',
-                  fontWeight: 600,
+                  fontFamily: '"Dancing Script", "Brush Script MT", cursive',
+                  fontSize: '36px',
+                  color: '#1a1a1a',
+                  letterSpacing: '1px',
                 }}>
-                  {issuerName}
+                  S.Harrison
                 </div>
-                <div style={{
-                  width: '220px', height: '1px', backgroundColor: '#94a3b8',
-                }} />
-                <div style={{
-                  fontSize: '10px',
-                  color: '#94a3b8',
-                  letterSpacing: '2px',
-                  textTransform: 'uppercase',
-                  fontFamily: 'Montserrat, Arial, sans-serif',
-                }}>
-                  Authorised by
+                <div style={{ width: '280px', height: '1px', backgroundColor: '#2b2b2b' }} />
+                <div style={{ fontFamily: 'Montserrat, Arial, sans-serif', fontWeight: 600, fontSize: '13px', color: '#2b2b2b' }}>
+                  {signerName}
+                </div>
+                <div style={{ fontFamily: 'Montserrat, Arial, sans-serif', fontSize: '12px', color: '#555', fontWeight: 500 }}>
+                  UKAG Training Coordinator
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Footer band */}
-          <div style={{
-            position: 'absolute', bottom: 0, left: 0, right: 0, height: '80px',
-            backgroundColor: '#0f172a',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '0 60px',
-          }}>
-            <div style={{
-              fontSize: '10px',
-              color: '#64748b',
-              fontFamily: 'Montserrat, Arial, sans-serif',
-              letterSpacing: '0.5px',
-            }}>
-              Certificate No: <span style={{ color: '#94a3b8' }}>{certNumber}</span>
-            </div>
-            <div style={{
-              fontSize: '10px',
-              color: '#64748b',
-              fontFamily: 'Montserrat, Arial, sans-serif',
-              letterSpacing: '0.5px',
-            }}>
-              ukacademiesofgymnastics.com
-            </div>
-            <div style={{
-              fontSize: '10px',
-              color: '#64748b',
-              fontFamily: 'Montserrat, Arial, sans-serif',
-              letterSpacing: '0.5px',
-            }}>
-              Registered Training Provider
+              {/* CPD Accredited stamp (bottom right) */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                <div style={{
+                  width: '72px',
+                  height: '72px',
+                  borderRadius: '50%',
+                  border: '3px solid #555',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#f8f8f8',
+                }}>
+                  <div style={{ fontFamily: 'Montserrat, Arial, sans-serif', fontWeight: 900, fontSize: '11px', color: '#0F1E3A', lineHeight: 1.1, textAlign: 'center' }}>UKAG<br />CPD</div>
+                  <div style={{ fontFamily: 'Montserrat, Arial, sans-serif', fontSize: '7px', color: '#555', letterSpacing: '0.5px' }}>Accredited</div>
+                </div>
+                <div style={{ fontFamily: 'Montserrat, Arial, sans-serif', fontSize: '11px', color: '#555', fontWeight: 600 }}>
+                  Date: {dateStr}
+                </div>
+              </div>
             </div>
           </div>
         </div>
